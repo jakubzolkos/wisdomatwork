@@ -55,7 +55,7 @@ export function ResourcePreviewCard({
         const data = await analyzeResource(url)
         setPreview(data)
       } catch (error) {
-        console.error('[v0] Error analyzing resource:', error)
+        console.error('Error analyzing resource:', error)
         setPreview({ type: 'document', isExternalLink: true })
       } finally {
         setIsLoading(false)
@@ -67,11 +67,11 @@ export function ResourcePreviewCard({
 
   if (isLoading) {
     return (
-      <div className={`flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 ${className}`}>
-        <div className="h-16 w-20 animate-pulse rounded bg-gray-200" />
+      <div className={`flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-3 ${className}`}>
+        <div className="h-16 w-20 animate-pulse rounded bg-border" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-24 animate-pulse rounded bg-gray-200" />
-          <div className="h-2 w-16 animate-pulse rounded bg-gray-200" />
+          <div className="h-3 w-24 animate-pulse rounded bg-border" />
+          <div className="h-2 w-16 animate-pulse rounded bg-border" />
         </div>
       </div>
     )
@@ -92,10 +92,10 @@ export function ResourcePreviewCard({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={isVideo ? `Watch video: ${title} (opens in new tab)` : `Open document: ${title} (opens in new tab)`}
-      className={`group flex items-center gap-3 overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-gray-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${className}`}
+      className={`group flex items-center gap-3 overflow-hidden rounded-lg border border-border bg-card shadow-xs transition hover:border-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`}
     >
       {/* Thumbnail / Icon Section */}
-      <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden bg-gray-100">
+      <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden bg-muted">
         {isVideo && preview.thumbnailUrl && !thumbnailError ? (
           <>
             <Image
@@ -119,20 +119,20 @@ export function ResourcePreviewCard({
             {IconComponent && <IconComponent className="h-8 w-8" />}
           </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-            <PlayCircle className="h-8 w-8 text-gray-600" />
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <PlayCircle className="h-8 w-8 text-muted-foreground" />
           </div>
         )}
       </div>
 
       {/* Content Section */}
       <div className="flex min-w-0 flex-1 flex-col justify-between">
-        <h3 className="truncate text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+        <h3 className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <div className="flex items-center gap-2 text-xs text-gray-600">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {isVideo && duration && (
-            <span className="inline-block rounded bg-gray-100 px-2 py-0.5">{duration}</span>
+            <span className="inline-block rounded bg-muted px-2 py-0.5">{duration}</span>
           )}
           {!isVideo && preview.fileType && (
             <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${fileTypeColor}`}>
@@ -143,7 +143,7 @@ export function ResourcePreviewCard({
       </div>
 
       {/* External Link Icon */}
-      <div className="flex-shrink-0 text-gray-400 group-hover:text-blue-600 group-focus-visible:text-blue-600 transition-colors">
+      <div className="flex-shrink-0 text-muted-foreground group-hover:text-primary group-focus-visible:text-primary transition-colors">
         <ExternalLink className="h-4 w-4" />
       </div>
     </Link>

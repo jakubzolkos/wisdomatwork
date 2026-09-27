@@ -475,7 +475,7 @@ function PreviewStep(props: {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge variant="secondary">Total: {props.rows.length}</Badge>
-        <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+        <Badge className="border-transparent bg-success-soft text-success hover:bg-success-soft">
           Ready: {props.validCount}
         </Badge>
         {props.invalidCount > 0 && (
@@ -485,7 +485,7 @@ function PreviewStep(props: {
 
       <div className="max-h-[420px] overflow-auto rounded-md border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="sticky top-0 bg-muted text-xs tracking-wider text-muted-foreground">
+          <thead className="sticky top-0 bg-muted text-xs font-medium uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-3 py-2 font-medium">Status</th>
               <th className="px-3 py-2 font-medium">School Name</th>
@@ -500,7 +500,7 @@ function PreviewStep(props: {
               <tr key={`row-${i}`}>
                 <td className="px-3 py-2">
                   {r.ok ? (
-                    <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+                    <Badge className="border-transparent bg-success-soft text-success hover:bg-success-soft">
                       Ready
                     </Badge>
                   ) : (
@@ -561,7 +561,7 @@ function BulkSummary({ summary }: { summary: BulkInviteSummary }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge variant="secondary">Total: {summary.total}</Badge>
-        <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+        <Badge className="border-transparent bg-success-soft text-success hover:bg-success-soft">
           Invited: {summary.invited}
         </Badge>
         {summary.failed > 0 && (
@@ -570,7 +570,7 @@ function BulkSummary({ summary }: { summary: BulkInviteSummary }) {
       </div>
       <div className="max-h-72 overflow-auto rounded-md border border-border">
         <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-xs tracking-wider text-muted-foreground">
+          <thead className="bg-muted text-xs font-medium uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Status</th>
@@ -583,7 +583,7 @@ function BulkSummary({ summary }: { summary: BulkInviteSummary }) {
                 <td className="px-3 py-2 font-mono text-xs">{r.email}</td>
                 <td className="px-3 py-2">
                   {r.status === 'invited' ? (
-                    <span className="text-emerald-600">invited</span>
+                    <span className="text-success">invited</span>
                   ) : (
                     <span className="text-destructive">failed</span>
                   )}

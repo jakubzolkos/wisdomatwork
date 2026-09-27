@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { PageHeader } from '@/components/page-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,29 +39,27 @@ export default async function CommunityDashboardPage() {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <header className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm font-medium tracking-wide text-muted-foreground">
-            Community
-          </p>
-          <h1 className="mt-1 font-serif text-3xl text-balance text-foreground">
-            What&apos;s happening this week
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+      <div className="flex flex-col">
+      <PageHeader
+        eyebrow="Community of Practice"
+        title="What’s happening this week"
+        description={
+          <>
             A quick read-out of who&apos;s sharing, asking, and learning together.
             Jump into a feed to write or comment.
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/community">All sections</Link>
-        </Button>
-      </header>
+          </>
+        }
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/community">All sections</Link>
+          </Button>
+        }
+      />
 
       {/* Stat tiles */}
       <section
         aria-label="Community at a glance"
-        className="grid grid-cols-2 gap-3 md:grid-cols-5"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       >
         <StatTile
           href="/community/bios"
@@ -95,13 +94,13 @@ export default async function CommunityDashboardPage() {
         />
       </section>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Featured win + recent wins */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 font-serif">
-                <Trophy className="h-4 w-4 text-amber-600" aria-hidden="true" />
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="size-4 text-muted-foreground" aria-hidden="true" />
                 Wins
               </CardTitle>
               <CardDescription>
@@ -110,7 +109,7 @@ export default async function CommunityDashboardPage() {
             </div>
             <Button asChild size="sm" variant="ghost">
               <Link href="/community/wins" className="gap-1">
-                See all <ArrowRight className="h-4 w-4" />
+                See all <ArrowRight />
               </Link>
             </Button>
           </CardHeader>
@@ -118,11 +117,11 @@ export default async function CommunityDashboardPage() {
             {data.featuredWin ? (
               <Link
                 href={`/community/stories/${data.featuredWin.id}`}
-                className="group rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 transition-colors hover:bg-amber-500/10"
+                className="group rounded-lg bg-muted/60 p-4 transition-colors hover:bg-accent"
               >
-                <div className="flex items-center gap-2">
-                  <Badge className="gap-1 bg-amber-500 text-amber-950 hover:bg-amber-500">
-                    <Sparkles className="h-3 w-3" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="gap-1 bg-card">
+                    <Sparkles className="text-highlight" />
                     Featured
                   </Badge>
                   {data.featuredWin.framework?.title && (
@@ -131,7 +130,7 @@ export default async function CommunityDashboardPage() {
                     </Badge>
                   )}
                 </div>
-                <h3 className="mt-2 font-serif text-lg leading-snug text-foreground group-hover:text-primary">
+                <h3 className="mt-2.5 text-base leading-snug group-hover:text-primary">
                   {data.featuredWin.title}
                 </h3>
                 {data.featuredWin.excerpt && (
@@ -147,7 +146,7 @@ export default async function CommunityDashboardPage() {
                 />
               </Link>
             ) : (
-              <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No featured win yet this week. Staff can pin one from any wins
                 post.
               </p>
@@ -159,7 +158,7 @@ export default async function CommunityDashboardPage() {
                   <li key={post.id}>
                     <Link
                       href={`/community/stories/${post.id}`}
-                      className="block py-3 transition-colors hover:bg-muted/50"
+                      className="-mx-2 block rounded-md px-2 py-3 transition-colors hover:bg-accent/60"
                     >
                       <p className="font-medium text-foreground">{post.title}</p>
                       <AuthorLine
@@ -179,8 +178,8 @@ export default async function CommunityDashboardPage() {
         {/* Member of the week */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-serif">
-              <Users className="h-4 w-4 text-primary" aria-hidden="true" />
+            <CardTitle className="flex items-center gap-2">
+              <Users className="size-4 text-muted-foreground" aria-hidden="true" />
               Member of the week
             </CardTitle>
             <CardDescription>
@@ -193,7 +192,7 @@ export default async function CommunityDashboardPage() {
                 href={`/community/bios#${data.memberOfWeek.id}`}
                 className="group flex items-start gap-3"
               >
-                <Avatar className="h-14 w-14">
+                <Avatar className="size-14">
                   <AvatarImage
                     src={data.memberOfWeek.avatar_url ?? undefined}
                     alt=""
@@ -206,7 +205,7 @@ export default async function CommunityDashboardPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <p className="font-serif text-lg leading-tight text-foreground group-hover:text-primary">
+                  <p className="text-base font-semibold leading-tight text-foreground group-hover:text-primary">
                     {data.memberOfWeek.full_name ?? 'Member'}
                   </p>
                   {data.memberOfWeek.title && (
@@ -222,7 +221,7 @@ export default async function CommunityDashboardPage() {
                 </div>
               </Link>
             ) : (
-              <p className="rounded-md border border-dashed border-border p-3 text-center text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No member of the week scheduled. Admins can pick one from{' '}
                 <Link
                   href="/admin/community/moderation"
@@ -237,14 +236,14 @@ export default async function CommunityDashboardPage() {
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Open asks */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 font-serif">
+              <CardTitle className="flex items-center gap-2">
                 <HelpCircle
-                  className="h-4 w-4 text-primary"
+                  className="size-4 text-muted-foreground"
                   aria-hidden="true"
                 />
                 Open asks
@@ -255,13 +254,13 @@ export default async function CommunityDashboardPage() {
             </div>
             <Button asChild size="sm" variant="ghost">
               <Link href="/community/ask" className="gap-1">
-                See all <ArrowRight className="h-4 w-4" />
+                See all <ArrowRight />
               </Link>
             </Button>
           </CardHeader>
           <CardContent>
             {data.openAsks.length === 0 ? (
-              <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No open asks at the moment.
               </p>
             ) : (
@@ -270,7 +269,7 @@ export default async function CommunityDashboardPage() {
                   <li key={post.id}>
                     <Link
                       href={`/community/stories/${post.id}`}
-                      className="block py-3 transition-colors hover:bg-muted/50"
+                      className="-mx-2 block rounded-md px-2 py-3 transition-colors hover:bg-accent/60"
                     >
                       <div className="flex items-start gap-2">
                         <p className="flex-1 font-medium text-foreground">
@@ -301,21 +300,21 @@ export default async function CommunityDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 font-serif">
-                <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="size-4 text-muted-foreground" aria-hidden="true" />
                 Latest reflections
               </CardTitle>
               <CardDescription>From phase labs and content.</CardDescription>
             </div>
             <Button asChild size="sm" variant="ghost">
               <Link href="/community/reflections" className="gap-1">
-                See all <ArrowRight className="h-4 w-4" />
+                See all <ArrowRight />
               </Link>
             </Button>
           </CardHeader>
           <CardContent>
             {data.recentReflections.length === 0 ? (
-              <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No reflections yet.
               </p>
             ) : (
@@ -323,7 +322,7 @@ export default async function CommunityDashboardPage() {
                 {data.recentReflections.map((r) => (
                   <li
                     key={r.id}
-                    className="rounded-md border border-border bg-card p-3"
+                    className="rounded-lg bg-muted/60 p-3"
                   >
                     {/* Breadcrumb back to the lab so readers know where the
                         reflection came from. */}
@@ -380,18 +379,23 @@ function StatTile({
   return (
     <Link
       href={href}
-      className={[
-        'group flex flex-col rounded-lg border bg-card p-3 transition-colors',
-        accent
-          ? 'border-primary/30 hover:border-primary'
-          : 'border-border hover:border-primary/40',
-      ].join(' ')}
+      className="group flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-xs transition hover:border-border-strong hover:shadow-md"
     >
-      <span className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      <span className="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
         {label}
+        <span
+          className={
+            accent
+              ? 'flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground'
+              : 'flex size-7 items-center justify-center rounded-md bg-primary-soft text-primary'
+          }
+        >
+          <Icon className="size-3.5" aria-hidden="true" />
+        </span>
       </span>
-      <span className="mt-1 font-serif text-2xl text-foreground">{value}</span>
+      <span className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+        {value}
+      </span>
     </Link>
   )
 }
@@ -412,7 +416,7 @@ function AuthorLine({
 }) {
   return (
     <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-      <Avatar className="h-5 w-5">
+      <Avatar className="size-5">
         <AvatarImage src={image ?? undefined} alt="" />
         <AvatarFallback className="text-[10px]">
           {initialsFor(name, email)}

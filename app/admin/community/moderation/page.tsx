@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { Archive, ArrowLeft, Pin, Sparkles, Trash2 } from 'lucide-react'
 import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
@@ -167,8 +168,8 @@ export default async function ModerationHubPage() {
   })
 
   return (
-    <div className="container mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Link
           href="/admin/community"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -176,19 +177,18 @@ export default async function ModerationHubPage() {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Community admin
         </Link>
-        <h1 className="font-serif text-2xl text-foreground">
-          Moderation hub
-        </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Pin standout posts, archive ones that need to disappear, soft-delete
-          comments that crossed a line, and schedule the Member of the Week.
-        </p>
+        <PageHeader
+          className="mb-2"
+          eyebrow="Community"
+          title="Moderation hub"
+          description="Pin standout posts, archive ones that need to disappear, soft-delete comments that crossed a line, and schedule the Member of the Week."
+        />
       </div>
 
       {/* Member of the week picker */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-serif">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
             Member of the week
           </CardTitle>
@@ -222,7 +222,7 @@ export default async function ModerationHubPage() {
       {/* Recent posts with admin controls */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-serif">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Pin className="h-4 w-4 text-primary" aria-hidden="true" />
             Recent posts
           </CardTitle>
@@ -233,16 +233,13 @@ export default async function ModerationHubPage() {
         </CardHeader>
         <CardContent>
           {posts.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No posts yet.
             </p>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ul className="-my-3 divide-y divide-border">
               {posts.map((post) => (
-                <li
-                  key={post.id}
-                  className="rounded-md border border-border bg-card p-3"
-                >
+                <li key={post.id} className="py-4">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
@@ -259,14 +256,14 @@ export default async function ModerationHubPage() {
                           {post.kind}
                         </Badge>
                         {post.featured_at && (
-                          <Badge className="gap-1 bg-amber-500 text-amber-950 hover:bg-amber-500">
+                          <Badge className="gap-1 border-transparent bg-warning-soft text-warning hover:bg-warning-soft">
                             <Sparkles className="h-3 w-3" /> Featured
                           </Badge>
                         )}
                         {post.is_archived && (
                           <Badge
                             variant="outline"
-                            className="gap-1 border-destructive/40 text-destructive"
+                            className="gap-1 border-destructive/30 bg-destructive/10 text-destructive"
                           >
                             <Archive className="h-3 w-3" /> Archived
                           </Badge>
@@ -309,7 +306,7 @@ export default async function ModerationHubPage() {
       {/* Recent comments with delete */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-serif">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Trash2 className="h-4 w-4 text-primary" aria-hidden="true" />
             Recent comments
           </CardTitle>
@@ -321,15 +318,15 @@ export default async function ModerationHubPage() {
         </CardHeader>
         <CardContent>
           {comments.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No comments yet.
             </p>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ul className="-my-3 divide-y divide-border">
               {comments.map((comment) => (
                 <li
                   key={comment.id}
-                  className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
+                  className="flex items-start gap-3 py-4"
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage

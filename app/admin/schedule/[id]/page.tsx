@@ -201,7 +201,7 @@ export default async function AdminScheduleDetailPage({
                   href={schedule.meeting_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline break-all"
+                  className="text-primary hover:underline break-all"
                 >
                   {schedule.meeting_link}
                 </a>

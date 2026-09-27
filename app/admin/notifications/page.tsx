@@ -384,7 +384,7 @@ export default async function AdminNotificationsPage({
             >
               {TAB_LABELS[t]}
               {tabCounts[t] > 0 && (
-                <span className="rounded-full bg-bg-muted px-1.5 text-xs text-text-muted">
+                <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground">
                   {tabCounts[t]}
                 </span>
               )}
@@ -421,10 +421,10 @@ export default async function AdminNotificationsPage({
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${
                       row.kind === 'alert'
-                        ? 'border-red-200 bg-red-50 text-red-700'
+                        ? 'border-destructive/30 bg-destructive/10 text-destructive'
                         : row.kind === 'reminder'
-                          ? 'border-blue-200 bg-blue-50 text-blue-700'
-                          : 'border-border bg-bg-muted text-text-muted'
+                          ? 'border-primary/30 bg-primary-soft text-primary'
+                          : 'border-border bg-muted text-muted-foreground'
                     }`}>
                       {NOTIFICATION_KIND_LABELS[row.kind]}
                     </span>
@@ -432,51 +432,51 @@ export default async function AdminNotificationsPage({
                       {row.title}
                     </h3>
                     {row.pinned && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-bg-muted px-2 py-0.5 text-xs text-text-muted">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         <Pin className="h-3 w-3" aria-hidden />
                         Pinned
                       </span>
                     )}
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
                       <Users className="h-3 w-3" aria-hidden />
                       {audienceLabel(row, schoolNameById, fellowNameById)}
                     </span>
                     {row.email_enabled && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
                         <Mail className="h-3 w-3" aria-hidden />
                         Email
                       </span>
                     )}
                     {row.status === 'scheduled' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary-soft px-2 py-0.5 text-xs text-primary">
                         <Clock className="h-3 w-3" aria-hidden />
                         Scheduled
                       </span>
                     )}
                     {row.status === 'failed' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs text-red-700">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-xs text-destructive">
                         <XCircle className="h-3 w-3" aria-hidden />
                         Failed
                       </span>
                     )}
                     {row.status === 'cancelled' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-text-muted">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
                         Cancelled
                       </span>
                     )}
                     {row.status === 'sent' && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs text-green-700">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-0.5 text-xs text-success">
                         <CheckCircle2 className="h-3 w-3" aria-hidden />
                         Sent
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-text leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                     {row.body}
                   </p>
                   {row.cta_label && row.cta_url && (
-                    <p className="text-xs text-text-muted">
-                      CTA: <span className="font-medium text-text">{row.cta_label}</span>{' '}
+                    <p className="text-xs text-muted-foreground">
+                      CTA: <span className="font-medium text-foreground">{row.cta_label}</span>{' '}
                       &rarr; <span className="font-mono">{row.cta_url}</span>
                     </p>
                   )}
@@ -489,7 +489,7 @@ export default async function AdminNotificationsPage({
                       Pinned to: {row.content.title}
                     </Link>
                   )}
-                  <p className="text-xs text-text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {row.author?.full_name ?? 'Unknown author'} ·{' '}
                     {timestampLabelForRow(row)}{' '}
                     {formatDate(timestampForRow(row))}
@@ -522,7 +522,7 @@ export default async function AdminNotificationsPage({
                         size="sm"
                         aria-label="Cancel schedule"
                       >
-                        <XCircle className="h-4 w-4 text-text-muted" />
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
                       </Button>
                     </form>
                   )}
@@ -538,7 +538,7 @@ export default async function AdminNotificationsPage({
                       >
                         <Pin
                           className={`h-4 w-4 ${
-                            row.pinned ? 'text-primary' : 'text-text-muted'
+                            row.pinned ? 'text-primary' : 'text-muted-foreground'
                           }`}
                         />
                       </Button>
@@ -585,7 +585,7 @@ export default async function AdminNotificationsPage({
                       size="sm"
                       aria-label="Delete"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </form>
                 </div>

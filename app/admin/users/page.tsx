@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
 import { InviteUserDialog } from './invite-user-dialog'
 import { BulkInviteDialog } from './bulk-invite-dialog'
 import { UserRow } from './user-row'
@@ -190,73 +191,73 @@ export default async function AdminUsersPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-serif text-foreground">Users</h2>
-          <p className="text-sm text-muted-foreground">
-            {users.length} total · Invite new people, adjust roles, and assign cohorts to fellows.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <BulkInviteDialog cohorts={cohortList} />
-          <InviteUserDialog cohorts={cohortList} />
-        </div>
-      </div>
+      <PageHeader
+        className="mb-2"
+        eyebrow="Admin console"
+        title="Users"
+        description={`${users.length} total · Invite new people, adjust roles, and assign cohorts to fellows.`}
+        actions={
+          <>
+            <BulkInviteDialog cohorts={cohortList} />
+            <InviteUserDialog cohorts={cohortList} />
+          </>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Card className="py-0">
+          <CardContent className="flex items-center gap-3 p-5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Users className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-medium tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 Total Fellows
               </p>
-              <p className="text-2xl font-semibold text-foreground">{totalFellows}</p>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{totalFellows}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-success/10 text-success">
+        <Card className="py-0">
+          <CardContent className="flex items-center gap-3 p-5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-success-soft text-success">
               <CheckCircle2 className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-medium tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 Active
               </p>
-              <p className="text-2xl font-semibold text-foreground">{activeFellows}</p>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{activeFellows}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-highlight-soft text-highlight">
+        <Card className="py-0">
+          <CardContent className="flex items-center gap-3 p-5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Building2 className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-medium tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 School Teams
               </p>
-              <p className="text-2xl font-semibold text-foreground">{uniqueSchoolTeams}</p>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{uniqueSchoolTeams}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-warning/10 text-warning">
+        <Card className="py-0">
+          <CardContent className="flex items-center gap-3 p-5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <BarChart3 className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-medium tracking-wider text-muted-foreground">
+              <p className="text-xs font-medium text-muted-foreground">
                 Cohorts
               </p>
-              <p className="text-2xl font-semibold text-foreground">{uniqueCohorts}</p>
+              <p className="text-2xl font-semibold tabular-nums text-foreground">{uniqueCohorts}</p>
             </div>
           </CardContent>
         </Card>
@@ -266,9 +267,9 @@ export default async function AdminUsersPage({
       <UsersSearch cohorts={cohortFilterList} schoolTeams={schoolTeamList} />
 
       {/* Users List */}
-      <Card>
+      <Card className="gap-0 overflow-hidden py-0">
         <CardContent className="p-0">
-          <div className="hidden grid-cols-12 gap-4 border-b border-border px-5 py-3 text-xs font-medium tracking-wider text-muted-foreground md:grid">
+          <div className="hidden grid-cols-12 gap-4 border-b border-border bg-muted/50 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
             <div className="col-span-3">Name</div>
             <div className="col-span-2">Role</div>
             <div className="col-span-3">School Team</div>
@@ -293,15 +294,15 @@ export default async function AdminUsersPage({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             Showing {start + 1} to {Math.min(end, totalFiltered)} of {totalFiltered} users
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {page > 1 && (
               <a
                 href={`/admin/users?search=${encodeURIComponent(search)}&role=${roleFilter}&school_team=${schoolTeamFilter}&cohort=${cohortFilter}&page=${page - 1}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
               >
                 Previous
               </a>
@@ -313,7 +314,7 @@ export default async function AdminUsersPage({
                 className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                   p === page
                     ? 'bg-primary text-primary-foreground'
-                    : 'border border-border text-foreground hover:bg-muted'
+                    : 'border border-border bg-card text-foreground hover:bg-accent'
                 }`}
               >
                 {p}
@@ -322,7 +323,7 @@ export default async function AdminUsersPage({
             {page < totalPages && (
               <a
                 href={`/admin/users?search=${encodeURIComponent(search)}&role=${roleFilter}&school_team=${schoolTeamFilter}&cohort=${cohortFilter}&page=${page + 1}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
               >
                 Next
               </a>

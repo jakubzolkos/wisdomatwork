@@ -146,7 +146,7 @@ function EventCard({ ev }: { ev: EventRow }) {
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <CardTitle className="font-serif text-base">{ev.title}</CardTitle>
+            <CardTitle className="text-base">{ev.title}</CardTitle>
             {isPast && (
               <Badge variant="secondary" className="text-[10px]">
                 Past
@@ -344,7 +344,7 @@ function PostCard({ post }: { post: PostRow }) {
             >
               {published ? 'Published' : 'Draft'}
             </Badge>
-            <CardTitle className="font-serif text-base">{post.title}</CardTitle>
+            <CardTitle className="text-base">{post.title}</CardTitle>
           </div>
           {post.excerpt && (
             <p className="text-sm text-muted-foreground">{post.excerpt}</p>
@@ -541,7 +541,7 @@ function ResourceCard({ resource }: { resource: ResourceRow }) {
                 {resource.category}
               </Badge>
             )}
-            <CardTitle className="font-serif text-base">{resource.title}</CardTitle>
+            <CardTitle className="text-base">{resource.title}</CardTitle>
             <CohortBadge cohorts={resource.cohorts} />
           </div>
           <a
@@ -662,10 +662,12 @@ function SectionHeader({
 }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
-      <div className="flex items-start gap-2">
-        {icon}
+      <div className="flex items-start gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary [&_svg]:size-[18px]">
+          {icon}
+        </span>
         <div>
-          <h3 className="font-serif text-lg text-foreground">{title}</h3>
+          <h2 className="text-lg">{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </div>
@@ -693,7 +695,7 @@ function FormRow({
 
 function Empty({ copy }: { copy: string }) {
   return (
-    <p className="rounded-md border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
+    <p className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
       {copy}
     </p>
   )

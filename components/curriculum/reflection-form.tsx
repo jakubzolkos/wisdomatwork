@@ -96,14 +96,14 @@ export function ReflectionForm({
   }
 
   return (
-    <section className="space-y-3 rounded-lg border border-border bg-card p-5">
-      <div className="flex items-start gap-2">
-        <Pencil className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+    <section className="space-y-4 rounded-lg bg-muted/60 p-5">
+      <div className="flex items-start gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <Pencil className="size-4" aria-hidden="true" />
+        </span>
         <div className="min-w-0 space-y-1">
-          <p className="text-xs font-semibold tracking-wider text-muted-foreground">
-            Reflection
-          </p>
-          <p className="text-pretty text-sm leading-relaxed text-foreground">
+          <p className="eyebrow">Reflection</p>
+          <p className="text-pretty text-[15px] leading-relaxed text-foreground">
             {prompt}
           </p>
         </div>
@@ -112,8 +112,8 @@ export function ReflectionForm({
       {!editing && savedResponse ? (
         // Submitted state.
         <div className="space-y-3">
-          <div className="rounded-md border border-border bg-muted/40 p-3">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-foreground">
               {savedResponse}
             </p>
           </div>
@@ -149,6 +149,7 @@ export function ReflectionForm({
             onBlur={handleBlur}
             placeholder=""
             disabled={pending}
+            className="bg-card"
           />
           {error && (
             <p className="text-sm text-destructive" role="alert">

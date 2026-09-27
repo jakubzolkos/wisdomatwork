@@ -4,16 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { KeyRound, Mail } from 'lucide-react'
+import { AuthCard, AuthNotice, MethodCard } from '../_components/auth-ui'
 
 type Method = 'password' | 'code'
 
@@ -121,108 +115,98 @@ export default function AcceptInvitePage() {
   const canSubmit = bootstrapped && !bootstrapError && !isSubmitting
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="space-y-2">
-            <CardTitle className="font-serif text-2xl">
-              {firstName ? `Welcome, ${firstName}` : 'Welcome to Wisdom At Work'}
-            </CardTitle>
-            <CardDescription>
-              {email ? (
-                <>
-                  You&apos;re accepting an invite for{' '}
-                  <span className="font-medium text-foreground">{email}</span>. Choose how
-                  you&apos;d like to sign in from now on.
-                </>
-              ) : (
-                "Choose how you'd like to sign in from now on."
-              )}
-            </CardDescription>
-          </CardHeader>
+    <div className="w-full max-w-md">
+      <AuthCard
+        title={firstName ? `Welcome, ${firstName}` : 'Welcome to Wisdom At Work'}
+        description={
+          email ? (
+            <>
+              You&apos;re accepting an invite for{' '}
+              <span className="font-medium break-all text-foreground">{email}</span>. Choose how
+              you&apos;d like to sign in from now on.
+            </>
+          ) : (
+            "Choose how you'd like to sign in from now on."
+          )
+        }
+      >
+        {bootstrapError && (
+          <AuthNotice tone="error" role="alert">
+            {bootstrapError}
+          </AuthNotice>
+        )}
 
-          <CardContent className="flex flex-col gap-5">
-            {bootstrapError && (
-              <p
-                role="alert"
-                className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
-              >
-                {bootstrapError}
+        <MethodPicker method={method} onChange={setMethod} disabled={!canSubmit} />
+
+        {method === 'password' ? (
+          <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-5">
+            <div className="space-y-2">
+              <Label htmlFor="password">New password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm">Confirm password</Label>
+              <Input
+                id="confirm"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
+            </div>
+            {submitError && (
+              <AuthNotice tone="error" role="alert">
+                {submitError}
+              </AuthNotice>
+            )}
+            <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
+              {isSubmitting ? 'Saving...' : 'Set password and continue'}
+            </Button>
+          </form>
+        ) : (
+          <div className="flex flex-col gap-5">
+            <AuthNotice tone="info">
+              <p className="font-medium">No password needed.</p>
+              <p className="mt-1 text-muted-foreground">
+                Every time you sign in, we&apos;ll email a one-time code to{' '}
+                <span className="font-medium break-all text-foreground">
+                  {email ?? 'your invited address'}
+                </span>
+                . Click the link in the email or paste the code to log in &mdash;
+                nothing to memorize.
               </p>
+            </AuthNotice>
+            {submitError && (
+              <AuthNotice tone="error" role="alert">
+                {submitError}
+              </AuthNotice>
             )}
-
-            <MethodPicker method={method} onChange={setMethod} disabled={!canSubmit} />
-
-            {method === 'password' ? (
-              <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="password">New password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">At least 8 characters.</p>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="confirm">Confirm password</Label>
-                  <Input
-                    id="confirm"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
-                  />
-                </div>
-                {submitError && (
-                  <p role="alert" className="text-sm text-destructive">
-                    {submitError}
-                  </p>
-                )}
-                <Button type="submit" className="w-full" disabled={!canSubmit}>
-                  {isSubmitting ? 'Saving...' : 'Set password and continue'}
-                </Button>
-              </form>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <div className="rounded-md border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-                  <p className="text-foreground">No password needed.</p>
-                  <p className="mt-1">
-                    Every time you sign in, we&apos;ll email a one-time code to{' '}
-                    <span className="font-medium text-foreground">
-                      {email ?? 'your invited address'}
-                    </span>
-                    . Click the link in the email or paste the code to log in &mdash;
-                    nothing to memorize.
-                  </p>
-                </div>
-                {submitError && (
-                  <p role="alert" className="text-sm text-destructive">
-                    {submitError}
-                  </p>
-                )}
-                <Button
-                  type="button"
-                  className="w-full"
-                  onClick={handleCodeContinue}
-                  disabled={!canSubmit}
-                >
-                  {isSubmitting ? 'Loading...' : 'Continue to dashboard'}
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">
-                  You can always add a password later from your profile.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              onClick={handleCodeContinue}
+              disabled={!canSubmit}
+            >
+              {isSubmitting ? 'Loading...' : 'Continue to dashboard'}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              You can always add a password later from your profile.
+            </p>
+          </div>
+        )}
+      </AuthCard>
     </div>
   )
 }
@@ -243,7 +227,7 @@ function MethodPicker({
       className="grid grid-cols-1 gap-2 sm:grid-cols-2"
     >
       <MethodCard
-        icon={<KeyRound className="h-4 w-4" />}
+        icon={<KeyRound className="size-4" />}
         label="Create a password"
         description="Sign in with email + password."
         selected={method === 'password'}
@@ -251,7 +235,7 @@ function MethodPicker({
         disabled={disabled}
       />
       <MethodCard
-        icon={<Mail className="h-4 w-4" />}
+        icon={<Mail className="size-4" />}
         label="Use email codes"
         description="We email a login code every time."
         selected={method === 'code'}
@@ -259,45 +243,5 @@ function MethodPicker({
         disabled={disabled}
       />
     </div>
-  )
-}
-
-function MethodCard({
-  icon,
-  label,
-  description,
-  selected,
-  onSelect,
-  disabled,
-}: {
-  icon: React.ReactNode
-  label: string
-  description: string
-  selected: boolean
-  onSelect: () => void
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onSelect}
-      disabled={disabled}
-      className={[
-        'flex flex-col gap-1 rounded-md border p-3 text-left transition',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        selected
-          ? 'border-primary bg-primary/5'
-          : 'border-border bg-card hover:border-foreground/30',
-        disabled ? 'cursor-not-allowed opacity-60' : '',
-      ].join(' ')}
-    >
-      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-        {icon}
-        {label}
-      </span>
-      <span className="text-xs text-muted-foreground">{description}</span>
-    </button>
   )
 }

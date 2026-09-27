@@ -351,17 +351,17 @@ export function PageEditor({
           </div>
 
           {!page.id && (
-            <Alert className="mt-4 bg-blue-50 border-blue-200">
-              <AlertDescription className="text-blue-900">
+            <Alert className="mt-4 bg-primary-soft border-primary/30">
+              <AlertDescription className="text-primary">
                 Save your page as a draft first before publishing
               </AlertDescription>
             </Alert>
           )}
 
           {hasUnsavedChanges && page.id && (
-            <Alert className="mt-4 bg-amber-50 border-amber-200">
-              <AlertCircle className="h-4 w-4 inline mr-2 text-amber-900" />
-              <AlertDescription className="text-amber-900">
+            <Alert className="mt-4 bg-warning-soft border-warning/30">
+              <AlertCircle className="h-4 w-4 inline mr-2 text-warning" />
+              <AlertDescription className="text-warning">
                 You have unsaved changes. Save to enable publishing these updates.
               </AlertDescription>
             </Alert>

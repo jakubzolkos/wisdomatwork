@@ -62,7 +62,7 @@ export function AddTeamForm({
   return (
     <form
       action={handle}
-      className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4"
+      className="flex flex-col gap-4 rounded-lg bg-muted/60 p-4"
     >
       <input type="hidden" name="schoolId" value={schoolId} />
       

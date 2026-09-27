@@ -241,8 +241,25 @@ export function CurriculumTree({ phases }: Props) {
                     {phase.description}
                   </p>
                 )}
+                {phase.itemCount > 0 && (
+                  <div
+                    className="mt-3 h-1 w-full overflow-hidden rounded-full bg-muted"
+                    role="progressbar"
+                    aria-label={`${phase.title} progress`}
+                    aria-valuemin={0}
+                    aria-valuemax={phase.itemCount}
+                    aria-valuenow={phase.completedCount}
+                  >
+                    <div
+                      className="h-full rounded-full bg-primary transition-[width] duration-500"
+                      style={{
+                        width: `${Math.round((phase.completedCount / phase.itemCount) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                )}
               </div>
-              <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex shrink-0 items-center gap-3 self-start text-xs text-muted-foreground">
                 {phase.itemCount > 0 && (
                   <span>
                     {phase.completedCount}/{phase.itemCount}

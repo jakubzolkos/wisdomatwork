@@ -240,7 +240,7 @@ export function CommentThread({
 
   return (
     <section className="flex flex-col gap-3" aria-label="Comments">
-      <h3 className="text-xs font-semibold tracking-wide text-muted-foreground">
+      <h3 className="eyebrow">
         {comments.filter((c) => !c.is_deleted).length === 0
           ? 'Comments'
           : `Comments (${comments.filter((c) => !c.is_deleted).length})`}
@@ -278,7 +278,7 @@ export function CommentThread({
               />
 
               {node.replies.length > 0 && (
-                <ul className="ml-10 flex flex-col gap-3 border-l border-border pl-4">
+                <ul className="ml-11 flex flex-col gap-3 border-l pl-4">
                   {node.replies.map((reply) => (
                     <li key={reply.id}>
                       <CommentRow
@@ -310,7 +310,7 @@ export function CommentThread({
 
               {/* Reply composer, scoped under this comment. */}
               {replyingTo === node.comment.id && (
-                <div className="ml-10 flex flex-col gap-2 border-l border-border pl-4">
+                <div className="ml-11 flex flex-col gap-2 border-l pl-4">
                   <Textarea
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
@@ -353,7 +353,7 @@ export function CommentThread({
 
       {/* Top-level composer */}
       {currentUser ? (
-        <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-3">
+        <div className="flex flex-col gap-2">
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -499,21 +499,21 @@ function CommentRow({
 
   return (
     <div className="flex gap-3">
-      <Avatar className="h-8 w-8 shrink-0">
+      <Avatar className="size-8 shrink-0">
         {comment.author?.avatar_url ? (
           <AvatarImage src={comment.author.avatar_url} alt="" />
         ) : null}
-        <AvatarFallback className="text-[10px] font-medium">
+        <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
           {initials}
         </AvatarFallback>
       </Avatar>
 
       <div
         className={[
-          'min-w-0 flex-1 rounded-md border bg-card px-3 py-2',
+          'min-w-0 flex-1 rounded-lg px-3.5 py-2.5',
           isAccepted
-            ? 'border-emerald-500/60 bg-emerald-500/5 ring-1 ring-emerald-500/20'
-            : 'border-border',
+            ? 'bg-success-soft ring-1 ring-success/25'
+            : 'bg-muted/60',
         ].join(' ')}
       >
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
@@ -526,10 +526,10 @@ function CommentRow({
           </span>
           {isAccepted && (
             <Badge
-              variant="outline"
-              className="gap-1 border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              variant="secondary"
+              className="gap-1 bg-card text-success"
             >
-              <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+              <CheckCircle2 aria-hidden="true" />
               Accepted answer
             </Badge>
           )}
@@ -563,7 +563,7 @@ function CommentRow({
                 onClick={onEditCancel}
                 disabled={pending}
               >
-                <X className="mr-1 h-3 w-3" aria-hidden="true" />
+                <X aria-hidden="true" />
                 Cancel
               </Button>
             </div>
@@ -575,14 +575,14 @@ function CommentRow({
         )}
 
         {!comment.is_deleted && !isEditing && currentUser && (
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs font-medium">
             {onReplyClick && (
               <button
                 type="button"
                 onClick={onReplyClick}
                 className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary"
               >
-                <Reply className="h-3 w-3" aria-hidden="true" />
+                <Reply className="size-3.5" aria-hidden="true" />
                 Reply
               </button>
             )}
@@ -599,12 +599,12 @@ function CommentRow({
                 className={[
                   'inline-flex items-center gap-1 transition-colors disabled:opacity-50',
                   isAccepted
-                    ? 'text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100'
-                    : 'text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-300',
+                    ? 'font-medium text-success hover:text-success/80'
+                    : 'text-muted-foreground hover:text-success',
                 ].join(' ')}
                 aria-pressed={isAccepted}
               >
-                <Check className="h-3 w-3" aria-hidden="true" />
+                <Check className="size-3.5" aria-hidden="true" />
                 {isAccepted ? 'Unmark answer' : 'Mark as answer'}
               </button>
             )}
@@ -614,7 +614,7 @@ function CommentRow({
                 onClick={onEditClick}
                 className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary"
               >
-                <Pencil className="h-3 w-3" aria-hidden="true" />
+                <Pencil className="size-3.5" aria-hidden="true" />
                 Edit
               </button>
             )}
@@ -624,7 +624,7 @@ function CommentRow({
                 onClick={onDeleteClick}
                 className="inline-flex items-center gap-1 text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-3 w-3" aria-hidden="true" />
+                <Trash2 className="size-3.5" aria-hidden="true" />
                 Delete
               </button>
             )}

@@ -53,10 +53,10 @@ export function ModuleList({
   const [createOpen, setCreateOpen] = useState(false)
 
   return (
-    <section className="rounded-lg border border-border bg-card">
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5">
         <div>
-          <h3 className="font-serif text-lg text-foreground">Modules</h3>
+          <h2 className="text-base">Modules</h2>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             Modules group related content within a phase. Open a module to
             manage the content inside it.
@@ -141,19 +141,19 @@ function ModuleRowItem({
   }
 
   return (
-    <li className="flex flex-wrap items-start gap-3 px-5 py-4">
+    <li className="flex flex-wrap items-start gap-3 px-5 py-4 transition-colors hover:bg-accent/60">
       <Link
         href={`/admin/curriculum/${phaseId}/modules/${module.id}`}
         className="group min-w-0 flex-1"
       >
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
             <BookOpen className="h-3 w-3" aria-hidden="true" />
             {count} {count === 1 ? 'item' : 'items'}
           </span>
           {inherits ? (
             <span
-              className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground"
+              className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground"
               title="Inherits cohort access from the phase"
             >
               Inherits phase

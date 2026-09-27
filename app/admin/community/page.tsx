@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
@@ -27,21 +28,25 @@ export default async function AdminCommunityPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-serif text-xl text-foreground">Community of Practice</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">
+      <PageHeader
+        className="mb-0"
+        eyebrow="Admin console"
+        title="Community of Practice"
+        description={
+          <>
             Shape the shared space fellows see at <span className="font-mono">/community</span>.
             Add events, publish posts and podcast notes, and curate the resource library.
-          </p>
-        </div>
-        <Button asChild variant="outline" className="gap-1 self-start sm:self-auto">
-          <Link href="/admin/community/moderation">
-            <Shield className="h-4 w-4" aria-hidden="true" />
-            Moderation hub
-          </Link>
-        </Button>
-      </div>
+          </>
+        }
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/admin/community/moderation">
+              <Shield className="h-4 w-4" aria-hidden="true" />
+              Moderation hub
+            </Link>
+          </Button>
+        }
+      />
 
       <CommunityAdmin
         events={eventsRes.data ?? []}

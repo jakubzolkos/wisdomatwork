@@ -22,7 +22,7 @@ export function WinsDashboard({
   return (
     <div className="flex flex-col gap-6">
       {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Award}
           label="You Shared"
@@ -51,9 +51,9 @@ export function WinsDashboard({
 
       {/* Framework Breakdown */}
       {frameworkStats.length > 0 && (
-        <Card className="border-border bg-card">
+        <Card>
           <CardHeader>
-            <CardTitle className="font-serif text-lg">
+            <CardTitle>
               Wins by Framework
             </CardTitle>
             <CardDescription>
@@ -69,11 +69,11 @@ export function WinsDashboard({
                       {fw.framework}
                     </span>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary">
                         {fw.count} win{fw.count !== 1 ? 's' : ''}
                       </Badge>
                       <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <Star className="size-3 fill-warning text-warning" />
                         {fw.avgRating.toFixed(1)}
                       </span>
                     </div>
@@ -95,9 +95,9 @@ export function WinsDashboard({
 
       {/* Recent Wins */}
       {recentWins.length > 0 && (
-        <Card className="border-border bg-card">
+        <Card>
           <CardHeader>
-            <CardTitle className="font-serif text-lg">
+            <CardTitle>
               Recent Wins
             </CardTitle>
             <CardDescription>
@@ -105,23 +105,23 @@ export function WinsDashboard({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3">
+            <ul className="divide-y divide-border">
               {recentWins.map((win) => (
                 <li
                   key={win.id}
-                  className="flex flex-col gap-1 rounded border border-border/50 p-3 text-sm"
+                  className="flex flex-col gap-1 py-3 text-sm first:pt-0 last:pb-0"
                 >
                   <p className="font-medium text-foreground line-clamp-1">
                     {win.title}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    By {win.author?.full_name || 'Anonymous'} •{' '}
+                    By {win.author?.full_name || 'Anonymous'} ·{' '}
                     {win.published_at
                       ? new Date(win.published_at).toLocaleDateString()
                       : 'Recently'}
                   </p>
                   {win.framework && (
-                    <Badge variant="secondary" className="w-fit text-xs">
+                    <Badge variant="secondary" className="mt-1 w-fit">
                       {win.framework.title}
                     </Badge>
                   )}
@@ -144,21 +144,19 @@ interface StatCardProps {
 
 function StatCard({ icon: Icon, label, value, description }: StatCardProps) {
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground">
-              {label}
-            </p>
-            <p className="font-serif text-2xl text-foreground">{value}</p>
-            <p className="text-xs text-muted-foreground">{description}</p>
-          </div>
-          <div className="rounded-lg bg-primary/10 p-2.5">
-            <Icon className="h-5 w-5 text-primary" />
-          </div>
+    <div className="rounded-xl border bg-card p-5 shadow-xs">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <p className="text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+            {value}
+          </p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <Icon className="size-4" />
+        </div>
+      </div>
+    </div>
   )
 }

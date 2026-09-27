@@ -48,11 +48,15 @@ export function ReflectionReactions({
 
   return (
     <Button
-      variant={hasReacted ? 'default' : 'outline'}
+      variant="outline"
       size="sm"
       onClick={handleToggle}
       disabled={isPending}
-      className="gap-1.5 text-xs"
+      className={
+        hasReacted
+          ? 'h-8 gap-1.5 border-primary/20 bg-primary-soft text-xs text-primary hover:bg-primary-soft hover:text-primary'
+          : 'h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground'
+      }
     >
       {isPending ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

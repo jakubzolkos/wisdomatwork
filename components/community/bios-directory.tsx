@@ -227,7 +227,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
   ]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {/*
         Member of the Week banner. Renders only when an admin has
         scheduled someone via featured_member_{from,until}; quietly
@@ -239,27 +239,27 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
         <button
           type="button"
           onClick={() => setSelected(featuredMember)}
-          className="group flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-left transition-colors hover:border-primary/60 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-4"
+          className="group flex flex-col gap-4 rounded-xl border bg-card p-5 text-left shadow-xs transition hover:border-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-row sm:items-center"
           aria-label={`Open profile for ${featuredMember.full_name ?? 'featured member'}`}
         >
-          <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/30">
+          <Avatar className="size-16 shrink-0 ring-2 ring-primary-soft ring-offset-2 ring-offset-card">
             {featuredMember.avatar_url ? (
               <AvatarImage src={featuredMember.avatar_url} alt="" />
             ) : null}
-            <AvatarFallback className="text-lg font-medium">
+            <AvatarFallback className="bg-primary-soft text-lg font-medium text-primary">
               {initialsFor(featuredMember.full_name, featuredMember.email)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-primary">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            <p className="eyebrow inline-flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-highlight" aria-hidden="true" />
               Member of the Week
             </p>
-            <p className="mt-1 truncate font-serif text-lg text-foreground">
+            <p className="mt-1.5 truncate text-base font-semibold text-foreground">
               {featuredMember.full_name ?? 'Featured member'}
             </p>
             {featuredMember.title && (
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
                 {featuredMember.title}
                 {featuredMember.school_name
                   ? ` · ${featuredMember.school_name}`
@@ -267,12 +267,12 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
               </p>
             )}
             {featuredMember.bio?.trim() && (
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                 {featuredMember.bio}
               </p>
             )}
           </div>
-          <span className="hidden text-xs font-medium text-primary group-hover:underline sm:inline">
+          <span className="hidden shrink-0 text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary sm:inline">
             Open profile →
           </span>
         </button>
@@ -284,7 +284,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
         <div
           role="tablist"
           aria-label="Filter by role"
-          className="inline-flex w-fit rounded-md border border-border bg-card p-1"
+          className="inline-flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg border bg-card p-1 shadow-xs"
         >
           {peopleTabs.map((tab) => {
             const active = peopleType === tab.value
@@ -297,15 +297,15 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
                 onClick={() => setPeopleType(tab.value)}
                 className={
                   active
-                    ? 'inline-flex items-center gap-2 rounded-sm bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground'
-                    : 'inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+                    ? 'inline-flex items-center gap-2 rounded-md bg-primary-soft px-3 py-1.5 text-sm font-medium text-primary'
+                    : 'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
                 }
               >
                 <span>{tab.label}</span>
                 <span
                   className={
                     active
-                      ? 'rounded bg-primary-foreground/20 px-1.5 text-xs tabular-nums'
+                      ? 'rounded bg-card px-1.5 text-xs tabular-nums text-primary'
                       : 'rounded bg-muted px-1.5 text-xs tabular-nums text-muted-foreground'
                   }
                 >
@@ -320,7 +320,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2">
         <div className="relative flex-1">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
           />
           <Input
@@ -329,14 +329,14 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, email, school, or role (e.g. admin)..."
             aria-label="Search Fellow Bios"
-            className="pl-9"
+            className="bg-card pl-9"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {cohortOptions.length > 0 && (
             <Select value={cohort} onValueChange={setCohort}>
-              <SelectTrigger className="h-9 min-w-[10rem]" aria-label="Filter by cohort">
+              <SelectTrigger className="h-9 min-w-[10rem] bg-card" aria-label="Filter by cohort">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -352,7 +352,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
 
           {teamOptions.length > 0 && (
             <Select value={team} onValueChange={setTeam}>
-              <SelectTrigger className="h-9 min-w-[12rem]" aria-label="Filter by team">
+              <SelectTrigger className="h-9 min-w-[12rem] bg-card" aria-label="Filter by team">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -381,7 +381,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
               onValueChange={(v) => setHelp(v as HelpFilter)}
             >
               <SelectTrigger
-                className="h-9 min-w-[12rem]"
+                className="h-9 min-w-[12rem] bg-card"
                 aria-label="Filter by help orientation"
               >
                 <SelectValue />
@@ -402,7 +402,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
               onClick={reset}
               className="inline-flex items-center gap-1.5 text-xs"
             >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
+              <X aria-hidden="true" />
               Reset
             </Button>
           )}
@@ -412,18 +412,23 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
       <p className="text-xs text-muted-foreground">
         Showing {filtered.length} of {profiles.length}
         {filtered.length !== profiles.length && (
-          <Badge variant="outline" className="ml-2 text-[10px]">
+          <Badge variant="secondary" className="ml-2">
             Filtered
           </Badge>
         )}
       </p>
 
       {filtered.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-          No one matches your search and filters.
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed bg-card p-10 text-center">
+          <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Search className="size-[18px]" aria-hidden="true" />
+          </span>
+          <p className="text-sm text-muted-foreground">
+            No one matches your search and filters.
+          </p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <MemberCard
               key={p.id}

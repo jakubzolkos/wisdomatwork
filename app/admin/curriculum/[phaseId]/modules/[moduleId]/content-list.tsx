@@ -121,10 +121,10 @@ export function ContentList({
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card">
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
       <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-5">
         <div>
-          <h3 className="font-serif text-lg text-foreground">Content</h3>
+          <h2 className="text-base">Content</h2>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             Every piece of fellow-facing content in this module, grouped by category and in display
             order. Drag items to reorder within their category.
@@ -170,10 +170,10 @@ export function ContentList({
             return (
               <div key={category} className="border-b border-border last:border-b-0">
                 {/* Category Header */}
-                <div className="bg-muted/30 px-5 py-3">
-                  <h4 className="font-medium text-foreground">
+                <div className="bg-muted/50 px-5 py-3">
+                  <h3 className="text-sm font-semibold text-foreground">
                     {categoryConfig?.label}
-                  </h4>
+                  </h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {categoryConfig?.description}
                   </p>
@@ -273,12 +273,12 @@ function ContentRowItemContent({
     <>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground">
+          <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
             {resource.label}
           </span>
           {inherits ? (
             <span
-              className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground"
+              className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground"
               title="Inherits cohort access from the module"
             >
               Inherits module

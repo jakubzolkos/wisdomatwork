@@ -608,8 +608,8 @@ export function AddResourceDialog({
                       className={
                         'inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors ' +
                         (checked
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border bg-card text-muted-foreground hover:bg-muted')
+                          ? 'border-primary/30 bg-primary-soft text-primary'
+                          : 'border-border bg-card text-muted-foreground hover:bg-accent')
                       }
                     >
                       <Checkbox

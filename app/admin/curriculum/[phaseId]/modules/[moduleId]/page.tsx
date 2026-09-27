@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -93,7 +94,7 @@ export default async function AdminModuleDetailPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-1.5">
+      <div>
         <Link
           href={`/admin/curriculum/${phaseId}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -101,10 +102,9 @@ export default async function AdminModuleDetailPage({
           <ArrowLeft className="h-4 w-4" />
           Back to {phase.title}
         </Link>
-        <p className="text-xs tracking-wider text-muted-foreground">
-          {phase.title}
-        </p>
       </div>
+
+      <PageHeader className="-mt-4 mb-0" eyebrow={phase.title} title={module.title} />
 
       <ModuleDetailsForm
         phaseId={phaseId}

@@ -125,8 +125,8 @@ export function ContentCleanupSection() {
       )}
 
       {success && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertDescription className="text-green-900">{success}</AlertDescription>
+        <Alert className="bg-success-soft border-success/30">
+          <AlertDescription className="text-success">{success}</AlertDescription>
         </Alert>
       )}
 

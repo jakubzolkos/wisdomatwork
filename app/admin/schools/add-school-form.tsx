@@ -63,7 +63,7 @@ export function AddSchoolForm() {
   return (
     <form
       action={handle}
-      className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 max-w-md"
+      className="flex max-w-md flex-col gap-4 rounded-xl border bg-card p-5 shadow-xs"
     >
       <div className="space-y-1.5">
         <Label htmlFor={inputId} className="text-sm font-medium">

@@ -30,9 +30,9 @@ import type { EmailLogEntry } from '@/lib/email/logs'
 import { resendInvitationEmail, resendNotificationEmail } from '@/app/admin/email-logs/actions'
 
 const STATUS_COLORS = {
-  sent: 'text-green-700',
-  failed: 'text-red-700',
-  pending: 'text-yellow-700',
+  sent: 'text-success',
+  failed: 'text-destructive',
+  pending: 'text-warning',
 }
 
 const STATUS_ICONS = {
@@ -162,9 +162,9 @@ export function EmailLogsClient({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Successfully Sent</p>
-                <p className="text-2xl font-bold text-green-600">{sentCount}</p>
+                <p className="text-2xl font-bold text-success">{sentCount}</p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600/50" />
+              <CheckCircle2 className="h-8 w-8 text-success/50" />
             </div>
           </CardContent>
         </Card>
@@ -177,9 +177,9 @@ export function EmailLogsClient({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Failed</p>
-                <p className="text-2xl font-bold text-red-600">{failedCount}</p>
+                <p className="text-2xl font-bold text-destructive">{failedCount}</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-red-600/50" />
+              <AlertCircle className="h-8 w-8 text-destructive/50" />
             </div>
           </CardContent>
         </Card>
@@ -192,9 +192,9 @@ export function EmailLogsClient({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
+                <p className="text-2xl font-bold text-warning">{pendingCount}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-600/50" />
+              <Clock className="h-8 w-8 text-warning/50" />
             </div>
           </CardContent>
         </Card>
@@ -204,7 +204,7 @@ export function EmailLogsClient({
       {message && (
         <div
           className={`p-4 rounded-lg ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            message.type === 'success' ? 'bg-success-soft text-success' : 'bg-destructive/10 text-destructive'
           }`}
         >
           {message.text}
@@ -316,7 +316,7 @@ export function EmailLogsClient({
                       </td>
                       <td className="px-4 py-4">
                         {log.error_message && (
-                          <p className="text-xs text-red-600 max-w-xs truncate" title={log.error_message}>
+                          <p className="text-xs text-destructive max-w-xs truncate" title={log.error_message}>
                             {log.error_message}
                           </p>
                         )}

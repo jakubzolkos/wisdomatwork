@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { PageHeader } from '@/components/page-header'
 import { Building2, Users, Plus } from 'lucide-react'
 import { AddSchoolForm } from './add-school-form'
 import { AddTeamForm } from './add-team-form'
@@ -106,55 +107,54 @@ export default async function AdminSchoolsPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <div>
-        <h1 className="text-balance font-serif text-4xl text-foreground">Schools &amp; Teams</h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-          Organize fellows into leadership teams by school. Each school can have multiple teams
-          progressing through different years of the program.
-        </p>
-      </div>
+      <PageHeader
+        className="mb-0"
+        eyebrow="Admin console"
+        title="Schools & Teams"
+        description="Organize fellows into leadership teams by school. Each school can have multiple teams progressing through different years of the program."
+      />
 
       {/* Summary Stats */}
       {schoolList.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <Card className="py-0">
+            <CardContent className="flex items-center gap-3 p-5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                 <Building2 className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-xs font-medium tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   Schools
                 </p>
-                <p className="text-2xl font-semibold text-foreground">{schoolList.length}</p>
+                <p className="text-2xl font-semibold tabular-nums text-foreground">{schoolList.length}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-highlight-soft text-highlight">
+          <Card className="py-0">
+            <CardContent className="flex items-center gap-3 p-5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                 <Users className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-xs font-medium tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   Teams
                 </p>
-                <p className="text-2xl font-semibold text-foreground">{schoolTeamList.length}</p>
+                <p className="text-2xl font-semibold tabular-nums text-foreground">{schoolTeamList.length}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-success/10 text-success">
+          <Card className="py-0">
+            <CardContent className="flex items-center gap-3 p-5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-success-soft text-success">
                 <Users className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-xs font-medium tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   Total Members
                 </p>
-                <p className="text-2xl font-semibold text-foreground">{memberList.length}</p>
+                <p className="text-2xl font-semibold tabular-nums text-foreground">{memberList.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -170,20 +170,18 @@ export default async function AdminSchoolsPage() {
 
       {/* Schools List */}
       {schoolList.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-              <Building2 className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="font-medium text-foreground mb-1">No schools yet</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Add your first school to start organizing fellows into leadership teams.
-              </p>
-            </div>
-            <AddSchoolForm />
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed bg-card p-10 text-center">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Building2 className="size-[18px]" />
+          </div>
+          <div className="space-y-1">
+            <h3>No schools yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Add your first school to start organizing fellows into leadership teams.
+            </p>
+          </div>
+          <AddSchoolForm />
+        </div>
       ) : (
         <div className="flex flex-col gap-6">
           {schoolList.map((school) => {
@@ -191,16 +189,16 @@ export default async function AdminSchoolsPage() {
             const totalMembers = membersBySchool.get(school.id) ?? 0
 
             return (
-              <Card key={school.id} className="overflow-hidden">
+              <Card key={school.id} className="gap-0 overflow-hidden py-0">
                 {/* School Header */}
-                <CardHeader className="border-b border-border pb-4">
+                <CardHeader className="border-b border-border py-5 [.border-b]:pb-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 mt-0.5">
-                        <Building2 className="h-5 w-5 text-primary" />
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                        <Building2 className="size-[18px]" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg font-serif">{school.name}</CardTitle>
+                        <CardTitle className="text-base">{school.name}</CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">
                           {teamsForSchool.length} team{teamsForSchool.length === 1 ? '' : 's'} ·{' '}
                           {totalMembers} member{totalMembers === 1 ? '' : 's'}
@@ -233,12 +231,12 @@ export default async function AdminSchoolsPage() {
                         const teamMembers = membersByCohort.get(team.cohort_id) ?? []
 
                         return (
-                          <div key={team.id} className="p-6">
+                          <div key={team.id} className="p-5 sm:p-6">
                             {/* Team Header */}
                             <div className="flex items-start justify-between gap-3 mb-4">
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-foreground">{team.name}</h4>
+                                  <h3 className="text-sm font-semibold text-foreground">{team.name}</h3>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {teamMembers.length} member{teamMembers.length === 1 ? '' : 's'}
@@ -269,11 +267,11 @@ export default async function AdminSchoolsPage() {
                                   return (
                                     <div
                                       key={m.profile_id}
-                                      className="flex items-center justify-between gap-3 p-3 rounded-md border border-border/50 hover:border-border transition-colors"
+                                      className="flex items-center justify-between gap-3 rounded-lg bg-muted/60 px-3 py-2.5 transition-colors hover:bg-muted"
                                     >
                                       <div className="flex items-center gap-2 min-w-0">
                                         <Avatar className="h-7 w-7 flex-shrink-0">
-                                          <AvatarFallback className="text-xs">
+                                          <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
                                             {initialsFor(fullName)}
                                           </AvatarFallback>
                                         </Avatar>

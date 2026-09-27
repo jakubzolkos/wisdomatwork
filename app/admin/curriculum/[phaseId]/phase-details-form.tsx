@@ -76,12 +76,12 @@ export function PhaseDetailsForm({ phase }: Props) {
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-6">
+    <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
       <header className="mb-5">
-        <p className="text-xs font-medium tracking-wider text-muted-foreground">
+        <p className="eyebrow">
           Phase details
         </p>
-        <h2 className="mt-1 font-serif text-xl text-foreground">
+        <h2 className="mt-1">
           Edit phase
         </h2>
       </header>

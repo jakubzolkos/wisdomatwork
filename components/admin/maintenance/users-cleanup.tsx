@@ -185,9 +185,9 @@ export function UsersCleanupSection() {
       </div>
 
       {testUsers.length > 0 && (
-        <Alert className="bg-orange-50 border-orange-200">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-900">
+        <Alert className="bg-warning-soft border-warning/30">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-warning">
             {testUsers.length} test user{testUsers.length !== 1 ? 's' : ''} found ({testUsers
               .map((u) => u.email)
               .join(', ')}
@@ -204,8 +204,8 @@ export function UsersCleanupSection() {
       )}
 
       {actionSuccess && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertDescription className="text-green-900">{actionSuccess}</AlertDescription>
+        <Alert className="bg-success-soft border-success/30">
+          <AlertDescription className="text-success">{actionSuccess}</AlertDescription>
         </Alert>
       )}
 
@@ -311,7 +311,7 @@ export function UsersCleanupSection() {
                       <TableCell>
                         {user.relatedContentCount > 0 && (
                           <div className="flex items-center gap-1 text-xs">
-                            <AlertTriangle className="h-3 w-3 text-orange-600" />
+                            <AlertTriangle className="h-3 w-3 text-warning" />
                             {user.relatedContentCount} items
                           </div>
                         )}

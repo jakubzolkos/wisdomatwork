@@ -2,6 +2,7 @@
 
 import { Eye, X } from 'lucide-react'
 import { endPreview } from '@/app/admin/preview/actions'
+import { Button } from '@/components/ui/button'
 
 type AdminPreviewBannerProps = {
   label: string
@@ -18,15 +19,15 @@ export function AdminPreviewBanner({
     <div
       role="status"
       aria-live="polite"
-      className="relative z-[60] w-full border-b border-warning/40 bg-warning/15"
+      className="relative z-[60] w-full border-b border-warning/30 bg-warning-soft"
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-1.5 text-sm">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-warning/30 text-warning">
-            <Eye className="h-4 w-4" aria-hidden="true" />
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-md text-warning">
+            <Eye className="size-4" aria-hidden="true" />
           </span>
           <p className="min-w-0 truncate text-foreground">
-            <span className="font-medium">Preview mode</span>
+            <span className="font-semibold text-warning">Preview mode</span>
             <span className="mx-2 text-muted-foreground">·</span>
             Viewing as{' '}
             <span className="font-medium">{label}</span>
@@ -42,13 +43,10 @@ export function AdminPreviewBanner({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <form action={endPreview}>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            <Button type="submit" size="sm" variant="outline" className="h-7 gap-1.5 bg-card text-xs">
+              <X className="size-3.5" aria-hidden="true" />
               Exit preview
-            </button>
+            </Button>
           </form>
         </div>
       </div>

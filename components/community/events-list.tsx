@@ -68,7 +68,7 @@ export function EventsList({ events }: Props) {
       >
         <FilterPill active={filter === null} onClick={() => setFilter(null)}>
           All
-          <Badge variant="outline" className="ml-1 text-[10px]">
+          <Badge variant="secondary" className="ml-1 px-1.5">
             {events.length}
           </Badge>
         </FilterPill>
@@ -82,7 +82,7 @@ export function EventsList({ events }: Props) {
               onClick={() => setFilter(opt.value)}
             >
               {opt.label}
-              <Badge variant="outline" className="ml-1 text-[10px]">
+              <Badge variant="secondary" className="ml-1 px-1.5">
                 {count}
               </Badge>
             </FilterPill>
@@ -91,11 +91,16 @@ export function EventsList({ events }: Props) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-          No upcoming events match this filter.
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed bg-card p-10 text-center">
+          <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <CalendarDays className="size-[18px]" aria-hidden="true" />
+          </span>
+          <p className="text-sm text-muted-foreground">
+            No upcoming events match this filter.
+          </p>
+        </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {filtered.map((e) => (
             <EventCard key={e.id} event={e} />
           ))}
@@ -118,9 +123,14 @@ function FilterPill({
     <Button
       type="button"
       size="sm"
-      variant={active ? 'default' : 'outline'}
+      variant="outline"
       onClick={onClick}
-      className={cn('h-8 rounded-full px-3 text-xs', active && 'shadow-sm')}
+      className={cn(
+        'h-8 rounded-full px-3 text-xs',
+        active
+          ? 'border-primary/20 bg-primary-soft text-primary hover:bg-primary-soft hover:text-primary'
+          : 'text-muted-foreground hover:text-foreground',
+      )}
       aria-pressed={active}
     >
       {children}
@@ -166,26 +176,26 @@ function EventCard({ event }: { event: CommunityEvent }) {
   }
 
   return (
-    <article className="flex flex-col gap-4 rounded-md border border-border bg-card p-5">
+    <article className="flex flex-col gap-4 rounded-xl border bg-card p-5 shadow-xs">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="secondary">
               {typeLabel}
             </Badge>
             <span className="inline-flex items-center gap-1">
-              <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+              <CalendarDays className="size-3.5" aria-hidden="true" />
               {dateLabel}
               {' · '}
               {timeLabel}
               {endTimeLabel ? ` – ${endTimeLabel}` : ''}
             </span>
           </div>
-          <h3 className="mt-1.5 font-serif text-lg text-foreground text-balance">
+          <h3 className="mt-2 text-balance">
             {event.title}
           </h3>
           {event.description && (
-            <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
+            <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
               {event.description}
             </p>
           )}
@@ -194,17 +204,17 @@ function EventCard({ event }: { event: CommunityEvent }) {
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
-          <Avatar className="h-5 w-5">
+          <Avatar className="size-5">
             {event.host?.avatar_url ? (
               <AvatarImage src={event.host.avatar_url} alt="" />
             ) : null}
-            <AvatarFallback className="text-[9px]">{hostInitials}</AvatarFallback>
+            <AvatarFallback className="bg-primary-soft text-[10px] text-primary">{hostInitials}</AvatarFallback>
           </Avatar>
           Host: {hostName}
         </span>
         {event.location && (
           <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            <MapPin className="size-3.5" aria-hidden="true" />
             {event.location}
           </span>
         )}
@@ -215,7 +225,7 @@ function EventCard({ event }: { event: CommunityEvent }) {
           <Button asChild size="sm" className="inline-flex items-center gap-1.5">
             <a href={event.join_url} target="_blank" rel="noreferrer">
               Join
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              <ExternalLink className="size-3.5" aria-hidden="true" />
             </a>
           </Button>
         )}
@@ -226,7 +236,7 @@ function EventCard({ event }: { event: CommunityEvent }) {
           onClick={handleAddToCalendar}
           className="inline-flex items-center gap-1.5"
         >
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          <Plus className="size-3.5" aria-hidden="true" />
           Add to calendar
         </Button>
       </div>

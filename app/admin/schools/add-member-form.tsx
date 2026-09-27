@@ -31,7 +31,7 @@ export function AddMemberForm({
 
   if (fellows.length === 0) {
     return (
-      <div className="flex flex-col gap-2 rounded-md border border-dashed border-border bg-muted/30 p-4">
+      <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Users className="h-4 w-4" />
           <p className="text-sm">All fellows are already assigned to teams.</p>

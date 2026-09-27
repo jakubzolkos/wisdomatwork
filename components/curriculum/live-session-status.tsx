@@ -238,7 +238,7 @@ export function LiveSessionStatus({
   return (
     <section
       aria-label="Live session schedule"
-      className="rounded-lg border border-border bg-card p-5 shadow-sm"
+      className="rounded-lg bg-muted/60 p-5"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
@@ -357,8 +357,8 @@ function PhaseIcon({ phase }: { phase: Phase }) {
         className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center"
         aria-hidden="true"
       >
-        <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-primary/60" />
-        <CircleDot className="relative h-5 w-5 text-primary" />
+        <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-highlight/50" />
+        <CircleDot className="relative h-5 w-5 text-highlight" />
       </span>
     )
   }
@@ -376,7 +376,7 @@ function PhaseLabel({ phase }: { phase: Phase }) {
     return (
       <>
         Starting soon
-        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold tracking-wider text-primary">
+        <span className="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
           Open
         </span>
       </>
@@ -386,7 +386,7 @@ function PhaseLabel({ phase }: { phase: Phase }) {
     return (
       <>
         Live now
-        <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold tracking-wider text-primary-foreground">
+        <span className="rounded-full bg-highlight-soft px-2 py-0.5 text-xs font-medium text-highlight">
           Live
         </span>
       </>

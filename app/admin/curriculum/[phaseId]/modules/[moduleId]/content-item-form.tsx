@@ -312,7 +312,7 @@ export function ContentItemForm({
           stays focused. The duration field above doubles as the
           session length, so we don't ask for "end time" separately. */}
       {resourceType === 'live_session' && (
-        <div className="space-y-2 rounded-md border border-border bg-muted/30 p-4">
+        <div className="space-y-2 rounded-lg bg-muted/60 p-4">
           <Label htmlFor={scheduledAtId}>Session date &amp; time</Label>
           <Input
             id={scheduledAtId}
@@ -349,7 +349,7 @@ export function ContentItemForm({
           submit a written reflection before they can mark the item
           complete. The prompt textarea is required when the toggle
           is on - both the form and the server action enforce that. */}
-      <div className="space-y-3 rounded-md border border-border bg-muted/30 p-4">
+      <div className="space-y-3 rounded-lg bg-muted/60 p-4">
         <label
           htmlFor={reflectionToggleId}
           className="flex items-start gap-2 text-sm"
@@ -391,7 +391,7 @@ export function ContentItemForm({
         )}
       </div>
 
-      <div className="space-y-2 rounded-md border border-border bg-muted/30 p-4">
+      <div className="space-y-2 rounded-lg bg-muted/60 p-4">
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"

@@ -65,13 +65,10 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
   }
 
   return (
-    <Card className="border-highlight/30 bg-highlight-soft">
-      <CardHeader className="space-y-2">
+    <Card className="gap-5 border-0 bg-transparent py-0 shadow-none">
+      <CardHeader className="gap-1.5 px-0">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-highlight-soft text-highlight">
-            <Eye className="h-4 w-4" aria-hidden="true" />
-          </span>
-          <CardTitle className="font-serif text-lg">Preview as fellow</CardTitle>
+          <CardTitle className="text-base">Preview as fellow</CardTitle>
         </div>
         <CardDescription>
           See exactly what a fellow sees. Pick an individual fellow to inherit their
@@ -80,11 +77,11 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 px-0">
         <div
           role="tablist"
           aria-label="Preview mode"
-          className="grid grid-cols-2 gap-1 rounded-md border border-border bg-background p-1"
+          className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
         >
           <TabButton
             active={tab === 'by_fellow'}
@@ -121,7 +118,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
             <ul
               role="listbox"
               aria-label="Fellows"
-              className="max-h-72 overflow-y-auto rounded-md border border-border bg-background"
+              className="max-h-72 divide-y divide-border overflow-y-auto rounded-lg border border-border bg-background"
             >
               {filtered.length === 0 ? (
                 <li className="px-3 py-6 text-center text-sm text-muted-foreground">
@@ -139,7 +136,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
                         aria-selected={selected}
                         className={cn(
                           'flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors',
-                          'hover:bg-muted/50 focus:bg-muted focus:outline-none',
+                          'hover:bg-accent/60 focus:bg-accent focus:outline-none',
                           selected && 'bg-primary-soft',
                         )}
                       >
@@ -188,13 +185,13 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
                     aria-checked={active}
                     onClick={() => setSelectedCohort(c)}
                     className={cn(
-                      'flex flex-col items-center gap-1 rounded-md border px-4 py-3 text-sm font-medium transition-colors',
+                      'flex flex-col items-center gap-1 rounded-lg border px-4 py-3 text-sm font-medium transition-colors',
                       active
                         ? 'border-primary bg-primary-soft text-primary'
-                        : 'border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground',
+                        : 'border-border bg-background text-muted-foreground hover:border-border-strong hover:text-foreground',
                     )}
                   >
-                    <span className="font-serif text-lg">Cohort {c}</span>
+                    <span>Cohort {c}</span>
                   </button>
                 )
               })}
@@ -242,9 +239,9 @@ function TabButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        'flex items-center justify-center gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+        'flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
         active
-          ? 'bg-foreground text-background'
+          ? 'bg-card text-foreground shadow-xs'
           : 'text-muted-foreground hover:text-foreground',
       )}
     >
@@ -253,7 +250,7 @@ function TabButton({
       <span
         className={cn(
           'rounded-full px-1.5 text-[10px] font-semibold',
-          active ? 'bg-background/15 text-background' : 'bg-muted text-muted-foreground',
+          active ? 'bg-primary-soft text-primary' : 'bg-background/70 text-muted-foreground',
         )}
       >
         {count}
@@ -265,13 +262,13 @@ function TabButton({
 function CohortPill({ cohort }: { cohort: Cohort | null }) {
   if (!cohort) {
     return (
-      <span className="shrink-0 rounded-full border border-dashed border-border px-2 py-0.5 text-[10px] tracking-wider text-muted-foreground">
+      <span className="shrink-0 rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
         Unassigned
       </span>
     )
   }
   return (
-    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-primary">
+    <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
       Cohort {cohort}
     </span>
   )

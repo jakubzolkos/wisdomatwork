@@ -1,3 +1,4 @@
+import { Users } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { BiosDirectory } from '@/components/community/bios-directory'
@@ -142,9 +143,14 @@ export default async function CommunityBiosPage() {
         />
 
       {profiles.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-          No fellows or faculty are listed yet.
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed bg-card p-10 text-center">
+          <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Users className="size-[18px]" aria-hidden="true" />
+          </span>
+          <p className="text-sm text-muted-foreground">
+            No fellows or faculty are listed yet.
+          </p>
+        </div>
       ) : (
         <BiosDirectory
           profiles={profiles}

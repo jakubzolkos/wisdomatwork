@@ -4,6 +4,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Markdown from 'react-markdown'
 import { ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
+import { cn } from '@/lib/utils'
 import { CustomPage, PageBlock } from '@/lib/custom-pages/types'
 
 interface PageRendererProps {
@@ -11,9 +14,12 @@ interface PageRendererProps {
   showCTA?: boolean
 }
 
+/** Shared reading column so every block lines up on one measure. */
+const COLUMN = 'mx-auto w-full max-w-3xl px-4'
+
 export function PageRenderer({ page, showCTA = true }: PageRendererProps) {
   const blocks = page.blocks || []
-  
+
   // Determine if we have any headers to render
   const hasAnyHeader = page.header1 || page.header2 || page.header3
 
@@ -22,39 +28,37 @@ export function PageRenderer({ page, showCTA = true }: PageRendererProps) {
     if (!content || position === 'hidden') return null
 
     const sizeClasses = {
-      large: 'text-4xl sm:text-5xl',
-      medium: 'text-2xl sm:text-3xl',
-      small: 'text-lg sm:text-xl',
+      large: 'font-display text-3xl sm:text-[2.125rem] font-semibold tracking-tight',
+      medium: 'font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight',
+      small: 'text-lg sm:text-xl font-semibold',
     }
 
     return (
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-          <div className="text-center space-y-4">
-            <h2 className={`font-serif ${sizeClasses[size]} text-foreground font-bold`}>
-              {content}
-            </h2>
-          </div>
-        </div>
+      <section className={cn(COLUMN, 'py-6 sm:py-8')}>
+        <h2 className={cn('text-balance text-foreground', sizeClasses[size])}>
+          {content}
+        </h2>
       </section>
     )
   }
 
   return (
-    <main className="w-full">
+    <article className="w-full pb-16 pt-8 sm:pt-12">
       {/* Cover Image - Display at top if available */}
       {page.cover_image_url && (
-        <section className="w-full relative h-64 sm:h-96 bg-muted overflow-hidden">
-          <Image
-            src={page.cover_image_url}
-            alt={page.title}
-            fill
-            className="object-cover"
-            priority
-          />
+        <section className="mx-auto mb-8 w-full max-w-4xl px-4">
+          <div className="relative h-56 w-full overflow-hidden rounded-xl border border-border bg-muted shadow-xs sm:h-96">
+            <Image
+              src={page.cover_image_url}
+              alt={page.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
         </section>
       )}
-      
+
       {/* Headers positioned BEFORE blocks - render regardless of blocks */}
       {page.header1_position === 'before' && renderHeader(page.header1, 'before', 'large')}
       {page.header2_position === 'before' && renderHeader(page.header2, 'before', 'medium')}
@@ -62,9 +66,9 @@ export function PageRenderer({ page, showCTA = true }: PageRendererProps) {
 
       {/* Body Content Blocks */}
       {blocks.length === 0 && !hasAnyHeader ? (
-        <section className="bg-background">
-          <div className="py-12 text-center text-muted-foreground max-w-4xl mx-auto">
-            <p>No content available for this page.</p>
+        <section className={COLUMN}>
+          <div className="rounded-xl border border-dashed border-border-strong p-10 text-center">
+            <p className="text-sm text-muted-foreground">No content available for this page.</p>
           </div>
         </section>
       ) : (
@@ -82,32 +86,27 @@ export function PageRenderer({ page, showCTA = true }: PageRendererProps) {
 
       {/* Optional Subtitle Section - Only show if description exists */}
       {page.description && (
-        <section className="border-t border-border bg-card">
-          <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-            <p className="text-base text-muted-foreground leading-relaxed text-center italic">
-              {page.description}
-            </p>
-          </div>
+        <section className={cn(COLUMN, 'py-6 sm:py-8')}>
+          <p className="border-t border-border pt-6 font-serif text-[1.0625rem] italic leading-relaxed text-muted-foreground">
+            {page.description}
+          </p>
         </section>
       )}
 
       {/* Call to action footer - matches About page */}
       {showCTA && (
-        <section className="border-t border-border bg-background">
-          <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-6 py-3 font-medium hover:opacity-90 transition-opacity"
-              >
+        <section className={cn(COLUMN, 'py-6 sm:py-8')}>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href="/dashboard">
                 Go to Dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
-            </div>
+            </Button>
           </div>
         </section>
       )}
-    </main>
+    </article>
   )
 }
 
@@ -123,43 +122,32 @@ function RenderBlock({ block }: RenderBlockProps) {
     case 'text': {
       const format = metadata.format
       const size = metadata.size
-      
+
       // Special format: header section (welcome section with h1 + 2 paragraphs)
       if (format === 'header_section') {
         const lines = (block.content || '').split('\n\n').filter(Boolean)
         const [h1, p1, p2] = lines
-        
+
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-              <div className="space-y-6">
-                <div>
-                  <h1 className="font-serif text-3xl sm:text-4xl text-foreground font-bold mb-4 text-center">
-                    {h1}
-                  </h1>
-                  <p className="text-lg text-foreground font-medium mb-3 text-center">
-                    {p1}
-                  </p>
-                  <p className="text-base text-muted-foreground leading-relaxed text-center">
-                    {p2}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <section className={cn(COLUMN, 'pb-4')}>
+            <PageHeader title={h1} description={p1} className="mb-4" />
+            {p2 && (
+              <p className="max-w-2xl text-pretty text-[15px] leading-relaxed text-muted-foreground">
+                {p2}
+              </p>
+            )}
           </section>
         )
       }
-      
+
       // Special format: prose section (multiple paragraphs)
       if (format === 'prose_section') {
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-              <div className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
-                {(block.content || '').split('\n\n').map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
-              </div>
+          <section className={cn(COLUMN, 'py-4 sm:py-6')}>
+            <div className="rich-text">
+              {(block.content || '').split('\n\n').map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
             </div>
           </section>
         )
@@ -168,50 +156,42 @@ function RenderBlock({ block }: RenderBlockProps) {
       // Size-based text rendering (for backward compatibility)
       if (size === 'large') {
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-              <h2 className="font-serif text-3xl sm:text-4xl text-foreground font-bold mb-4 text-center">
-                {block.content}
-              </h2>
-            </div>
+          <section className={cn(COLUMN, 'py-6 sm:py-8')}>
+            <h2 className="text-balance font-display text-3xl font-semibold tracking-tight sm:text-[2.125rem]">
+              {block.content}
+            </h2>
           </section>
         )
       } else if (size === 'medium') {
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-              <p className="text-lg text-foreground font-medium mb-3 text-center">
-                {block.content}
-              </p>
-            </div>
+          <section className={cn(COLUMN, 'py-3')}>
+            <p className="text-pretty text-lg font-medium leading-relaxed text-foreground">
+              {block.content}
+            </p>
           </section>
         )
       } else if (size === 'small') {
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-              <p className="text-base text-muted-foreground leading-relaxed text-center">
-                {block.content}
-              </p>
-            </div>
+          <section className={cn(COLUMN, 'py-3')}>
+            <p className="text-pretty text-[15px] leading-relaxed text-muted-foreground">
+              {block.content}
+            </p>
           </section>
         )
       } else {
         // Default text rendering with Markdown support
         return (
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-              <div className="prose prose-neutral prose-sm max-w-none">
-                <Markdown
-                  components={{
-                    h3: ({ children }) => (
-                      <h3 className="text-center">{children}</h3>
-                    ),
-                  }}
-                >
-                  {block.content || ''}
-                </Markdown>
-              </div>
+          <section className={cn(COLUMN, 'py-4 sm:py-6')}>
+            <div className="rich-text">
+              <Markdown
+                components={{
+                  h3: ({ children }) => (
+                    <h3 className="text-center">{children}</h3>
+                  ),
+                }}
+              >
+                {block.content || ''}
+              </Markdown>
             </div>
           </section>
         )
@@ -219,13 +199,13 @@ function RenderBlock({ block }: RenderBlockProps) {
     }
 
     case 'image': {
-      const containerClass = metadata.containerClass || 'py-8 sm:py-12'
-      const imageClass = metadata.className || 'w-full rounded-lg shadow-md'
-      const sectionClass = metadata.section || 'bg-background'
-      
+      const containerClass = metadata.containerClass || 'py-6 sm:py-8'
+      const imageClass = metadata.className || 'w-full rounded-xl border border-border shadow-xs'
+      const sectionClass = metadata.section || ''
+
       return (
         <section className={sectionClass}>
-          <div className={`mx-auto max-w-4xl px-4 ${containerClass}`}>
+          <div className={`${COLUMN} ${containerClass}`}>
             <img
               src={block.content || ''}
               alt={metadata.alt || 'Page image'}
@@ -238,21 +218,20 @@ function RenderBlock({ block }: RenderBlockProps) {
     }
 
     case 'cta': {
-      const containerClass = metadata.containerClass || 'py-8 sm:py-12'
-      const sectionClass = metadata.section || 'bg-background'
+      const containerClass = metadata.containerClass || 'py-6 sm:py-8'
+      const sectionClass = metadata.section || ''
       const href = metadata.href || '#'
-      
+
       return (
         <section className={sectionClass}>
-          <div className={`mx-auto max-w-4xl px-4 ${containerClass}`}>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href={href}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-6 py-3 font-medium hover:opacity-90 transition-opacity"
-              >
-                {block.content}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+          <div className={`${COLUMN} ${containerClass}`}>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg">
+                <Link href={href}>
+                  {block.content}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>

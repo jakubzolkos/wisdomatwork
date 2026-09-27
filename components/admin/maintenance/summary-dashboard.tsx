@@ -30,21 +30,21 @@ export function PortalMaintenanceSummary({ stats }: PortalMaintenanceSummaryProp
       title: 'Pending Invites',
       value: stats.pendingInvites,
       icon: <Clock className="h-4 w-4" />,
-      color: 'text-blue-600',
+      color: 'text-primary',
       action: 'users',
     },
     {
       title: 'Test Users',
       value: stats.testUsers,
       icon: <AlertCircle className="h-4 w-4" />,
-      color: 'text-orange-600',
+      color: 'text-warning',
       action: 'users',
     },
     {
       title: 'Draft Content',
       value: stats.draftContent,
       icon: <BookOpen className="h-4 w-4" />,
-      color: 'text-yellow-600',
+      color: 'text-warning',
       action: 'content',
     },
     {
@@ -65,7 +65,7 @@ export function PortalMaintenanceSummary({ stats }: PortalMaintenanceSummaryProp
       title: 'Community Posts',
       value: stats.communityPosts,
       icon: <MessageSquare className="h-4 w-4" />,
-      color: 'text-green-600',
+      color: 'text-success',
       action: 'community',
     },
     {

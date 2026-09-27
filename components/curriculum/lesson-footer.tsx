@@ -147,9 +147,11 @@ export function LessonFooter({
       disabled={pending}
       title="Mark incomplete"
       aria-label="Mark incomplete"
-      className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60"
+      className="group inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
     >
-      <Check className="h-4 w-4" aria-hidden="true" />
+      <span className="grid size-5 place-items-center rounded-full bg-muted group-hover:bg-background">
+        <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+      </span>
       <span className="group-hover:hidden">Completed</span>
       <span className="hidden group-hover:inline">Mark incomplete</span>
     </button>
@@ -164,7 +166,8 @@ export function LessonFooter({
     !optimistic && !blocked && !autoComplete && !!incompleteHint
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border pt-6">
+    <div className="flex flex-col gap-3 border-t border-border bg-muted/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-8">
+      <div className="min-w-0 space-y-1 sm:flex-1">
       {!optimistic && blocked && blockMessage && (
         <p className="text-sm text-muted-foreground" role="status">
           {blockMessage}
@@ -182,8 +185,9 @@ export function LessonFooter({
           {error}
         </p>
       )}
+      </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:shrink-0">
         {optimistic ? (
           // Completed state. When there IS a next item we render
           // the primary nav CTA. When this is the final item in the
@@ -191,15 +195,15 @@ export function LessonFooter({
           // dashboard" link replaces the dead-end - alongside the
           // neutral Completed indicator either way.
           <>
+            {completedBadge}
             {nextHref ? (
               <Button
                 type="button"
                 onClick={handleContinue}
-                size="lg"
                 className="inline-flex items-center gap-2"
               >
                 Go to next item
-                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Button>
             ) : (
               <Button
@@ -209,10 +213,9 @@ export function LessonFooter({
                 className="inline-flex items-center gap-2"
               >
                 Back to dashboard
-                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                <ArrowRight className="size-4" aria-hidden="true" />
               </Button>
             )}
-            {completedBadge}
           </>
         ) : needsLinkClick ? (
           // Link gate is active but reflection (if required) is cleared.
@@ -245,12 +248,11 @@ export function LessonFooter({
           <Button
             type="button"
             onClick={handleContinue}
-            size="lg"
             className="inline-flex items-center gap-2"
             disabled={pending}
           >
             Go to next item
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            <ArrowRight className="size-4" aria-hidden="true" />
           </Button>
         ) : (
           // Final item, all gates cleared - just show Mark complete.

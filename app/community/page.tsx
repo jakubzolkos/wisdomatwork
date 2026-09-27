@@ -1,9 +1,11 @@
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, CalendarDays } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { COMMUNITY_SECTIONS } from '@/lib/community/sections'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
 
 export const metadata = {
   title: 'Community | Leadership Fellowship',
@@ -63,108 +65,98 @@ export default async function CommunityOverviewPage() {
   )
 
   return (
-    <>
-      <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium tracking-wider text-muted-foreground">
-            Community of Practice
-          </p>
-          <h1 className="font-serif text-3xl text-foreground sm:text-4xl">
-            Welcome to the Fellowship
-          </h1>
-          <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-            Connect with your peers, celebrate progress, and learn from shared experiences across the program.
-          </p>
-        </div>
-        {/* Quick path to the curated weekly read-out. */}
-        <Link
-          href="/community/dashboard"
-          className="inline-flex items-center gap-1 self-start rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary sm:self-auto"
-        >
-          This week&apos;s dashboard
-          <ArrowRight className="h-3 w-3" aria-hidden="true" />
-        </Link>
-      </header>
+    <div className="space-y-10">
+      <PageHeader
+        className="mb-0"
+        eyebrow="Community of Practice"
+        title="Welcome to the Fellowship"
+        description="Connect with your peers, celebrate progress, and learn from shared experiences across the program."
+        actions={
+          /* Quick path to the curated weekly read-out. */
+          <Button asChild variant="outline" size="sm">
+            <Link href="/community/dashboard">
+              <CalendarDays aria-hidden="true" />
+              This week&apos;s dashboard
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Featured Sections */}
       {featuredSections.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="font-serif text-xl text-foreground">
-              Featured sections
-            </h2>
-          </div>
-          <ul className="grid gap-3 sm:grid-cols-2">
+        <section className="space-y-4">
+          <h2>Featured sections</h2>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {featuredSections.map(({ section, count }) => {
-            const Icon = section.icon
-            return (
-              <li key={section.id}>
-                <Link
-                  href={`/community/${section.slug}`}
-                  className="group flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="grid h-10 w-10 place-items-center rounded-md bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
+              const Icon = section.icon
+              return (
+                <li key={section.id}>
+                  <Link
+                    href={`/community/${section.slug}`}
+                    className="group flex h-full flex-col gap-4 rounded-xl border bg-card p-6 shadow-xs transition hover:border-border-strong hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                        <Icon className="size-[18px]" aria-hidden="true" />
+                      </span>
+                      <Badge variant="secondary" className="tabular-nums">
+                        {count}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg">{section.label}</h3>
+                      <p className="text-[15px] leading-relaxed text-muted-foreground">
+                        {section.description}
+                      </p>
+                    </div>
+                    <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-primary">
+                      Explore
+                      <ArrowRight
+                        className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
                     </span>
-                    <Badge variant="outline" className="text-xs tabular-nums">
-                      {count}
-                    </Badge>
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-lg text-foreground group-hover:text-primary">
-                      {section.label}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {section.description}
-                    </p>
-                  </div>
-                  <span className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                    Explore
-                    <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                  </span>
-                </Link>
-              </li>
-            )
+                  </Link>
+                </li>
+              )
             })}
           </ul>
         </section>
       )}
 
       {/* All Sections Grid */}
-      <section className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-serif text-xl text-foreground">
-            Browse all sections
-          </h2>
-        </div>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="space-y-4">
+        <h2>Browse all sections</h2>
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {otherSections.map(({ section, count }) => {
             const Icon = section.icon
             return (
               <li key={section.id}>
                 <Link
                   href={`/community/${section.slug}`}
-                  className="group flex h-full flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                  className="group flex h-full flex-col gap-3 rounded-xl border bg-card p-5 shadow-xs transition hover:border-border-strong hover:shadow-md"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-primary">
-                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    <span className="flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                      <Icon className="size-4" aria-hidden="true" />
                     </span>
-                    <Badge variant="outline" className="text-xs tabular-nums">
+                    <Badge variant="secondary" className="tabular-nums">
                       {count}
                     </Badge>
                   </div>
-                  <h3 className="font-serif text-base text-foreground group-hover:text-primary">
-                    {section.label}
-                  </h3>
-                  <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                    {section.description}
-                  </p>
-                  <span className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="space-y-1">
+                    <h3>{section.label}</h3>
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {section.description}
+                    </p>
+                  </div>
+                  <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-muted-foreground transition-colors group-hover:text-primary">
                     Open
-                    <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                    <ArrowRight
+                      className="size-3.5 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
                   </span>
                 </Link>
               </li>
@@ -173,6 +165,5 @@ export default async function CommunityOverviewPage() {
         </ul>
       </section>
     </div>
-    </>
   )
 }

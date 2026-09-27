@@ -89,7 +89,7 @@ export function ModuleForm({
         />
       </div>
 
-      <div className="space-y-2 rounded-md border border-border bg-muted/30 p-4">
+      <div className="space-y-2 rounded-lg bg-muted/60 p-4">
         <label className="flex items-start gap-2 text-sm">
           <input
             type="checkbox"

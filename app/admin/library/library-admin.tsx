@@ -17,6 +17,7 @@ import {
 import { deleteLibraryResource } from '@/app/resources/actions'
 import { AddResourceDialog } from '@/components/library/add-resource-dialog'
 import type { LibraryResource } from '@/components/library/library-view'
+import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -113,16 +114,13 @@ export function LibraryAdmin({ resources }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="font-serif text-2xl text-foreground">Library</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Curate the resources fellows see. Add new entries, edit details,
-            or remove anything that no longer belongs.
-          </p>
-        </div>
-        <AddResourceDialog />
-      </header>
+      <PageHeader
+        className="mb-2"
+        eyebrow="Admin console"
+        title="Library"
+        description="Curate the resources fellows see. Add new entries, edit details, or remove anything that no longer belongs."
+        actions={<AddResourceDialog />}
+      />
 
       <div className="relative max-w-md">
         <Search
@@ -264,7 +262,7 @@ function ResourceGroup({
     <section className="flex flex-col gap-3" aria-label={title}>
       <div className="flex items-baseline justify-between gap-3">
         <div>
-          <h3 className="font-serif text-lg text-foreground">{title}</h3>
+          <h2 className="text-base">{title}</h2>
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
@@ -273,11 +271,11 @@ function ResourceGroup({
       </div>
 
       {rows.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border bg-card px-4 py-8 text-center text-xs text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
           {emptyMessage}
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border rounded-md border border-border bg-card">
+        <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-xs">
           {rows.map((row) => (
             <li key={row.id}>
               <ResourceRow row={row} onEdit={onEdit} onDelete={onDelete} />
@@ -299,9 +297,9 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
   const meta = TYPE_META[row.resourceType]
   const Icon = meta.Icon
   return (
-    <div className="flex items-start gap-3 px-3 py-3 sm:gap-4 sm:px-4">
+    <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/60 sm:gap-4">
       {/* Cover thumb (or type-icon fallback) */}
-      <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded border border-border bg-muted sm:h-14 sm:w-20">
+      <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md border border-border bg-muted sm:h-14 sm:w-20">
         {row.coverUrl ? (
           <Image
             src={row.coverUrl}
@@ -338,7 +336,7 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
           </p>
         )}
 
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           {row.isUniversal ? (
             <Badge variant="secondary" className="gap-1 text-[10px]">
               <Layers className="h-3 w-3" aria-hidden="true" />
@@ -362,13 +360,13 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
           {row.tags?.slice(0, 3).map((t) => (
             <span
               key={t}
-              className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px]"
+              className="rounded-sm bg-muted px-1.5 py-0.5 text-xs"
             >
               #{t}
             </span>
           ))}
           {row.tags && row.tags.length > 3 && (
-            <span className="text-[10px]">+{row.tags.length - 3}</span>
+            <span className="text-xs">+{row.tags.length - 3}</span>
           )}
 
           {row.url && (
@@ -376,7 +374,7 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
               href={row.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto inline-flex items-center gap-1 text-xs text-highlight hover:underline"
+              className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
               Open
               <ExternalLink className="h-3 w-3" aria-hidden="true" />

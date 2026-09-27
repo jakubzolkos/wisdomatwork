@@ -61,17 +61,17 @@ export function PostAdminRow({ postId, isFeatured, isArchived }: Props) {
     <div
       // Slim utility row, visually offset so it's clearly admin-only
       // chrome distinct from the post itself.
-      className="mt-1 flex flex-wrap items-center gap-2 rounded-md border border-dashed border-border/60 bg-muted/20 px-3 py-1.5 text-[11px] text-muted-foreground"
+      className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-dashed bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground"
       aria-label="Admin moderation controls"
     >
-      <span className="font-semibold tracking-wide">Staff</span>
+      <span className="font-semibold uppercase tracking-[0.08em]">Staff</span>
       <Button
         type="button"
         size="sm"
         variant={isFeatured ? 'secondary' : 'outline'}
         onClick={toggleFeatured}
         disabled={pending}
-        className="h-7 gap-1 px-2 text-[11px]"
+        className="h-7 gap-1 px-2 text-xs"
       >
         {pending ? (
           <Spinner className="h-3 w-3" />
@@ -88,7 +88,7 @@ export function PostAdminRow({ postId, isFeatured, isArchived }: Props) {
         variant={isArchived ? 'secondary' : 'outline'}
         onClick={toggleArchived}
         disabled={pending}
-        className="h-7 gap-1 px-2 text-[11px]"
+        className="h-7 gap-1 px-2 text-xs"
       >
         {pending ? (
           <Spinner className="h-3 w-3" />

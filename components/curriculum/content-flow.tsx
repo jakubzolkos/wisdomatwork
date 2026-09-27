@@ -80,7 +80,7 @@ export function ContentFlow({ phases, currentContentId }: ContentFlowProps) {
             <Link
               href={previousItem.href}
               className={cn(
-                'flex-1 rounded-lg border border-muted px-4 py-3 transition-colors hover:bg-muted/50',
+                'flex-1 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-accent/60',
               )}
             >
               <div className="text-xs text-muted-foreground">Previous</div>
@@ -89,7 +89,7 @@ export function ContentFlow({ phases, currentContentId }: ContentFlowProps) {
                   {previousItem.title}
                 </span>
                 {previousItem.isCompleted && (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                 )}
               </div>
             </Link>
@@ -99,7 +99,7 @@ export function ContentFlow({ phases, currentContentId }: ContentFlowProps) {
             <Link
               href={nextItem.href}
               className={cn(
-                'flex-1 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 transition-colors hover:bg-primary/10',
+                'flex-1 rounded-lg border border-primary/20 bg-primary-soft px-4 py-3 transition-colors hover:border-primary/40',
               )}
             >
               <div className="text-xs text-primary font-medium">Next</div>

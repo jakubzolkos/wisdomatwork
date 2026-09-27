@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { AddResourceDialog } from '@/components/library/add-resource-dialog'
+import { PageHeader } from '@/components/page-header'
 // Lives in a leaf module so AddResourceDialog can also import it
 // without creating a circular dependency on this file (which would
 // throw a TDZ ReferenceError at module evaluation time).
@@ -201,31 +202,33 @@ export function LibraryView({
   return (
     <div className="flex flex-col gap-6">
       {/* Header: title, subtitle, admin Add button */}
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-serif text-2xl text-foreground">Library</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Curated books, videos, podcasts, and other resources. Use the
-            tabs to switch between your cohort resources and recommended
-            resources.
-          </p>
-        </div>
-        {canManage && <AddResourceDialog />}
-      </header>
+      <PageHeader
+        className="mb-2"
+        title="Library"
+        description="Curated books, videos, podcasts, and other resources. Use the tabs to switch between your cohort resources and recommended resources."
+        actions={canManage ? <AddResourceDialog /> : undefined}
+      />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="flex flex-col gap-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="mine">
+        <TabsList className="grid h-10 w-full grid-cols-2 rounded-lg border border-border bg-muted/70 p-1 sm:inline-grid sm:w-auto">
+          <TabsTrigger
+            value="mine"
+            className="gap-2 px-4 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          >
             My Resources
-            <Badge variant="secondary" className="ml-2 text-[10px]">
+            <span className="rounded-full bg-muted px-1.5 py-px text-[11px] font-medium tabular-nums text-muted-foreground">
               {myResources.length}
-            </Badge>
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="further">
-            Recommended Resources
-            <Badge variant="secondary" className="ml-2 text-[10px]">
+          <TabsTrigger
+            value="further"
+            className="gap-2 px-4 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          >
+            <span className="sm:hidden">Recommended</span>
+            <span className="hidden sm:inline">Recommended Resources</span>
+            <span className="rounded-full bg-muted px-1.5 py-px text-[11px] font-medium tabular-nums text-muted-foreground">
               {furtherReading.length}
-            </Badge>
+            </span>
           </TabsTrigger>
         </TabsList>
 
@@ -236,7 +239,7 @@ export function LibraryView({
             vs. universal extended-learning - and a contextual
             caption keeps the toggle from feeling arbitrary. */}
         <p
-          className="-mt-2 text-sm leading-relaxed text-muted-foreground"
+          className="-mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground"
           aria-live="polite"
         >
           {tab === 'mine'
@@ -257,7 +260,7 @@ export function LibraryView({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by title, description, or tag..."
               aria-label="Search the library"
-              className="pl-9"
+              className="h-10 bg-card pl-9 shadow-xs"
             />
           </div>
 
@@ -265,7 +268,7 @@ export function LibraryView({
             <div
               role="tablist"
               aria-label="Filter by type"
-              className="flex flex-wrap items-center gap-2"
+              className="flex flex-wrap items-center gap-1.5"
             >
               {(tab === 'further' ? RECOMMENDED_TYPE_FILTERS : TYPE_FILTERS).map((f) => {
                 const active = typeFilter === f.id
@@ -276,10 +279,10 @@ export function LibraryView({
                     aria-selected={active}
                     onClick={() => setTypeFilter(f.id)}
                     className={cn(
-                      'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
+                      'inline-flex h-8 items-center rounded-full border px-3.5 text-sm font-medium transition-colors',
                       active
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card text-muted-foreground hover:bg-muted',
+                        ? 'border-primary/25 bg-primary-soft text-primary'
+                        : 'border-border bg-card text-muted-foreground hover:border-border-strong hover:bg-accent hover:text-foreground',
                     )}
                   >
                     {f.label}
@@ -299,7 +302,7 @@ export function LibraryView({
               <div
                 role="group"
                 aria-label="View mode"
-                className="inline-flex items-center rounded-md border border-border bg-card p-0.5"
+                className="inline-flex h-8 items-center rounded-md border border-border bg-card p-0.5 shadow-xs"
               >
                 <ViewToggleButton
                   active={view === 'grid'}
@@ -328,7 +331,7 @@ export function LibraryView({
                   key={t}
                   type="button"
                   onClick={() => toggleTag(t)}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/20"
+                  className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
                   aria-label={`Remove tag ${t}`}
                 >
                   {t}
@@ -414,7 +417,7 @@ function ResultsBody({
     // Smaller per-card footprint so curated stacks read as a wall
     // of options rather than three giant tiles.
     return (
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {filtered.map((r) => (
           <GridCard key={r.id} resource={r} showCohort={showCohort} />
         ))}
@@ -448,10 +451,10 @@ function ViewToggleButton({
       aria-pressed={active}
       aria-label={label}
       className={cn(
-        'inline-flex h-8 w-8 items-center justify-center rounded transition-colors',
+        'inline-flex h-full w-7 items-center justify-center rounded-sm transition-colors',
         active
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted',
+          ? 'bg-primary-soft text-primary'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
       )}
     >
       <Icon className="h-4 w-4" />
@@ -475,7 +478,7 @@ function SortToggle({
       type="button"
       onClick={() => onChange(isAlpha ? 'newest' : 'alpha')}
       aria-label={`Sort: ${isAlpha ? 'A to Z' : 'Newest first'} (click to switch)`}
-      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted"
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-sm text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-foreground"
     >
       {isAlpha ? (
         <ArrowDownAZ className="h-4 w-4" aria-hidden="true" />
@@ -551,8 +554,8 @@ function TagFilterPopover({
                   aria-selected={active}
                   onClick={() => onToggle(tag)}
                   className={cn(
-                    'flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted',
-                    active && 'bg-muted',
+                    'flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent',
+                    active && 'bg-primary-soft text-primary',
                   )}
                 >
                   <span className="truncate">{tag}</span>
@@ -591,7 +594,7 @@ function GridCard({
       href={resource.url}
       target="_blank"
       rel="noreferrer"
-      className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs transition hover:border-border-strong hover:shadow-md"
     >
       {/* Hero: cover image or icon fallback. We use object-contain
           inside a generously-padded muted frame so the entire cover
@@ -601,7 +604,7 @@ function GridCard({
           look the curator preferred over edge-to-edge bleed. The
           fixed 4:5 portrait wrapper keeps every tile aligned no
           matter the source image's aspect. */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
+      <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-border bg-muted/60">
         {resource.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -611,13 +614,15 @@ function GridCard({
             loading="lazy"
           />
         ) : (
-          <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 via-muted to-muted">
-            <Icon className="h-8 w-8 text-primary/60" aria-hidden="true" />
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="flex size-12 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-xs">
+              <Icon className="size-5" aria-hidden="true" />
+            </span>
           </div>
         )}
         <Badge
           variant="secondary"
-          className="absolute left-2 top-2 bg-card/95 text-[10px] tracking-wide backdrop-blur"
+          className="absolute left-2.5 top-2.5 border-border bg-card/95 text-[11px] font-medium text-foreground shadow-xs backdrop-blur"
         >
           <Icon className="mr-1 h-3 w-3" aria-hidden="true" />
           {meta.label}
@@ -626,9 +631,9 @@ function GridCard({
 
       {/* Compacter padding so 4-up doesn't feel cramped despite
           smaller cells. */}
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex flex-1 flex-col gap-2">
-          <h3 className="line-clamp-2 font-serif text-base leading-snug text-foreground group-hover:text-primary">
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex flex-1 flex-col gap-1">
+          <h3 className="line-clamp-2 text-[15px] leading-snug text-foreground transition-colors group-hover:text-primary">
             {resource.title}
           </h3>
           {/* Author byline. Sits directly under the title (book-jacket
@@ -636,12 +641,12 @@ function GridCard({
               identity, not as metadata. Hidden when the row predates
               migration 043 and has no author recorded. */}
           {resource.author && (
-            <p className="text-xs font-medium tracking-wide text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               by {resource.author}
             </p>
           )}
           {resource.description && (
-            <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
               {resource.description}
             </p>
           )}
@@ -654,7 +659,7 @@ function GridCard({
             {/* Cap at 3 tags now that cards are narrower - more than
                 that wraps to a third row and breaks the rhythm. */}
             {resource.tags.slice(0, 3).map((t) => (
-              <Badge key={t} variant="secondary" className="text-[10px]">
+              <Badge key={t} variant="secondary" className="text-[11px] font-normal">
                 {t}
               </Badge>
             ))}
@@ -685,12 +690,12 @@ function ListRow({
         href={resource.url}
         target="_blank"
         rel="noreferrer"
-        className="group flex items-start gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+        className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 shadow-xs transition hover:border-border-strong hover:shadow-md"
       >
         {/* Portrait thumbnail mirrors the 3:4 hero used by the grid
             cards so users see the same orientation regardless of
             view mode. */}
-        <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
+        <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-md border border-border bg-muted/60">
           {resource.coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -700,17 +705,17 @@ function ListRow({
               loading="lazy"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 to-muted">
-              <Icon className="h-5 w-5 text-primary/60" aria-hidden="true" />
+            <div className="absolute inset-0 grid place-items-center">
+              <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
             </div>
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-2">
-            <h3 className="font-serif text-base leading-snug text-foreground group-hover:text-primary">
+            <h3 className="text-[15px] leading-snug text-foreground transition-colors group-hover:text-primary">
               {resource.title}
             </h3>
-            <Badge variant="outline" className="text-[10px] tracking-wide">
+            <Badge variant="outline" className="text-[11px] font-medium text-muted-foreground">
               {meta.label}
             </Badge>
             {showCohort && <CohortBadgeRow resource={resource} compact />}
@@ -720,7 +725,7 @@ function ListRow({
               the description on dense lists so authorship is always
               one glance away from the title. */}
           {resource.author && (
-            <p className="mt-0.5 text-xs font-medium text-muted-foreground">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               by {resource.author}
             </p>
           )}
@@ -731,7 +736,7 @@ function ListRow({
           )}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {resource.tags.slice(0, 4).map((t) => (
-              <Badge key={t} variant="secondary" className="text-[10px]">
+              <Badge key={t} variant="secondary" className="text-[11px] font-normal">
                 {t}
               </Badge>
             ))}
@@ -763,7 +768,7 @@ function CohortBadgeRow({
         <Badge
           key={c}
           variant="outline"
-          className="border-primary/40 bg-primary/5 text-[10px] font-medium text-primary"
+          className="text-[11px] font-medium text-muted-foreground"
         >
           Cohort {c}
         </Badge>
@@ -805,11 +810,12 @@ function EmptyState({
   }
 
   return (
-    <div className="rounded-lg border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
-      <span className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Layers className="h-5 w-5" aria-hidden="true" />
+    <div className="rounded-xl border border-dashed border-border-strong p-10 text-center">
+      <span className="mx-auto flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+        <Layers className="size-[18px]" aria-hidden="true" />
       </span>
-      <p className="mt-3 text-sm text-muted-foreground">{message}</p>
+      <p className="mx-auto mt-4 max-w-md text-sm text-muted-foreground">{message}</p>
+
     </div>
   )
 }

@@ -2,13 +2,6 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -19,6 +12,13 @@ import {
   verifyEmailLoginCodeAction,
   requestPasswordSetupAction,
 } from './actions'
+import {
+  AuthCard,
+  AuthFootnote,
+  AuthNotice,
+  SegmentTab,
+  authLinkClass,
+} from '../_components/auth-ui'
 
 type Method = 'password' | 'code'
 type CodeStep = 'request' | 'verify'
@@ -208,208 +208,195 @@ function LoginForm() {
   }
 
   return (
-    <Card>
-      <CardHeader className="space-y-2">
-        <CardTitle className="font-serif text-2xl text-center">
-          Wisdom At Work
-        </CardTitle>
-        <CardDescription className="text-center">
-          Sign in to the Fellows Portal with your program email.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
-        {setupView !== 'hidden' ? (
-          <PasswordSetupPanel
-            view={setupView}
-            email={setupEmail}
-            sentTo={setupSentTo}
-            error={setupError}
-            isLoading={setupLoading}
-            onEmailChange={setSetupEmail}
-            onSubmit={handleSetupSubmit}
-            onCancel={() => {
-              setSetupView('hidden')
-              setSetupError(null)
-            }}
-            onResend={() => {
-              setSetupView('form')
-              setSetupSentTo(null)
-            }}
-          />
-        ) : (
-          <>
-        <MethodPicker method={method} onChange={switchMethod} disabled={isLoading} />
+    <AuthCard
+      title="Sign in"
+      description="Sign in to the Wisdom At Work Fellows Portal with your program email."
+    >
+      {setupView !== 'hidden' ? (
+        <PasswordSetupPanel
+          view={setupView}
+          email={setupEmail}
+          sentTo={setupSentTo}
+          error={setupError}
+          isLoading={setupLoading}
+          onEmailChange={setSetupEmail}
+          onSubmit={handleSetupSubmit}
+          onCancel={() => {
+            setSetupView('hidden')
+            setSetupError(null)
+          }}
+          onResend={() => {
+            setSetupView('form')
+            setSetupSentTo(null)
+          }}
+        />
+      ) : (
+        <>
+          <MethodPicker method={method} onChange={switchMethod} disabled={isLoading} />
 
-        {method === 'password' ? (
-          <form onSubmit={handlePasswordLogin} className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="name@school.edu"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              <button
-                type="button"
-                onClick={openSetup}
-                className="underline underline-offset-2 hover:text-foreground"
-                disabled={isLoading}
-              >
-                Forgot or need to set a password?
-              </button>
-            </p>
-          </form>
-        ) : codeStep === 'request' ? (
-          <form onSubmit={handleCodeSend} className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email-code">Email</Label>
-              <Input
-                id="email-code"
-                type="email"
-                autoComplete="email"
-                placeholder="name@school.edu"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                We&apos;ll email you a 6-digit code. Come back to this tab and type it
-                in to sign in &mdash; no password required.
-              </p>
-            </div>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Sending code...' : 'Email me a sign-in code'}
-            </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              <button
-                type="button"
-                onClick={openSetup}
-                className="underline underline-offset-2 hover:text-foreground"
-                disabled={isLoading}
-              >
-                Want a password instead? Set one up
-              </button>
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleCodeVerify} className="flex flex-col gap-4">
-            <p
-              role="status"
-              className="rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"
-            >
-              {fromInvite ? (
-                <>
-                  Welcome! Enter the 6-digit code we just emailed
-                  {codeSentTo ? (
-                    <>
-                      {' '}to{' '}
-                      <span className="font-medium">{codeSentTo}</span>
-                    </>
-                  ) : null}{' '}
-                  to finish activating your account.
-                </>
-              ) : (
-                <>
-                  We sent a 6-digit code to{' '}
-                  <span className="font-medium">{codeSentTo}</span>. Enter it below
-                  to finish signing in.
-                </>
+          {method === 'password' ? (
+            <form onSubmit={handlePasswordLogin} className="flex flex-col gap-5">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@school.edu"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              {error && (
+                <AuthNotice tone="error" role="alert">
+                  {error}
+                </AuthNotice>
               )}
-            </p>
-            <div className="grid gap-2">
-              <Label htmlFor="otp-code">Sign-in code</Label>
-              <Input
-                id="otp-code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="[0-9]*"
-                maxLength={6}
-                placeholder="123456"
-                required
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                className="text-center text-lg tracking-[0.5em] font-mono"
-              />
-            </div>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
+              <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Sign in'}
+              </Button>
+              <p className="text-center text-sm">
+                <button
+                  type="button"
+                  onClick={openSetup}
+                  className={authLinkClass}
+                  disabled={isLoading}
+                >
+                  Forgot or need to set a password?
+                </button>
               </p>
-            )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Verifying...' : 'Verify and sign in'}
-            </Button>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <button
-                type="button"
-                onClick={() => {
-                  setCodeStep('request')
-                  setCode('')
-                  setError(null)
-                }}
-                className="underline underline-offset-2 hover:text-foreground"
-                disabled={isLoading}
-              >
-                Use a different email
-              </button>
-              <button
-                type="button"
-                onClick={(ev) => {
-                  setCode('')
-                  handleCodeSend(ev)
-                }}
-                className="underline underline-offset-2 hover:text-foreground"
-                disabled={isLoading}
-              >
-                Resend code
-              </button>
-            </div>
-          </form>
-        )}
-          </>
-        )}
+            </form>
+          ) : codeStep === 'request' ? (
+            <form onSubmit={handleCodeSend} className="flex flex-col gap-5">
+              <div className="space-y-2">
+                <Label htmlFor="email-code">Email</Label>
+                <Input
+                  id="email-code"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@school.edu"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  We&apos;ll email you a 6-digit code. Come back to this tab and type it
+                  in to sign in &mdash; no password required.
+                </p>
+              </div>
+              {error && (
+                <AuthNotice tone="error" role="alert">
+                  {error}
+                </AuthNotice>
+              )}
+              <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Sending code...' : 'Email me a sign-in code'}
+              </Button>
+              <p className="text-center text-sm">
+                <button
+                  type="button"
+                  onClick={openSetup}
+                  className={authLinkClass}
+                  disabled={isLoading}
+                >
+                  Want a password instead? Set one up
+                </button>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleCodeVerify} className="flex flex-col gap-5">
+              <AuthNotice tone="info" role="status">
+                {fromInvite ? (
+                  <>
+                    Welcome! Enter the 6-digit code we just emailed
+                    {codeSentTo ? (
+                      <>
+                        {' '}to{' '}
+                        <span className="font-medium">{codeSentTo}</span>
+                      </>
+                    ) : null}{' '}
+                    to finish activating your account.
+                  </>
+                ) : (
+                  <>
+                    We sent a 6-digit code to{' '}
+                    <span className="font-medium">{codeSentTo}</span>. Enter it below
+                    to finish signing in.
+                  </>
+                )}
+              </AuthNotice>
+              <div className="space-y-2">
+                <Label htmlFor="otp-code">Sign-in code</Label>
+                <Input
+                  id="otp-code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  placeholder="123456"
+                  required
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                  className="h-12 text-center font-mono text-xl tracking-[0.5em] md:text-xl"
+                />
+              </div>
+              {error && (
+                <AuthNotice tone="error" role="alert">
+                  {error}
+                </AuthNotice>
+              )}
+              <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Verifying...' : 'Verify and sign in'}
+              </Button>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCodeStep('request')
+                    setCode('')
+                    setError(null)
+                  }}
+                  className={authLinkClass}
+                  disabled={isLoading}
+                >
+                  Use a different email
+                </button>
+                <button
+                  type="button"
+                  onClick={(ev) => {
+                    setCode('')
+                    handleCodeSend(ev)
+                  }}
+                  className={authLinkClass}
+                  disabled={isLoading}
+                >
+                  Resend code
+                </button>
+              </div>
+            </form>
+          )}
+        </>
+      )}
 
-        <p className="text-center text-xs text-muted-foreground">
-          The Fellows Portal is invite-only. If you need access, contact the WaW team:{' '}
-          <a
-            href="mailto:waw@abigailadamsinstitute.org"
-            className="underline underline-offset-2"
-          >
-            waw@abigailadamsinstitute.org
-          </a>
-        </p>
-      </CardContent>
-    </Card>
+      <AuthFootnote>
+        The Fellows Portal is invite-only. If you need access, contact the WaW team:{' '}
+        <a href="mailto:waw@abigailadamsinstitute.org" className={authLinkClass}>
+          waw@abigailadamsinstitute.org
+        </a>
+      </AuthFootnote>
+    </AuthCard>
   )
 }
 
@@ -426,58 +413,23 @@ function MethodPicker({
     <div
       role="radiogroup"
       aria-label="Sign-in method"
-      className="grid grid-cols-2 gap-2"
+      className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1"
     >
-      <MethodTab
-        icon={<KeyRound className="h-4 w-4" />}
+      <SegmentTab
+        icon={<KeyRound className="size-4" />}
         label="Password"
         selected={method === 'password'}
         onSelect={() => onChange('password')}
         disabled={disabled}
       />
-      <MethodTab
-        icon={<Mail className="h-4 w-4" />}
+      <SegmentTab
+        icon={<Mail className="size-4" />}
         label="Email code"
         selected={method === 'code'}
         onSelect={() => onChange('code')}
         disabled={disabled}
       />
     </div>
-  )
-}
-
-function MethodTab({
-  icon,
-  label,
-  selected,
-  onSelect,
-  disabled,
-}: {
-  icon: React.ReactNode
-  label: string
-  selected: boolean
-  onSelect: () => void
-  disabled?: boolean
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onSelect}
-      disabled={disabled}
-      className={[
-        'flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        selected
-          ? 'border-primary bg-primary/5 text-foreground'
-          : 'border-border bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground',
-        disabled ? 'cursor-not-allowed opacity-60' : '',
-      ].join(' ')}
-    >
-      {icon}
-      {label}
-    </button>
   )
 }
 
@@ -513,31 +465,20 @@ function PasswordSetupPanel({
 }) {
   if (view === 'sent') {
     return (
-      <div className="flex flex-col gap-4">
-        <div
-          role="status"
-          className="rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground"
-        >
-          <p className="font-medium text-foreground">Check your inbox</p>
-          <p className="mt-1 text-muted-foreground">
+      <div className="flex flex-col gap-5">
+        <AuthNotice tone="success" role="status">
+          <p className="font-medium">Check your inbox</p>
+          <p className="mt-1 text-foreground">
             If an account exists for{' '}
-            <span className="font-medium text-foreground">{sentTo}</span>, we sent a
+            <span className="font-medium">{sentTo}</span>, we sent a
             link to set or reset its password. The link expires in 1 hour.
           </p>
-        </div>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="underline underline-offset-2 hover:text-foreground"
-          >
+        </AuthNotice>
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <button type="button" onClick={onCancel} className={authLinkClass}>
             Back to sign in
           </button>
-          <button
-            type="button"
-            onClick={onResend}
-            className="underline underline-offset-2 hover:text-foreground"
-          >
+          <button type="button" onClick={onResend} className={authLinkClass}>
             Use a different email
           </button>
         </div>
@@ -546,16 +487,16 @@ function PasswordSetupPanel({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
-        <p className="text-foreground">Set or reset your password</p>
-        <p className="mt-1">
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <div className="space-y-1">
+        <h2 className="text-base">Set or reset your password</h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Enter the email on your Wisdom At Work account and we&apos;ll send a link
           to choose a new password. After that, you can sign in with either your
           password or a one-time email code.
         </p>
       </div>
-      <div className="grid gap-2">
+      <div className="space-y-2">
         <Label htmlFor="setup-email">Email</Label>
         <Input
           id="setup-email"
@@ -569,12 +510,12 @@ function PasswordSetupPanel({
         />
       </div>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <AuthNotice tone="error" role="alert">
           {error}
-        </p>
+        </AuthNotice>
       )}
       <div className="grid gap-2">
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
           {isLoading ? 'Sending link...' : 'Email me a setup link'}
         </Button>
         <Button
@@ -593,12 +534,10 @@ function PasswordSetupPanel({
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <Suspense fallback={null}>
-          <LoginForm />
-        </Suspense>
-      </div>
+    <div className="w-full max-w-sm">
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
     </div>
   )
 }

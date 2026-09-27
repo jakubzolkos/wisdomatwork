@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation'
+import { Clock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { LessonFooter } from '@/components/curriculum/lesson-footer'
 import { LinkOpenButton } from '@/components/curriculum/link-open-button'
 import { LiveSessionStatus } from '@/components/curriculum/live-session-status'
@@ -158,6 +160,8 @@ export default async function ContentItemPage({
   let isCompleted = !!completion
   const reflectionResponse = reflection?.response ?? null
   const resource = item.resource_type ? getResourceType(item.resource_type) : null
+  // "External link" says nothing the link button doesn't already show.
+  const showResourceBadge = !!resource && item.resource_type !== 'external_link'
   const duration = formatDuration(item.duration_minutes)
   const hasBody = !!item.body && item.body.trim().length > 0
   const hasUrl = !!item.url
@@ -180,7 +184,7 @@ export default async function ContentItemPage({
   // shouldn't synthesise on their behalf.
   const scheduledAt = item.scheduled_at
   const liveSessionScheduled = isLiveSession && !!scheduledAt
-  if (liveSessionScheduled && !isCompleted && !reflectionRequired) {
+  if (liveSessionScheduled && !isCompleted && !reflectionRequired && !user.preview) {
     const startMs = new Date(scheduledAt!).getTime()
     if (Number.isFinite(startMs)) {
       const durationMs = (item.duration_minutes ?? 60) * 60 * 1000
@@ -213,31 +217,31 @@ export default async function ContentItemPage({
     !reflectionMeetsMinimum(reflectionResponse)
 
   return (
-    <article className="mx-auto max-w-2xl space-y-8">
-      <header className="space-y-3">
-        {(resource || duration) && (
+    <article className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+      <header className="space-y-3 border-b border-border px-5 py-6 sm:px-8 sm:py-8">
+        {(showResourceBadge || duration) && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {resource && (
-              <span className="rounded-full border border-border bg-muted px-2.5 py-0.5 font-medium tracking-wider">
-                {resource.label}
+            {showResourceBadge && <Badge variant="secondary">{resource.label}</Badge>}
+            {duration && (
+              <span className="inline-flex items-center gap-1">
+                <Clock className="size-3.5" aria-hidden="true" />
+                {duration}
               </span>
             )}
-            {duration && <span>{duration}</span>}
           </div>
         )}
-        <h1 className="text-pretty font-serif text-xl leading-tight text-foreground md:text-2xl">
-          {item.title}
-        </h1>
+        <h1 className="text-pretty text-2xl sm:text-3xl">{item.title}</h1>
         {item.description && (
-          <p className="text-pretty text-base leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl text-pretty text-[15px] leading-relaxed text-muted-foreground">
             {item.description}
           </p>
         )}
       </header>
 
+      <div className="space-y-8 px-5 py-6 sm:px-8 sm:py-8">
       {/* Body */}
       {hasBody && (
-        <div className="space-y-4 text-base leading-relaxed text-foreground">
+        <div className="rich-text">
           {item.body!.split(/\n{2,}/).map((para, i) => (
             <p key={i} className="whitespace-pre-wrap">
               {para}
@@ -285,7 +289,7 @@ export default async function ContentItemPage({
         ))}
 
       {!hasBody && !hasUrl && !reflectionRequired && (
-        <div className="rounded-lg border border-dashed border-border p-8 text-center">
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <p className="text-sm text-muted-foreground">
             This item has no content attached yet.
           </p>
@@ -308,6 +312,7 @@ export default async function ContentItemPage({
           />
         </>
       )}
+      </div>
 
       {/* Footer pairs Mark-complete with Continue.
           - Scheduled live sessions hide the manual "Mark complete"

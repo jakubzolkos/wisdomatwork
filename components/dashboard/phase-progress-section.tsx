@@ -29,8 +29,8 @@ export function PhaseProgressSection({
 
   return (
     <section className="space-y-4">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="font-serif text-2xl text-primary">Your progress</h2>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <h2>Your progress</h2>
         {teammateCount > 0 && (
           <p className="text-xs text-muted-foreground">
             Tracking alongside {teammateCount}{' '}
@@ -39,7 +39,7 @@ export function PhaseProgressSection({
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {phases.map((phase) => (
           <PhaseCard key={phase.id} phase={phase} meName={meName} />
         ))}
@@ -58,12 +58,10 @@ function PhaseCard({
   const hasItems = phase.itemCount > 0
 
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="space-y-5 p-6">
+    <Card className="gap-0 rounded-xl py-0 shadow-xs">
+      <CardContent className="space-y-5 p-5 sm:p-6">
         <header className="space-y-1">
-          <h3 className="font-serif text-lg leading-tight text-primary">
-            {phase.title}
-          </h3>
+          <h3 className="text-pretty">{phase.title}</h3>
           <p className="text-xs text-muted-foreground">
             {hasItems
               ? `${phase.itemCount} ${phase.itemCount === 1 ? 'item' : 'items'}`
@@ -77,15 +75,13 @@ function PhaseCard({
             value internally to draw the fill. */}
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground">You</p>
-          <Progress value={phase.me.percent} className="h-2" />
+          <Progress value={phase.me.percent} className="h-2 bg-muted" />
         </div>
 
         {/* Teammates list. Hidden when the user is solo. */}
         {phase.teammates.length > 0 && (
           <div className="space-y-3 border-t border-border pt-4">
-            <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-              Your team
-            </p>
+            <p className="eyebrow">Your team</p>
             <ul className="space-y-3">
               {phase.teammates.map((tm) => (
                 <TeammateRow
@@ -123,7 +119,7 @@ function TeammateRow({
         {teammate.avatarUrl && (
           <AvatarImage src={teammate.avatarUrl} alt="" />
         )}
-        <AvatarFallback className="bg-muted text-[11px] font-medium text-foreground">
+        <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
           {teammate.initials}
         </AvatarFallback>
       </Avatar>
@@ -133,7 +129,7 @@ function TeammateRow({
             no raw percentage or "X of Y" counter. The bar fill
             itself still uses the percent value to draw the meter. */}
         <p className="truncate text-sm text-foreground">{teammate.name}</p>
-        <Progress value={teammate.percent} className="h-1" />
+        <Progress value={teammate.percent} className="h-1.5 bg-muted" />
       </div>
     </li>
   )

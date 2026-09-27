@@ -3,6 +3,7 @@ import { loadTeamProgress } from '@/lib/team-progress'
 import { LiveSessionCard } from '@/components/dashboard/live-session-card'
 import { NotificationsFeed } from '@/components/notifications/notifications-feed'
 import { PhaseProgressSection } from '@/components/dashboard/phase-progress-section'
+import { PageHeader } from '@/components/page-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,15 +32,11 @@ export default async function DashboardPage() {
   return (
     <>
       <div className="space-y-10">
-        <header className="space-y-2">
-          <h1 className="font-serif text-3xl text-primary md:text-4xl">
-            Welcome back, {data.user.fullName}
-          </h1>
-          <p className="text-muted-foreground">
-            Pick up where you left off - choose a content item from the
-            curriculum on the left.
-          </p>
-        </header>
+        <PageHeader
+          className="mb-0"
+          title={<>Welcome back, {data.user.fullName}</>}
+          description="Pick up where you left off - choose a content item from the curriculum on the left."
+        />
 
         {/* Unified notifications (announcements, reminders, alerts)
             pinned at the top of the page. Full inbox lives at

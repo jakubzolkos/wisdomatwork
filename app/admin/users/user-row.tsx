@@ -171,10 +171,10 @@ export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolT
   const isPending = !user.email_confirmed_at && !user.last_sign_in_at
 
   return (
-    <li className="grid grid-cols-12 items-center gap-4 px-5 py-4">
+    <li className="grid grid-cols-12 items-center gap-4 px-4 py-3 transition-colors hover:bg-accent/60">
       <div className="col-span-12 flex items-center gap-3 md:col-span-3">
         <Avatar className="h-9 w-9">
-          <AvatarFallback className="bg-primary/10 text-xs text-primary">
+          <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -426,7 +426,7 @@ function StatusBadge({
   }
   if (invitationStatus === 'failed') {
     return (
-      <Badge variant="outline" className="text-xs text-destructive border-destructive/40">
+      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-xs text-destructive">
         Send failed
       </Badge>
     )

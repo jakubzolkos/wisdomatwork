@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { ArrowRight, Layers, Eye } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
@@ -78,24 +79,21 @@ export default async function AdminCurriculumPage() {
       {/* Main Content */}
       <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 className="font-serif text-2xl text-foreground">Curriculum</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Build your program phases and content. A phase is a top-level grouping (e.g. "Year One: Deep Learning"). Click into a phase to add content.
-            </p>
-          </div>
-          <CreatePhaseDialog />
-        </div>
+        <PageHeader
+          className="mb-2"
+          eyebrow="Admin console"
+          title="Curriculum"
+          description='Build your program phases and content. A phase is a top-level grouping (e.g. "Year One: Deep Learning"). Click into a phase to add content.'
+          actions={<CreatePhaseDialog />}
+        />
 
         {/* Phases List - Primary Task */}
         {phaseList.length === 0 ? (
-          <div className="rounded-md border border-dashed border-border p-10 text-center">
-            <Layers
-              className="mx-auto mb-3 h-8 w-8 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <p className="text-sm font-medium text-foreground">No phases yet</p>
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+            <span className="mx-auto mb-3 flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+              <Layers className="size-[18px]" aria-hidden="true" />
+            </span>
+            <h3>No phases yet</h3>
             <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
               Click "New phase" above to create the first one. Phases are the top-level scaffolding of the curriculum.
             </p>
@@ -108,17 +106,17 @@ export default async function AdminCurriculumPage() {
                 <li key={phase.id}>
                   <Link
                     href={`/admin/curriculum/${phase.id}`}
-                    className="group block rounded-lg border border-border bg-card p-5 transition-colors hover:border-foreground/30"
+                    className="group block rounded-xl border border-border bg-card p-5 shadow-xs transition hover:border-border-strong hover:shadow-md"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium tracking-wider text-muted-foreground">
+                          <span className="text-xs font-medium text-muted-foreground">
                             Phase {idx + 1}
                           </span>
                           <CohortBadge cohorts={phase.cohorts} />
                         </div>
-                        <h3 className="mt-1 font-serif text-lg text-foreground">
+                        <h3 className="mt-1 text-base font-semibold text-foreground">
                           {phase.title}
                         </h3>
                         {phase.description && (
@@ -148,19 +146,19 @@ export default async function AdminCurriculumPage() {
 
       {/* Preview Launcher - Secondary/Utility */}
       {previewFellows.length > 0 && (
-        <Card className="border-border/50 bg-muted/30">
-          <CardContent className="p-4">
+        <Card className="py-0">
+          <CardContent className="p-5">
             <details className="group/details cursor-pointer">
-              <summary className="flex items-center gap-2 font-medium text-foreground hover:text-foreground/80 transition-colors">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-background text-muted-foreground">
-                  <Eye className="h-3.5 w-3.5" />
+              <summary className="flex items-center gap-3 text-sm font-medium text-foreground transition-colors hover:text-foreground/80">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                  <Eye className="size-4" />
                 </span>
                 Preview curriculum as fellow
                 <span className="ml-auto text-xs font-normal text-muted-foreground group-open/details:rotate-180 transition-transform">
                   ▼
                 </span>
               </summary>
-              <div className="mt-4 -mx-4 -mb-4 px-4 pb-4 border-t border-border pt-4">
+              <div className="-mx-5 -mb-5 mt-5 border-t border-border px-5 pb-5 pt-5">
                 <PreviewLauncher fellows={previewFellows} />
               </div>
             </details>

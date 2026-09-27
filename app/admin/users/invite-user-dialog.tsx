@@ -189,7 +189,7 @@ export function InviteUserDialog({ cohorts }: Props) {
               <p
                 className={
                   message.type === 'ok'
-                    ? 'text-sm text-emerald-600'
+                    ? 'text-sm text-success'
                     : 'text-sm text-destructive'
                 }
                 role="status"

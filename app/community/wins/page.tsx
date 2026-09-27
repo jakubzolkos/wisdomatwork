@@ -55,7 +55,7 @@ export default async function WinsPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col">
       <SectionHeader
         section={section}
         canPost={true}
@@ -64,6 +64,7 @@ export default async function WinsPage({ searchParams }: PageProps) {
         requireVisibilitySettings
       />
 
+      <div className="space-y-10">
       {/* Analytics Dashboard */}
       <WinsDashboard
         stats={stats}
@@ -73,13 +74,13 @@ export default async function WinsPage({ searchParams }: PageProps) {
       />
 
       {/* Search and Feed */}
-      <div className="flex flex-col gap-4 border-t border-border pt-6">
+      <section className="space-y-4 border-t pt-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <FeedSearchBar placeholder="Search wins, hashtags, frameworks…" />
           {query && (
             <p className="text-xs text-muted-foreground">
               Showing wins matching{' '}
-              <span className="font-medium text-foreground">"{query}"</span>
+              <span className="font-medium text-foreground">&ldquo;{query}&rdquo;</span>
             </p>
           )}
         </div>
@@ -96,6 +97,7 @@ export default async function WinsPage({ searchParams }: PageProps) {
           }
           isStaff={isStaff}
         />
+      </section>
       </div>
     </div>
     </>

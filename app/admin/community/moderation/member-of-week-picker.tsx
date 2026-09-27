@@ -88,7 +88,7 @@ export function MemberOfWeekPicker({ profiles, current }: Props) {
   return (
     <div className="flex flex-col gap-4">
       {current ? (
-        <div className="flex items-center gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+        <div className="flex items-center gap-3 rounded-lg bg-warning-soft p-3">
           <Avatar className="h-10 w-10">
             <AvatarImage
               src={current.profileImageUrl ?? undefined}
@@ -101,7 +101,7 @@ export function MemberOfWeekPicker({ profiles, current }: Props) {
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1 text-sm font-medium text-foreground">
               <Sparkles
-                className="h-3 w-3 text-amber-600"
+                className="h-3 w-3 text-warning"
                 aria-hidden="true"
               />
               {current.fullName ?? 'Member'}
@@ -191,7 +191,7 @@ export function MemberOfWeekPicker({ profiles, current }: Props) {
       )}
       {success && (
         <p
-          className="flex items-center gap-1 text-sm text-emerald-600"
+          className="flex items-center gap-1 text-sm text-success"
           role="status"
         >
           <CheckCircle2 className="h-3 w-3" aria-hidden="true" />

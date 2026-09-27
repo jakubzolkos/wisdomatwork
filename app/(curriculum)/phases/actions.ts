@@ -20,6 +20,21 @@ import {
 } from '@/lib/session-link-clicks'
 
 // ----------------------------------------------------------------------------
+// Preview guard
+// ----------------------------------------------------------------------------
+
+/**
+ * True while an admin is previewing the fellow experience. In cohort
+ * preview the user id is the synthetic '__preview__' (not a uuid); in
+ * by-fellow preview it is a real fellow's id. Either way nothing may be
+ * written on that id's behalf, so the actions below short-circuit to a
+ * no-op that still lets the admin click through the flow.
+ */
+function isPreviewing(user: Awaited<ReturnType<typeof requireUser>>): boolean {
+  return !!user.preview
+}
+
+// ----------------------------------------------------------------------------
 // Visibility helper
 // ----------------------------------------------------------------------------
 
@@ -111,6 +126,10 @@ export async function toggleContentCompletion(
     const visible = await loadVisibleItem(supabase, contentId, user)
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
+
+    // Preview: report success so "Mark complete" / "Go to next item"
+    // behave normally, but persist nothing.
+    if (isPreviewing(user)) return { ok: true, completed: nextCompleted }
 
     if (nextCompleted) {
       // Gate 1: link click. Live sessions are exempt - the fellow
@@ -219,6 +238,10 @@ export async function recordLinkClick(
     //    page reader consult.
     await recordSessionLinkClick(contentId)
 
+    // Preview: the cookie above clears the gate for this browser
+    // session only; skip the per-profile audit row.
+    if (isPreviewing(user)) return { ok: true }
+
     // 2) Audit/analytics: keep the legacy DB row so admins can
     //    still see who has *ever* opened a resource. This is best
     //    effort - failure here doesn't block the gate clearing.
@@ -273,6 +296,9 @@ export async function submitReflection(
     const user = await requireUser()
     const supabase = await createClient()
     if (!contentId) return { ok: false, message: 'Missing content id' }
+    if (isPreviewing(user)) {
+      return { ok: false, message: 'Reflections are not saved while previewing.' }
+    }
 
     const trimmed = response.trim()
     if (!trimmed) return { ok: false, message: 'Reflection cannot be empty' }
@@ -373,6 +399,8 @@ export async function deleteReflection(
     const user = await requireUser()
     const supabase = await createClient()
     if (!contentId) return { ok: false, message: 'Missing content id' }
+
+    if (isPreviewing(user)) return { ok: true }
 
     const visible = await loadVisibleItem(supabase, contentId, user)
     if (!visible.ok) return { ok: false, message: visible.message }

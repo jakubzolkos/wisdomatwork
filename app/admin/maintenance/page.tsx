@@ -28,9 +28,9 @@ export default async function PortalMaintenancePage() {
       </section>
 
       {/* Safety Warning */}
-      <Alert variant="destructive" className="border-orange-200 bg-orange-50">
-        <AlertTriangle className="h-4 w-4 text-orange-600" />
-        <AlertDescription className="text-orange-900">
+      <Alert variant="destructive" className="border-warning/30 bg-warning-soft">
+        <AlertTriangle className="h-4 w-4 text-warning" />
+        <AlertDescription className="text-warning">
           Use caution when deleting content. Archive or unpublish instead where possible.
           All actions are permanently logged and cannot be undone.
         </AlertDescription>

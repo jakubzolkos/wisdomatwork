@@ -83,7 +83,7 @@ export function ReflectionVisibilityToggle({ reflectionId, value }: Props) {
         </SelectContent>
       </Select>
       {error && (
-        <p role="alert" className="text-[10px] text-destructive">
+        <p role="alert" className="text-xs text-destructive">
           {error}
         </p>
       )}

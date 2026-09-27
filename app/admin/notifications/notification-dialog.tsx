@@ -347,7 +347,7 @@ export function NotificationDialog({
                   return (
                     <label
                       key={code}
-                      className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-bg-muted"
+                      className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-muted"
                     >
                       <Checkbox
                         checked={checked}
@@ -378,7 +378,7 @@ export function NotificationDialog({
               </legend>
               <div className="relative">
                 <Search
-                  className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+                  className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden
                 />
                 <Input
@@ -404,7 +404,7 @@ export function NotificationDialog({
                         <button
                           type="button"
                           aria-label={`Remove ${s.name}`}
-                          className="ml-1 rounded-sm p-0.5 hover:bg-bg-muted"
+                          className="ml-1 rounded-sm p-0.5 hover:bg-muted"
                           onClick={() =>
                             toggle(schoolTeamIds, setSchoolTeamIds, id)
                           }
@@ -419,7 +419,7 @@ export function NotificationDialog({
               <ScrollArea className="h-48 rounded-md border border-border">
                 <ul className="divide-y divide-border">
                   {filteredSchools.length === 0 ? (
-                    <li className="px-3 py-6 text-center text-sm text-text-muted">
+                    <li className="px-3 py-6 text-center text-sm text-muted-foreground">
                       No matches
                     </li>
                   ) : (
@@ -427,7 +427,7 @@ export function NotificationDialog({
                       const checked = schoolTeamIds.includes(s.id)
                       return (
                         <li key={s.id}>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-bg-muted">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
                             <Checkbox
                               checked={checked}
                               onCheckedChange={() =>
@@ -460,7 +460,7 @@ export function NotificationDialog({
               </legend>
               <div className="relative">
                 <Search
-                  className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+                  className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden
                 />
                 <Input
@@ -486,7 +486,7 @@ export function NotificationDialog({
                         <button
                           type="button"
                           aria-label={`Remove ${f.fullName}`}
-                          className="ml-1 rounded-sm p-0.5 hover:bg-bg-muted"
+                          className="ml-1 rounded-sm p-0.5 hover:bg-muted"
                           onClick={() => toggle(userIds, setUserIds, id)}
                         >
                           <X className="h-3 w-3" />
@@ -499,7 +499,7 @@ export function NotificationDialog({
               <ScrollArea className="h-56 rounded-md border border-border">
                 <ul className="divide-y divide-border">
                   {filteredFellows.length === 0 ? (
-                    <li className="px-3 py-6 text-center text-sm text-text-muted">
+                    <li className="px-3 py-6 text-center text-sm text-muted-foreground">
                       No matches
                     </li>
                   ) : (
@@ -507,7 +507,7 @@ export function NotificationDialog({
                       const checked = userIds.includes(f.id)
                       return (
                         <li key={f.id}>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-bg-muted">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
                             <Checkbox
                               checked={checked}
                               onCheckedChange={() =>
@@ -519,7 +519,7 @@ export function NotificationDialog({
                                 {f.fullName}
                               </span>
                               {f.email && (
-                                <span className="block truncate text-xs text-text-muted">
+                                <span className="block truncate text-xs text-muted-foreground">
                                   {f.email}
                                 </span>
                               )}
@@ -596,7 +596,7 @@ export function NotificationDialog({
                 />
               </div>
             </div>
-            <p className="text-xs text-text-muted">
+            <p className="text-xs text-muted-foreground">
               Both fields are required together. Leaving them blank hides the
               button.
             </p>
@@ -706,7 +706,7 @@ export function NotificationDialog({
                     className={`flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm ${
                       scheduleAction === opt.value
                         ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-border hover:bg-bg-muted'
+                        : 'border-border hover:bg-muted'
                     }`}
                   >
                     <input
@@ -740,7 +740,7 @@ export function NotificationDialog({
           )}
 
           {error && (
-            <p className="text-sm text-red-600" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}

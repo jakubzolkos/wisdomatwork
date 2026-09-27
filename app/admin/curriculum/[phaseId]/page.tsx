@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
@@ -74,6 +75,8 @@ export default async function AdminPhaseDetailPage({
           All phases
         </Link>
       </div>
+
+      <PageHeader className="-mt-4 mb-0" eyebrow="Curriculum · Phase" title={phase.title} />
 
       <PhaseDetailsForm
         phase={{

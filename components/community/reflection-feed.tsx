@@ -53,9 +53,12 @@ export function ReflectionFeed({
 }: Props) {
   if (reflections.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card p-10 text-center">
-        <h2 className="font-serif text-lg text-foreground">{emptyTitle}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      <div className="flex flex-col items-center rounded-xl border border-dashed bg-card p-10 text-center">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <MessageCircle className="size-[18px]" aria-hidden="true" />
+        </span>
+        <h3 className="mt-4">{emptyTitle}</h3>
+        <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
           {emptyCopy}
         </p>
       </div>
@@ -63,7 +66,7 @@ export function ReflectionFeed({
   }
 
   return (
-    <ul className="flex flex-col gap-5">
+    <ul className="flex flex-col gap-4">
       {reflections.map((r) => (
         <li key={r.id}>
           <ReflectionCardClient

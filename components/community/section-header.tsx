@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header'
 import { PostComposer } from '@/components/community/post-composer'
 import type { CommunitySection } from '@/lib/community/sections'
 
@@ -52,24 +53,19 @@ export function SectionHeader({
   requireVisibilitySettings = false,
 }: Props) {
   return (
-    <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-serif text-2xl text-foreground sm:text-3xl">
-          {section.label}
-        </h1>
-        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          {section.description}
-        </p>
-      </div>
-
-      {section.writeKind && (
-        <div className="shrink-0">
-          {/*
+    <PageHeader
+      className="mb-8"
+      eyebrow="Community of Practice"
+      title={section.label}
+      description={section.description}
+      actions={
+        section.writeKind ? (
+          /*
             Pass primitive fields only - PostComposer is a Client
             Component, and serializing the full section object would
             try to ship `section.icon` (a Lucide React component
             function) across the boundary, which React refuses.
-          */}
+          */
           <PostComposer
             writeKind={section.writeKind}
             description={section.description}
@@ -82,8 +78,8 @@ export function SectionHeader({
             requireStarRating={requireStarRating}
             requireVisibilitySettings={requireVisibilitySettings}
           />
-        </div>
-      )}
-    </header>
+        ) : undefined
+      }
+    />
   )
 }

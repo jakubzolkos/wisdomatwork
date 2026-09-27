@@ -25,37 +25,40 @@ export function SchoolCardClient({
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="overflow-hidden rounded-xl border bg-card shadow-xs transition hover:border-border-strong">
       {/* Header - Click to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center gap-4 p-6 hover:bg-muted/50 transition-colors"
+        className="flex w-full items-center gap-4 p-5 transition-colors hover:bg-accent/60"
       >
         {/* Logo/Crest */}
         {logo_url ? (
           <img
             src={logo_url}
             alt={name || 'School logo'}
-            className="h-20 w-20 rounded-lg object-cover flex-shrink-0"
+            className="size-14 shrink-0 rounded-lg border object-cover sm:size-16"
           />
         ) : (
-          <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl font-serif text-muted-foreground">
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-primary-soft sm:size-16">
+            <span className="text-xl font-semibold text-primary">
               {name?.charAt(0) || '?'}
             </span>
           </div>
         )}
 
         {/* School Name */}
-        <div className="flex-1 text-left">
-          <h3 className="font-serif text-lg font-semibold text-foreground">
-            {name || 'Unnamed School'}
-          </h3>
+        <div className="min-w-0 flex-1 text-left">
+          <h3 className="truncate">{name || 'Unnamed School'}</h3>
+          {location && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {location}
+            </p>
+          )}
         </div>
 
         {/* Chevron Icon */}
         <ChevronDown
-          className={`h-5 w-5 text-muted-foreground transition-transform ${
+          className={`size-5 shrink-0 text-muted-foreground transition-transform ${
             isExpanded ? 'rotate-180' : ''
           }`}
         />
@@ -63,14 +66,14 @@ export function SchoolCardClient({
 
       {/* Expanded Content - School Information */}
       {isExpanded && (
-        <div className="border-t border-border">
-          <div className="px-6 py-4 flex flex-col gap-4">
+        <div className="border-t">
+          <div className="grid gap-5 px-5 py-5 sm:grid-cols-2">
             {description && (
-              <div>
-                <h4 className="mb-2 text-sm font-semibold text-foreground">
+              <div className="sm:col-span-2">
+                <h4 className="eyebrow mb-1.5">
                   About
                 </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-[15px] leading-relaxed text-foreground">
                   {description}
                 </p>
               </div>
@@ -78,21 +81,21 @@ export function SchoolCardClient({
 
             {location && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-foreground">
+                <h4 className="eyebrow mb-1.5">
                   Location
                 </h4>
-                <p className="text-sm text-muted-foreground">{location}</p>
+                <p className="text-sm text-foreground">{location}</p>
               </div>
             )}
 
             {contact_email && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-foreground">
+                <h4 className="eyebrow mb-1.5">
                   Contact
                 </h4>
                 <a
                   href={`mailto:${contact_email}`}
-                  className="text-sm text-primary hover:underline"
+                  className="break-all text-sm font-medium text-primary underline-offset-4 hover:underline"
                 >
                   {contact_email}
                 </a>
@@ -101,14 +104,14 @@ export function SchoolCardClient({
 
             {website_url && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-foreground">
+                <h4 className="eyebrow mb-1.5">
                   Website
                 </h4>
                 <a
                   href={website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
+                  className="break-all text-sm font-medium text-primary underline-offset-4 hover:underline"
                 >
                   Visit school website
                 </a>
@@ -116,7 +119,7 @@ export function SchoolCardClient({
             )}
 
             {!description && !location && !contact_email && !website_url && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground sm:col-span-2">
                 No additional information available
               </p>
             )}

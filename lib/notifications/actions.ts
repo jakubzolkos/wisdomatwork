@@ -16,6 +16,8 @@ import {
 export async function markNotificationReadAction(notificationId: string) {
   try {
     const user = await requireUser()
+    // Admin preview is read-only: nothing is written for the previewed id.
+    if (user.preview) return { ok: true as const }
     await markNotificationRead(user.id, notificationId)
     revalidatePath('/notifications')
     revalidatePath('/dashboard')
@@ -34,6 +36,8 @@ export async function markNotificationReadAction(notificationId: string) {
 export async function markAllNotificationsReadAction() {
   try {
     const user = await requireUser()
+    // Admin preview is read-only: nothing is written for the previewed id.
+    if (user.preview) return { ok: true as const }
     await markAllNotificationsRead(user.id)
     revalidatePath('/notifications')
     revalidatePath('/dashboard')
@@ -54,6 +58,8 @@ export async function markAllNotificationsReadAction() {
 export async function dismissNotificationAction(notificationId: string) {
   try {
     const user = await requireUser()
+    // Admin preview is read-only: nothing is written for the previewed id.
+    if (user.preview) return { ok: true as const }
     await dismissNotification(user.id, notificationId)
     revalidatePath('/notifications')
     revalidatePath('/dashboard')
@@ -72,6 +78,8 @@ export async function dismissNotificationAction(notificationId: string) {
 export async function dismissAllNotificationsAction() {
   try {
     const user = await requireUser()
+    // Admin preview is read-only: nothing is written for the previewed id.
+    if (user.preview) return { ok: true as const }
     await dismissAllNotifications(user.id)
     revalidatePath('/notifications')
     revalidatePath('/dashboard')

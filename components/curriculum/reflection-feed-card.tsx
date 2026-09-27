@@ -50,12 +50,12 @@ export function ReflectionFeedCard({
     <>
       <div
         onClick={() => setIsDetailOpen(true)}
-        className="cursor-pointer rounded-lg border border-border bg-card p-4 hover:bg-muted/50 transition-colors"
+        className="cursor-pointer rounded-xl border border-border bg-card p-5 shadow-xs transition hover:border-border-strong hover:shadow-md"
       >
         {/* Header */}
         <div className="mb-3 flex items-start justify-between">
           <div>
-            <p className="text-xs text-muted-foreground tracking-wider">
+            <p className="text-xs text-muted-foreground">
               {reflection.contentTitle}
             </p>
             <p className="font-medium text-foreground">{reflection.title}</p>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, BookmarkCheck, Pin } from 'lucide-react'
+import { ArrowRight, BookmarkCheck, MessagesSquare, Pin } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { PostAdminRow } from '@/components/community/post-admin-row'
@@ -75,9 +75,12 @@ export function PostFeed({
 }: Props) {
   if (posts.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-card p-10 text-center">
-        <h2 className="font-serif text-lg text-foreground">{emptyTitle}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      <div className="flex flex-col items-center rounded-xl border border-dashed bg-card p-10 text-center">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <MessagesSquare className="size-[18px]" aria-hidden="true" />
+        </span>
+        <h3 className="mt-4">{emptyTitle}</h3>
+        <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">
           {emptyCopy}
         </p>
       </div>
@@ -85,7 +88,7 @@ export function PostFeed({
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="flex flex-col gap-4">
       {posts.map((post) => (
         <PostFeedItem key={post.id} post={post} isStaff={isStaff} />
       ))}
@@ -153,93 +156,102 @@ function PostFeedItem({
       <Link
         href={`/community/stories/${post.id}`}
         className={[
-          'group flex gap-4 rounded-lg border bg-card p-4 transition-all hover:shadow-sm sm:p-5',
+          'group flex gap-4 rounded-xl border bg-card p-5 shadow-xs transition hover:border-border-strong hover:shadow-md',
           // Featured posts get a subtle ring so the pin isn't the
           // only signal that this row is special.
-          isFeatured
-            ? 'border-primary/40 ring-1 ring-primary/20 hover:border-primary/60'
-            : 'border-border hover:border-primary/40',
+          isFeatured ? 'border-primary/30 ring-1 ring-primary/10' : '',
         ].join(' ')}
       >
-        <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
+        <Avatar className="size-10 shrink-0">
           {post.author?.avatar_url ? (
             <AvatarImage src={post.author.avatar_url} alt="" />
           ) : null}
-          <AvatarFallback className="text-xs font-medium">
+          <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
             {initials}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="truncate font-medium text-foreground">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="truncate text-sm font-medium text-foreground">
               {authorName}
             </span>
             {dateLabel && (
               <>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{dateLabel}</span>
+                <span className="text-xs text-muted-foreground" aria-hidden="true">
+                  ·
+                </span>
+                <span className="text-xs text-muted-foreground">{dateLabel}</span>
               </>
             )}
             {isFeatured && (
               <Badge
                 variant="secondary"
-                className="gap-1 bg-primary/10 text-primary"
+                className="gap-1 bg-primary-soft text-primary"
               >
-                <Pin className="h-3 w-3" aria-hidden="true" />
+                <Pin aria-hidden="true" />
                 Featured
               </Badge>
             )}
             {/* Ask metadata chips: category + status. Rendered on
                 ask cards only (other kinds keep the values null). */}
-            {askCategory && (
-              <Badge variant="outline" className="text-[10px]">
-                {askCategory}
-              </Badge>
-            )}
+            {askCategory && <Badge variant="outline">{askCategory}</Badge>}
             {askStatus && (
               <Badge
-                variant={post.ask_status === 'open' ? 'default' : 'outline'}
-                className="text-[10px]"
+                variant="secondary"
+                className={
+                  post.ask_status === 'open'
+                    ? 'bg-primary-soft text-primary'
+                    : post.ask_status === 'answered'
+                      ? 'bg-success-soft text-success'
+                      : undefined
+                }
               >
                 {askStatus}
               </Badge>
             )}
           </div>
 
-          <h3 className="text-pretty font-serif text-lg leading-snug text-foreground group-hover:text-primary">
+          <h3 className="text-pretty text-base leading-snug transition-colors group-hover:text-primary">
             {post.title}
           </h3>
 
           {post.kind === 'win' && post.body ? (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
               {post.body}
             </p>
           ) : post.excerpt ? (
-            <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="line-clamp-2 text-[15px] leading-relaxed text-muted-foreground">
               {post.excerpt}
             </p>
           ) : null}
 
-          {/*
-            Framework chip ("Used: Reading Reset Protocol"). Linked
-            to the library so curious peers can find the underlying
-            resource without leaving the feed mentally.
-          */}
-          {post.framework && (
-            <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-foreground">
-              <BookmarkCheck
-                className="h-3 w-3 text-primary"
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+            {/*
+              Framework chip ("Used: Reading Reset Protocol"). Linked
+              to the library so curious peers can find the underlying
+              resource without leaving the feed mentally.
+            */}
+            {post.framework ? (
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground">
+                <BookmarkCheck
+                  className="size-3.5 text-primary"
+                  aria-hidden="true"
+                />
+                Used: {post.framework.title}
+              </span>
+            ) : (
+              <span />
+            )}
+
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-primary">
+              Read more
+              <ArrowRight
+                className="size-3.5 transition-transform group-hover:translate-x-0.5"
                 aria-hidden="true"
               />
-              Used: {post.framework.title}
             </span>
-          )}
-
-          <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-            Read more
-            <ArrowRight className="h-3 w-3" aria-hidden="true" />
-          </span>
+          </div>
         </div>
 
         {post.cover_url && (
@@ -247,7 +259,7 @@ function PostFeedItem({
           <img
             src={post.cover_url}
             alt=""
-            className="hidden h-24 w-32 shrink-0 rounded-md object-cover sm:block"
+            className="hidden h-24 w-32 shrink-0 rounded-lg border object-cover sm:block"
             loading="lazy"
           />
         )}

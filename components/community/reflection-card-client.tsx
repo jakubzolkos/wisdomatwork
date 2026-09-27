@@ -66,20 +66,20 @@ export function ReflectionCardClient({
     <>
       <article
         onClick={() => setIsDetailOpen(true)}
-        className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5 sm:p-6 cursor-pointer hover:shadow-md transition-shadow"
+        className="flex cursor-pointer flex-col gap-4 rounded-xl border bg-card p-5 shadow-xs transition hover:border-border-strong hover:shadow-md sm:p-6"
       >
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar className="h-10 w-10 shrink-0">
+            <Avatar className="size-10 shrink-0">
               {reflection.author?.avatar_url ? (
                 <AvatarImage src={reflection.author.avatar_url} alt="" />
               ) : null}
-              <AvatarFallback className="text-xs font-medium">
+              <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">
+              <p className="truncate text-sm font-medium text-foreground">
                 {authorName}
               </p>
               <p className="truncate text-xs text-muted-foreground">
@@ -113,27 +113,27 @@ export function ReflectionCardClient({
         {/* Prompt comes from `content.reflection_prompt` and is rendered as
             a quoted block so the response context is obvious. */}
         {reflection.content?.prompt && (
-          <blockquote className="flex gap-2 rounded-md border-l-2 border-primary/40 bg-muted/40 px-3 py-2 text-sm italic leading-relaxed text-muted-foreground">
+          <blockquote className="flex gap-2.5 rounded-lg bg-muted/60 px-3.5 py-2.5 text-sm leading-relaxed text-muted-foreground">
             <Sparkles
-              className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+              className="mt-0.5 size-4 shrink-0 text-primary"
               aria-hidden="true"
             />
             <span>{reflection.content.prompt}</span>
           </blockquote>
         )}
 
-        <p className="whitespace-pre-wrap text-pretty text-sm leading-relaxed text-foreground">
+        <p className="rich-text whitespace-pre-wrap text-pretty text-base">
           {reflection.body}
         </p>
 
-        <footer className="flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+        <footer className="flex items-center gap-3 border-t pt-4 text-xs text-muted-foreground">
           <ReflectionReactions
             reflectionId={reflection.id}
             reactions={reflection.reactions}
             userReactions={reflection.user_reactions}
           />
           <span className="inline-flex items-center gap-1">
-            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
+            <MessageCircle className="size-3.5" aria-hidden="true" />
             {comments.filter((c) => !c.is_deleted).length}{' '}
             {comments.filter((c) => !c.is_deleted).length === 1
               ? 'comment'
@@ -160,26 +160,26 @@ export function ReflectionCardClient({
 
           <div className="space-y-6">
             {/* Author info */}
-            <div className="flex items-center gap-3 pb-4 border-b border-border">
-              <Avatar className="h-10 w-10 shrink-0">
+            <div className="flex items-center gap-3 border-b pb-4">
+              <Avatar className="size-10 shrink-0">
                 {reflection.author?.avatar_url ? (
                   <AvatarImage src={reflection.author.avatar_url} alt="" />
                 ) : null}
-                <AvatarFallback className="text-xs font-medium">
+                <AvatarFallback className="bg-primary-soft text-xs font-medium text-primary">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="font-medium">{authorName}</p>
+                <p className="text-sm font-medium text-foreground">{authorName}</p>
                 <p className="text-xs text-muted-foreground">{dateLabel}</p>
               </div>
             </div>
 
             {/* Prompt */}
             {reflection.content?.prompt && (
-              <blockquote className="flex gap-2 rounded-md border-l-2 border-primary/40 bg-muted/40 px-3 py-2 text-sm italic leading-relaxed text-muted-foreground">
+              <blockquote className="flex gap-2.5 rounded-lg bg-muted/60 px-3.5 py-2.5 text-sm leading-relaxed text-muted-foreground">
                 <Sparkles
-                  className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                  className="mt-0.5 size-4 shrink-0 text-primary"
                   aria-hidden="true"
                 />
                 <span>{reflection.content.prompt}</span>
@@ -187,12 +187,12 @@ export function ReflectionCardClient({
             )}
 
             {/* Reflection content */}
-            <p className="whitespace-pre-wrap text-pretty text-sm leading-relaxed text-foreground">
+            <p className="rich-text whitespace-pre-wrap text-pretty">
               {reflection.body}
             </p>
 
             {/* Comments section */}
-            <div className="border-t border-border pt-4">
+            <div className="border-t pt-4">
               <CommentThread
                 subjectType="reflection"
                 subjectId={reflection.id}
@@ -214,7 +214,7 @@ function VisibilityChip({
 }) {
   if (value === 'private') {
     return (
-      <Badge variant="outline" className="gap-1 text-[10px]">
+      <Badge variant="outline" className="gap-1">
         <Lock className="h-3 w-3" aria-hidden="true" />
         Private
       </Badge>
@@ -222,14 +222,14 @@ function VisibilityChip({
   }
   if (value === 'cohort') {
     return (
-      <Badge variant="outline" className="gap-1 text-[10px]">
+      <Badge variant="outline" className="gap-1">
         <EyeOff className="h-3 w-3" aria-hidden="true" />
         Cohort only
       </Badge>
     )
   }
   return (
-    <Badge variant="secondary" className="gap-1 text-[10px]">
+    <Badge variant="secondary" className="gap-1">
       <Eye className="h-3 w-3" aria-hidden="true" />
       Public
     </Badge>

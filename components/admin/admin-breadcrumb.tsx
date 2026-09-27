@@ -33,31 +33,42 @@ export function AdminBreadcrumb() {
   }
 
   return (
-    <nav className="flex items-center gap-2 text-sm mb-6 px-1">
-      {items.map((item, index) => (
-        <div key={item.href} className="flex items-center gap-2">
-          {index === 0 ? (
-            <Link
-              href={item.href}
-              className="flex items-center gap-1.5 hover:text-primary transition-colors text-muted-foreground hover:text-foreground"
-              title="Back to Dashboard"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-          ) : (
-            <Link
-              href={item.href}
-              className="hover:text-foreground transition-colors text-muted-foreground"
-            >
-              {item.label}
-            </Link>
-          )}
+    <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1
+          return (
+            <li key={item.href} className="flex items-center gap-1.5">
+              {index === 0 ? (
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-1 rounded-sm transition-colors hover:text-foreground"
+                  title="Back to Dashboard"
+                >
+                  <Home className="size-3.5" aria-hidden="true" />
+                  <span>Admin</span>
+                </Link>
+              ) : (
+                <Link
+                  href={item.href}
+                  aria-current={isLast ? 'page' : undefined}
+                  className={
+                    isLast
+                      ? 'font-medium text-foreground'
+                      : 'transition-colors hover:text-foreground'
+                  }
+                >
+                  {item.label}
+                </Link>
+              )}
 
-          {index < items.length - 1 && (
-            <ChevronRight className="h-3 w-3 text-muted-foreground" />
-          )}
-        </div>
-      ))}
+              {!isLast && (
+                <ChevronRight className="size-3 text-muted-foreground/60" aria-hidden="true" />
+              )}
+            </li>
+          )
+        })}
+      </ol>
     </nav>
   )
 }

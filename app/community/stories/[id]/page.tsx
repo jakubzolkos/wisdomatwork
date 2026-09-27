@@ -145,56 +145,56 @@ export default async function StoryPage({
         href={isAsk ? '/community/ask' : '/community'}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        <ArrowLeft className="size-4" aria-hidden="true" />
         {isAsk ? 'Back to Asks' : 'Back to Community'}
       </Link>
 
-      <article className="mt-6 flex flex-col gap-6">
+      <article className="mt-6 flex flex-col gap-8">
         {data.cover_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={data.cover_url}
             alt=""
-            className="aspect-[16/9] w-full rounded-lg border border-border object-cover"
+            className="aspect-[16/9] w-full rounded-xl border object-cover"
           />
         )}
 
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline">
               {kindLabel}
             </Badge>
             {!data.published_at && (
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary">
                 Draft
               </Badge>
             )}
             {isAsk && (
               <>
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline">
                   {askCategoryLabel(data.ask_category)}
                 </Badge>
                 <Badge
                   variant={askStatus === 'open' ? 'default' : 'outline'}
-                  className="text-[10px]"
+                 
                 >
                   {ASK_STATUS_LABEL[askStatus]}
                 </Badge>
               </>
             )}
           </div>
-          <h1 className="font-serif text-3xl text-foreground text-balance sm:text-4xl">
+          <h1 className="text-balance text-3xl sm:text-[2.125rem]">
             {data.title}
           </h1>
           {data.excerpt && (
-            <p className="text-pretty text-base leading-relaxed text-muted-foreground">
+            <p className="text-pretty text-[17px] leading-relaxed text-muted-foreground">
               {data.excerpt}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-3 border-y border-border py-4">
-          <Avatar className="h-10 w-10 shrink-0">
+        <div className="flex items-center gap-3 border-y py-4">
+          <Avatar className="size-10 shrink-0">
             {author?.avatar_url ? (
               <AvatarImage src={author.avatar_url} alt="" />
             ) : null}
@@ -212,7 +212,7 @@ export default async function StoryPage({
             </p>
           </div>
           {author?.cohort && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="secondary">
               Cohort {author.cohort}
             </Badge>
           )}
@@ -221,9 +221,9 @@ export default async function StoryPage({
         {/* Framework chip ("Used: Reading Reset Protocol"). */}
         {data.framework && (
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 font-medium text-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-primary-soft px-2.5 py-1 font-medium text-primary">
               <BookmarkCheck
-                className="h-3 w-3 text-primary"
+                className="size-3.5"
                 aria-hidden="true"
               />
               Used: {data.framework.title}
@@ -243,7 +243,7 @@ export default async function StoryPage({
         )}
 
         {data.body && (
-          <div className="whitespace-pre-wrap text-pretty text-base leading-relaxed text-foreground">
+          <div className="rich-text whitespace-pre-wrap text-pretty">
             {data.body}
           </div>
         )}
@@ -254,7 +254,7 @@ export default async function StoryPage({
           action so prominence isn't critical.
         */}
         {canManageAsk && (
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-xl border bg-card p-5 shadow-xs">
             <AskStatusControl postId={data.id} currentStatus={askStatus} />
             <p className="mt-2 text-xs text-muted-foreground">
               Marking a comment as the accepted answer below will move
@@ -263,7 +263,7 @@ export default async function StoryPage({
           </div>
         )}
 
-        <div className="border-t border-border pt-6">
+        <div className="border-t pt-8">
           <CommentThread
             subjectType="post"
             subjectId={data.id}
