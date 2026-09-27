@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { BookOpen, Clock, Users } from 'lucide-react'
+import { ArrowLeft, BookOpen, Clock, Loader2, Users } from 'lucide-react'
 import { TopBar } from '@/components/top-bar'
+import { PageHeader } from '@/components/page-header'
 
 interface Module {
   id: string
@@ -124,10 +125,10 @@ export default function ProgramDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-canvas">
         <TopBar />
         <div className="flex items-center justify-center py-24">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-label="Loading" />
         </div>
       </div>
     )
@@ -135,45 +136,62 @@ export default function ProgramDetailPage() {
 
   if (!program) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-canvas">
         <TopBar />
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <Link href="/programs">
-            <Button variant="outline" className="mb-4">
-              ← Back
-            </Button>
-          </Link>
-          <p className="text-gray-600">Program not found.</p>
-        </div>
+        <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-10">
+          <Button asChild variant="ghost" size="sm" className="-ml-2 mb-4 text-muted-foreground">
+            <Link href="/programs">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </Button>
+          <div className="rounded-xl border border-dashed border-border-strong p-10 text-center">
+            <p className="text-sm text-muted-foreground">Program not found.</p>
+          </div>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas">
       <TopBar />
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <Link href="/programs">
-          <Button variant="outline" className="mb-6">
-            ← Back to Programs
+      <main className="mx-auto w-full max-w-4xl space-y-10 px-4 py-8 sm:py-10">
+        <div>
+          <Button asChild variant="ghost" size="sm" className="-ml-2 mb-4 text-muted-foreground">
+            <Link href="/programs">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Programs
+            </Link>
           </Button>
-        </Link>
 
-        {/* Program Header */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {yearLabels[program.year] || program.title}
-          </h1>
-          <p className="text-gray-600 mb-6">{program.description}</p>
+          {/* Program Header */}
+          <PageHeader
+            className="mb-0"
+            eyebrow="Program"
+            title={yearLabels[program.year] || program.title}
+            description={program.description}
+            actions={
+              enrolled ? (
+                <Badge variant="secondary" className="bg-success-soft px-2.5 py-1 text-success">
+                  Enrolled
+                </Badge>
+              ) : (
+                <Button onClick={handleEnroll} size="lg">
+                  Enroll in Program
+                </Button>
+              )
+            }
+          />
 
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-2 text-gray-700">
-              <BookOpen className="w-5 h-5" />
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
               <span>{modules.length} Modules</span>
             </div>
             {program.start_date && program.end_date && (
-              <div className="flex items-center gap-2 text-gray-700">
-                <Clock className="w-5 h-5" />
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
                 <span>
                   {new Date(program.start_date).toLocaleDateString()} -{' '}
                   {new Date(program.end_date).toLocaleDateString()}
@@ -181,67 +199,62 @@ export default function ProgramDetailPage() {
               </div>
             )}
           </div>
-
-          {enrolled ? (
-            <Badge className="bg-green-100 text-green-800">Enrolled</Badge>
-          ) : (
-            <Button onClick={handleEnroll} size="lg">
-              Enroll in Program
-            </Button>
-          )}
         </div>
 
         {/* Modules */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Program Modules</h2>
+        <section className="space-y-4">
+          <h2>Program Modules</h2>
 
           {modules.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-gray-500 text-center py-8">No modules available yet.</p>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl border border-dashed border-border-strong p-10 text-center">
+              <span className="mx-auto flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                <BookOpen className="size-[18px]" aria-hidden="true" />
+              </span>
+              <p className="mt-4 text-sm text-muted-foreground">No modules available yet.</p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {modules.map((module) => (
-                <Card key={module.id} className="hover:shadow-md transition-shadow">
+                <Card key={module.id} className="gap-4 shadow-xs transition hover:border-border-strong hover:shadow-md">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
+                      <div className="min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <Badge variant="secondary" className="bg-primary-soft text-primary">
                             Module {module.order_number}
-                          </span>
-                          <Badge variant="outline">
+                          </Badge>
+                          <Badge variant="outline" className="text-muted-foreground">
                             {moduleTypeLabels[module.module_type] || module.module_type}
                           </Badge>
                         </div>
-                        <CardTitle>{module.title}</CardTitle>
-                        <CardDescription className="mt-1">{module.description}</CardDescription>
+                        <CardTitle className="text-base">{module.title}</CardTitle>
+                        <CardDescription className="mt-1.5 leading-relaxed">{module.description}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      {module.duration_hours && (
-                        <div>
-                          <p className="text-sm text-gray-600">Duration</p>
-                          <p className="font-semibold">{module.duration_hours} hours</p>
-                        </div>
-                      )}
-                      {module.start_date && (
-                        <div>
-                          <p className="text-sm text-gray-600">Dates</p>
-                          <p className="font-semibold">
-                            {module.end_date
-                              ? `${new Date(module.start_date).toLocaleDateString()} - ${new Date(module.end_date).toLocaleDateString()}`
-                              : new Date(module.start_date).toLocaleDateString()}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    {(module.duration_hours || module.start_date) && (
+                      <dl className="grid grid-cols-2 gap-4 rounded-lg bg-muted/60 px-4 py-3">
+                        {module.duration_hours && (
+                          <div>
+                            <dt className="text-xs text-muted-foreground">Duration</dt>
+                            <dd className="text-sm font-medium text-foreground">{module.duration_hours} hours</dd>
+                          </div>
+                        )}
+                        {module.start_date && (
+                          <div>
+                            <dt className="text-xs text-muted-foreground">Dates</dt>
+                            <dd className="text-sm font-medium text-foreground">
+                              {module.end_date
+                                ? `${new Date(module.start_date).toLocaleDateString()} - ${new Date(module.end_date).toLocaleDateString()}`
+                                : new Date(module.start_date).toLocaleDateString()}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    )}
                     {enrolled && (
-                      <Button className="w-full" variant="outline">
+                      <Button className="mt-4 w-full" variant="outline">
                         View Module
                       </Button>
                     )}
@@ -250,8 +263,8 @@ export default function ProgramDetailPage() {
               ))}
             </div>
           )}
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   )
 }

@@ -34,36 +34,36 @@ export function AdminPollList({ schedules, onDeletePoll }: AdminPollListProps) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="border border-border/50">
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold">{activePollCount}</div>
-            <p className="text-sm text-muted-foreground mt-1">Active Polls</p>
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <Card className="py-5 shadow-xs">
+          <CardContent className="px-4 sm:px-5">
+            <div className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{activePollCount}</div>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Active Polls</p>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/50">
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold">{scheduledCount}</div>
-            <p className="text-sm text-muted-foreground mt-1">Confirmed Events</p>
+        <Card className="py-5 shadow-xs">
+          <CardContent className="px-4 sm:px-5">
+            <div className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{scheduledCount}</div>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Confirmed Events</p>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/50">
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold">{pollCount}</div>
-            <p className="text-sm text-muted-foreground mt-1">Total Created</p>
+        <Card className="py-5 shadow-xs">
+          <CardContent className="px-4 sm:px-5">
+            <div className="text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{pollCount}</div>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">Total Created</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Poll List */}
       <div>
-        <h3 className="font-semibold text-foreground mb-4">Your Polls</h3>
+        <h3 className="mb-4">Your Polls</h3>
         {schedules.length === 0 ? (
-          <Card className="border border-dashed">
-            <CardContent className="pt-6 pb-6 text-center">
-              <p className="text-muted-foreground">
+          <Card className="border-dashed border-border-strong bg-transparent py-10 shadow-none">
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground">
                 No polls yet. Create one to get started with scheduling.
               </p>
             </CardContent>
@@ -73,14 +73,14 @@ export function AdminPollList({ schedules, onDeletePoll }: AdminPollListProps) {
             {schedules.map((schedule) => (
               <Card
                 key={schedule.id}
-                className="border border-border hover:border-border/80 hover:shadow-sm transition-all duration-200 group"
+                className="group py-4 shadow-xs transition hover:border-border-strong hover:shadow-md"
               >
-                <CardContent className="pt-4 pb-4 px-4">
-                  <div className="flex items-start justify-between gap-4">
+                <CardContent className="px-4 sm:px-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     {/* Left Content */}
                     <div className="flex-1 min-w-0">
                       <Link href={`/admin/schedule/${schedule.id}`}>
-                        <h4 className="font-semibold text-foreground group-hover:text-blue-600 transition-colors truncate">
+                        <h4 className="text-sm font-semibold text-foreground truncate transition-colors group-hover:text-primary">
                           {schedule.title}
                         </h4>
                       </Link>
@@ -111,10 +111,12 @@ export function AdminPollList({ schedules, onDeletePoll }: AdminPollListProps) {
                     {/* Right Actions */}
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant={
-                          schedule.status === 'polling' ? 'default' : 'secondary'
+                        variant="secondary"
+                        className={
+                          schedule.status === 'polling'
+                            ? 'whitespace-nowrap bg-success-soft text-success'
+                            : 'whitespace-nowrap'
                         }
-                        className="whitespace-nowrap"
                       >
                         {schedule.status === 'polling' ? 'Voting Open' : 'Scheduled'}
                       </Badge>

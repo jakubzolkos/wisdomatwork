@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import { MemberCard } from '@/components/profile/member-card'
 import { ProfileModal } from '@/components/profile/profile-view'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { DirectoryProfile } from '@/lib/types/profile'
 import { cn } from '@/lib/utils'
@@ -57,7 +56,7 @@ export function TeamDirectory({ members, showCohort = false }: Props) {
           role="group"
           aria-label="Filter team by cohort"
         >
-          <span className="text-xs font-medium tracking-wide text-muted-foreground">
+          <span className="eyebrow mr-1">
             Cohort
           </span>
           <FilterPill
@@ -65,9 +64,9 @@ export function TeamDirectory({ members, showCohort = false }: Props) {
             onClick={() => setCohortFilter(null)}
           >
             All
-            <Badge variant="outline" className="ml-1 text-[10px]">
+            <span className="ml-1 text-[11px] tabular-nums opacity-70">
               {members.length}
-            </Badge>
+            </span>
           </FilterPill>
           {distinctCohorts.map((c) => {
             const count = members.filter((m) => m.cohort === c).length
@@ -78,9 +77,9 @@ export function TeamDirectory({ members, showCohort = false }: Props) {
                 onClick={() => setCohortFilter(c)}
               >
                 Cohort {c}
-                <Badge variant="outline" className="ml-1 text-[10px]">
+                <span className="ml-1 text-[11px] tabular-nums opacity-70">
                   {count}
-                </Badge>
+                </span>
               </FilterPill>
             )
           })}
@@ -88,11 +87,11 @@ export function TeamDirectory({ members, showCohort = false }: Props) {
       )}
 
       {filtered.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border-strong p-10 text-center text-sm text-muted-foreground">
           No teammates match this filter.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((m) => (
             <MemberCard
               key={m.id}
@@ -127,9 +126,14 @@ function FilterPill({
     <Button
       type="button"
       size="sm"
-      variant={active ? 'default' : 'outline'}
+      variant="outline"
       onClick={onClick}
-      className={cn('h-8 rounded-full px-3 text-xs', active && 'shadow-sm')}
+      className={cn(
+        'h-8 rounded-full px-3.5 text-sm font-medium shadow-none',
+        active
+          ? 'border-primary/25 bg-primary-soft text-primary hover:bg-primary-soft hover:text-primary'
+          : 'text-muted-foreground hover:border-border-strong hover:text-foreground',
+      )}
       aria-pressed={active}
     >
       {children}

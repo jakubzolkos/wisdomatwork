@@ -30,9 +30,9 @@ import type { EmailLogEntry } from '@/lib/email/logs'
 import { resendInvitationEmail, resendNotificationEmail } from '@/app/admin/email-logs/actions'
 
 const STATUS_COLORS = {
-  sent: 'text-success',
-  failed: 'text-destructive',
-  pending: 'text-warning',
+  sent: 'border-success/30 bg-success-soft text-success',
+  failed: 'border-destructive/30 bg-destructive/10 text-destructive',
+  pending: 'border-warning/30 bg-warning-soft text-warning',
 }
 
 const STATUS_ICONS = {
@@ -139,62 +139,62 @@ export function EmailLogsClient({
   return (
     <div className="flex flex-col gap-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card
-          className={`cursor-pointer transition-all ${statusFilter === 'all' ? 'ring-2 ring-primary' : 'hover:border-primary'}`}
+          className={`cursor-pointer py-0 transition ${statusFilter === 'all' ? 'border-primary/40 bg-primary-soft' : 'hover:border-border-strong hover:shadow-md'}`}
           onClick={() => setStatusFilter('all')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Emails</p>
-                <p className="text-2xl font-bold text-foreground">{totalLogs}</p>
+                <p className="text-2xl font-semibold tabular-nums text-foreground">{totalLogs}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer transition-all ${statusFilter === 'sent' ? 'ring-2 ring-green-600' : 'hover:border-green-600'}`}
+          className={`cursor-pointer py-0 transition ${statusFilter === 'sent' ? 'border-primary/40 bg-primary-soft' : 'hover:border-border-strong hover:shadow-md'}`}
           onClick={() => setStatusFilter('sent')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Successfully Sent</p>
-                <p className="text-2xl font-bold text-success">{sentCount}</p>
+                <p className="text-2xl font-semibold tabular-nums text-success">{sentCount}</p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-success/50" />
+              <CheckCircle2 className="size-6 text-success/50" />
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer transition-all ${statusFilter === 'failed' ? 'ring-2 ring-red-600' : 'hover:border-red-600'}`}
+          className={`cursor-pointer py-0 transition ${statusFilter === 'failed' ? 'border-primary/40 bg-primary-soft' : 'hover:border-border-strong hover:shadow-md'}`}
           onClick={() => setStatusFilter('failed')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Failed</p>
-                <p className="text-2xl font-bold text-destructive">{failedCount}</p>
+                <p className="text-2xl font-semibold tabular-nums text-destructive">{failedCount}</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-destructive/50" />
+              <AlertCircle className="size-6 text-destructive/50" />
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`cursor-pointer transition-all ${statusFilter === 'pending' ? 'ring-2 ring-yellow-600' : 'hover:border-yellow-600'}`}
+          className={`cursor-pointer py-0 transition ${statusFilter === 'pending' ? 'border-primary/40 bg-primary-soft' : 'hover:border-border-strong hover:shadow-md'}`}
           onClick={() => setStatusFilter('pending')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-warning">{pendingCount}</p>
+                <p className="text-2xl font-semibold tabular-nums text-warning">{pendingCount}</p>
               </div>
-              <Clock className="h-8 w-8 text-warning/50" />
+              <Clock className="size-6 text-warning/50" />
             </div>
           </CardContent>
         </Card>
@@ -203,7 +203,8 @@ export function EmailLogsClient({
       {/* Message Alert */}
       {message && (
         <div
-          className={`p-4 rounded-lg ${
+          role="status"
+          className={`rounded-lg p-4 text-sm ${
             message.type === 'success' ? 'bg-success-soft text-success' : 'bg-destructive/10 text-destructive'
           }`}
         >
@@ -250,17 +251,17 @@ export function EmailLogsClient({
           </div>
 
           {/* Email Logs Table */}
-          <div className="overflow-x-auto">
+          <div className={filteredLogs.length === 0 ? undefined : '-mx-6 overflow-x-auto border-y border-border'}>
             {filteredLogs.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
-                <p className="mt-3 text-sm font-medium text-muted-foreground">No emails found</p>
+              <div className="rounded-xl border border-dashed border-border p-10 text-center">
+                <h3 className="text-sm">No emails found</h3>
                 <p className="text-xs text-muted-foreground">
                   Try adjusting your search or filters
                 </p>
               </div>
             ) : (
               <table className="w-full text-sm">
-                <thead className="border-b border-border bg-muted/30">
+                <thead className="border-b border-border bg-muted/50 text-xs uppercase tracking-wide">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                       Recipient
@@ -284,8 +285,8 @@ export function EmailLogsClient({
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-4">
+                    <tr key={log.id} className="transition-colors hover:bg-accent/60">
+                      <td className="px-4 py-3">
                         <div>
                           <p className="font-medium text-foreground">{log.recipient_email}</p>
                           {log.recipient_name && (
@@ -293,12 +294,12 @@ export function EmailLogsClient({
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <Badge variant="outline" className="capitalize">
                           {log.type}
                         </Badge>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {STATUS_ICONS[log.status as keyof typeof STATUS_ICONS]}
                           <Badge
@@ -309,19 +310,19 @@ export function EmailLogsClient({
                           </Badge>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <p className="text-xs text-muted-foreground">
                           {formatDate(log.sent_at)}
                         </p>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         {log.error_message && (
                           <p className="text-xs text-destructive max-w-xs truncate" title={log.error_message}>
                             {log.error_message}
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           {log.status === 'failed' && (
                             <Button
@@ -349,7 +350,7 @@ export function EmailLogsClient({
 
           {/* Pagination */}
           {pageCount > 1 && (
-            <div className="flex items-center justify-between border-t border-border pt-4">
+            <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
                 Page {currentPage} of {pageCount} ({totalLogs} total)
               </p>

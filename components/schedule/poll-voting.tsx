@@ -88,21 +88,24 @@ export function PollVoting({
   return (
     <div className="space-y-6">
       {/* Poll Header */}
-      <Card>
+      <Card className="gap-5 shadow-xs">
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-2xl mb-2">{schedule.title}</CardTitle>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1.5">
+              <CardTitle className="text-xl leading-snug">{schedule.title}</CardTitle>
               {schedule.description && (
-                <p className="text-muted-foreground">{schedule.description}</p>
+                <p className="text-[15px] leading-relaxed text-muted-foreground">{schedule.description}</p>
               )}
             </div>
-            <Badge variant={isOpen ? 'default' : 'secondary'}>
+            <Badge
+              variant="secondary"
+              className={isOpen ? 'shrink-0 bg-success-soft text-success' : 'shrink-0'}
+            >
               {isOpen ? 'Voting Open' : 'Closed'}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="flex flex-wrap gap-x-5 gap-y-2 text-muted-foreground">
           {schedule.location && (
             <div className="flex items-center gap-2 text-sm">
               <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -129,7 +132,7 @@ export function PollVoting({
 
       {/* Time Options */}
       <div className="space-y-3">
-        <h3 className="font-semibold">
+        <h3>
           {isAdmin ? 'Vote Results' : 'Select Your Availability'}
         </h3>
 
@@ -143,23 +146,23 @@ export function PollVoting({
           return (
             <Card
               key={option.id}
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer py-4 shadow-xs transition ${
                 isSelected || voted
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:border-primary/50'
+                  ? 'border-primary/40 bg-primary-soft'
+                  : 'hover:border-border-strong hover:shadow-md'
               }`}
               onClick={() => !isAdmin && isOpen && setSelectedOption(option.id)}
             >
-              <CardContent className="pt-6">
+              <CardContent className="px-5">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">
+                      <span className="text-sm font-medium text-foreground">
                         {format(new Date(option.start_time), 'EEEE, MMMM d')}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="h-4 w-4" />
                       {format(new Date(option.start_time), 'h:mm a')} -{' '}
                       {format(new Date(option.end_time), 'h:mm a')}
@@ -169,7 +172,7 @@ export function PollVoting({
                   <div className="flex items-center gap-3">
                     {isAdmin && (
                       <div className="text-right">
-                        <div className="text-2xl font-bold">{voteCount}</div>
+                        <div className="text-xl font-semibold tabular-nums text-foreground">{voteCount}</div>
                         <div className="text-xs text-muted-foreground">
                           vote{voteCount !== 1 ? 's' : ''}
                         </div>
@@ -208,7 +211,8 @@ export function PollVoting({
       )}
 
       {isAdmin && isOpen && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-primary/20 bg-primary-soft shadow-xs">
+
           <CardHeader>
             <CardTitle className="text-sm">Finalize Event</CardTitle>
           </CardHeader>

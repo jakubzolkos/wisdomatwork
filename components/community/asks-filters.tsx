@@ -52,7 +52,7 @@ export function AsksFilters() {
         onValueChange={(v) => updateParam('category', v)}
       >
         <SelectTrigger
-          className="h-9 min-w-[10rem]"
+          className="h-9 min-w-[10rem] bg-card"
           aria-label="Filter by category"
         >
           <SelectValue />
@@ -69,7 +69,7 @@ export function AsksFilters() {
 
       <Select value={status} onValueChange={(v) => updateParam('status', v)}>
         <SelectTrigger
-          className="h-9 min-w-[10rem]"
+          className="h-9 min-w-[10rem] bg-card"
           aria-label="Filter by status"
         >
           <SelectValue />
@@ -99,7 +99,7 @@ export function AsksFilters() {
             router.push(qs ? `?${qs}` : '?')
           }}
         >
-          <X className="h-3.5 w-3.5" aria-hidden="true" />
+          <X aria-hidden="true" />
           Clear filters
         </Button>
       )}

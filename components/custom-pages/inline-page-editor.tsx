@@ -115,27 +115,27 @@ export function InlinePageEditor({ page }: InlinePageEditorProps) {
 
       <div className="mx-auto max-w-4xl px-4 py-12 space-y-6">
         {/* Editable Fields */}
-        <div className="bg-card p-6 rounded-lg border">
-          <h2 className="text-lg font-semibold mb-4">Edit Page</h2>
+        <div className="rounded-xl border bg-card p-6 shadow-xs">
+          <h2 className="mb-4 text-lg">Edit Page</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
+              <label className="mb-2 block text-sm font-medium">Title</label>
               <input
                 type="text"
                 value={editedPage.title}
                 onChange={(e) => handleFieldChange('title', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="mb-2 block text-sm font-medium">Description</label>
               <textarea
                 value={editedPage.description || ''}
                 onChange={(e) => handleFieldChange('description', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
               />
             </div>
 
@@ -143,35 +143,35 @@ export function InlinePageEditor({ page }: InlinePageEditorProps) {
               <h3 className="text-sm font-semibold mb-3">Headers</h3>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Header 1 (Largest)</label>
+                <label className="mb-2 block text-sm font-medium">Header 1 (Largest)</label>
                 <input
                   type="text"
                   value={editedPage.header1 || ''}
                   onChange={(e) => handleFieldChange('header1', e.target.value)}
                   placeholder="Main header"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
               </div>
 
               <div className="mt-3">
-                <label className="block text-sm font-medium mb-1">Header 2 (Medium)</label>
+                <label className="mb-2 block text-sm font-medium">Header 2 (Medium)</label>
                 <input
                   type="text"
                   value={editedPage.header2 || ''}
                   onChange={(e) => handleFieldChange('header2', e.target.value)}
                   placeholder="Secondary header"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
               </div>
 
               <div className="mt-3">
-                <label className="block text-sm font-medium mb-1">Header 3 (Small)</label>
+                <label className="mb-2 block text-sm font-medium">Header 3 (Small)</label>
                 <input
                   type="text"
                   value={editedPage.header3 || ''}
                   onChange={(e) => handleFieldChange('header3', e.target.value)}
                   placeholder="Tertiary header"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
               </div>
             </div>
@@ -179,8 +179,8 @@ export function InlinePageEditor({ page }: InlinePageEditorProps) {
         </div>
 
         {/* Preview */}
-        <div className="bg-card p-6 rounded-lg border">
-          <h2 className="text-lg font-semibold mb-4">Preview</h2>
+        <div className="rounded-xl border bg-card p-6 shadow-xs">
+          <h2 className="mb-4 text-lg">Preview</h2>
           <PageRenderer page={editedPage} showCTA={true} />
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { PageHeader } from '@/components/page-header'
 import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { CreatePollForm } from '@/components/schedule/create-poll-form'
@@ -177,15 +178,12 @@ export default async function AdminSchedulePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold text-foreground">
-          Scheduling &amp; Availability
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-          Create scheduling polls to find the best time for your group meetings. Select individual
-          fellows or entire cohorts to invite them to set their availability.
-        </p>
-      </div>
+      <PageHeader
+        className="mb-0"
+        eyebrow="Admin console"
+        title="Scheduling & Availability"
+        description="Create scheduling polls to find the best time for your group meetings. Select individual fellows or entire cohorts to invite them to set their availability."
+      />
 
       <div className="grid grid-cols-1 gap-6">
         <Card>

@@ -44,54 +44,54 @@ export function PortalMaintenanceSummary({ stats }: PortalMaintenanceSummaryProp
       title: 'Draft Content',
       value: stats.draftContent,
       icon: <BookOpen className="h-4 w-4" />,
-      color: 'text-warning',
+      color: 'text-primary',
       action: 'content',
     },
     {
       title: 'Unassigned Resources',
       value: stats.unassignedResources,
       icon: <Library className="h-4 w-4" />,
-      color: 'text-purple-600',
+      color: 'text-primary',
       action: 'library',
     },
     {
       title: 'Scheduled Notifications',
       value: stats.scheduledNotifications,
       icon: <Bell className="h-4 w-4" />,
-      color: 'text-pink-600',
+      color: 'text-primary',
       action: 'notifications',
     },
     {
       title: 'Community Posts',
       value: stats.communityPosts,
       icon: <MessageSquare className="h-4 w-4" />,
-      color: 'text-success',
+      color: 'text-primary',
       action: 'community',
     },
     {
       title: 'Custom Pages',
       value: stats.customPages,
       icon: <FileText className="h-4 w-4" />,
-      color: 'text-indigo-600',
+      color: 'text-primary',
       action: 'pages',
     },
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
       {summaryItems.map((item) => (
         <Card
           key={item.title}
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer gap-3 py-5 transition hover:border-border-strong hover:shadow-md"
         >
-          <CardHeader className="pb-2">
+          <CardHeader className="px-5">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
               <span className={item.color}>{item.icon}</span>
               {item.title}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{item.value}</p>
+          <CardContent className="px-5">
+            <p className="text-2xl font-semibold tabular-nums">{item.value}</p>
           </CardContent>
         </Card>
       ))}

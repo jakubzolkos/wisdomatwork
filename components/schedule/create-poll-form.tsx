@@ -168,12 +168,12 @@ export function CreatePollForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What is this meeting about?"
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium mb-1">
                 Location
@@ -284,12 +284,12 @@ export function CreatePollForm({
               </TabsList>
 
               <TabsContent value="fellows" className="mt-3">
-                <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-border p-2">
                   {availableFellows.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No fellows available</p>
                   ) : (
                     availableFellows.map((fellow) => (
-                      <label key={fellow.id} className="flex items-center gap-2 cursor-pointer hover:bg-accent/30 p-2 rounded">
+                      <label key={fellow.id} className="flex items-center gap-2 cursor-pointer rounded-md p-2 transition-colors hover:bg-accent">
                         <input
                           type="checkbox"
                           checked={invitedFellows.includes(fellow.id)}
@@ -315,12 +315,12 @@ export function CreatePollForm({
               </TabsContent>
 
               <TabsContent value="cohorts" className="mt-3">
-                <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-border p-2">
                   {availableCohorts.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No cohorts available</p>
                   ) : (
                     availableCohorts.map((cohort) => (
-                      <label key={cohort.id} className="flex items-center gap-2 cursor-pointer hover:bg-accent/30 p-2 rounded">
+                      <label key={cohort.id} className="flex items-center gap-2 cursor-pointer rounded-md p-2 transition-colors hover:bg-accent">
                         <input
                           type="checkbox"
                           checked={invitedCohorts.includes(cohort.id)}
@@ -354,7 +354,7 @@ export function CreatePollForm({
             </Tabs>
 
             {totalInvitees > 0 && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
+              <div className="mt-3 rounded-lg border border-primary/20 bg-primary-soft p-3 text-sm text-primary">
                 <strong>{totalInvitees} participant{totalInvitees !== 1 ? 's' : ''} will be invited</strong> to set their availability
               </div>
             )}

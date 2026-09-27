@@ -1,7 +1,10 @@
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
 import { StandalonePageTemplate } from '@/components/custom-pages/standalone-page-template'
 import { getAdminPageContent } from '@/app/admin/actions'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
 
 // Skip prerendering since this page requires authentication
 export const dynamic = 'force-dynamic'
@@ -25,32 +28,32 @@ function renderContentBlock(block: ContentBlock) {
   switch (block.block_type) {
     case 'text':
       return (
-        <div key={block.id} className="space-y-2">
-          {block.title && <h3 className="font-semibold text-lg text-foreground">{block.title}</h3>}
-          <p className="text-base text-muted-foreground leading-relaxed">{block.content}</p>
+        <div key={block.id} className="rich-text">
+          {block.title && <h3>{block.title}</h3>}
+          <p>{block.content}</p>
         </div>
       )
     case 'image':
       return (
-        <div key={block.id}>
+        <figure key={block.id}>
           <img
             src={block.image_url || ''}
             alt={block.image_alt || 'Content image'}
-            className="w-full rounded-lg shadow-md"
+            className="w-full rounded-xl border border-border shadow-xs"
           />
-        </div>
+        </figure>
       )
     case 'text_image':
       return (
-        <div key={block.id} className="grid md:grid-cols-2 gap-6 items-center">
-          <div className="space-y-2">
-            {block.title && <h3 className="font-semibold text-lg text-foreground">{block.title}</h3>}
-            <p className="text-base text-muted-foreground leading-relaxed">{block.content}</p>
+        <div key={block.id} className="grid items-center gap-6 md:grid-cols-2">
+          <div className="rich-text">
+            {block.title && <h3>{block.title}</h3>}
+            <p>{block.content}</p>
           </div>
           <img
             src={block.image_url || ''}
             alt={block.image_alt || 'Content image'}
-            className="w-full rounded-lg shadow-md"
+            className="w-full rounded-xl border border-border shadow-xs"
           />
         </div>
       )
@@ -61,98 +64,93 @@ function renderContentBlock(block: ContentBlock) {
 
 export default async function AboutPage() {
   await requireUser()
-  
+
   // Fetch editable body content blocks
   const bodyContent = await getAdminPageContent('about', 'body')
-  
+
   // Show edit features only if user is admin (indicated by successful fetch)
   const isAdmin = bodyContent.ok
   const blocks: ContentBlock[] = bodyContent.ok ? bodyContent.data : []
 
   return (
     <StandalonePageTemplate>
-      {/* Edit link - only show to admins */}
-      {isAdmin && (
-        <div className="mb-4 flex justify-end px-4">
-          <a href="/admin/about" className="text-sm underline hover:opacity-80">
-            Edit Page
-          </a>
-        </div>
-      )}
-
-      {/* Welcome header section */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-serif text-3xl sm:text-4xl text-foreground font-bold mb-4 text-center">
-                Welcome to the Wisdom at Work Fellows&apos; Portal
-              </h1>
-              <p className="text-lg text-foreground font-medium mb-3 text-center">
+      <article className="mx-auto w-full max-w-3xl space-y-10 px-4 pb-16 pt-10 sm:pt-14">
+        {/* Welcome header section */}
+        <PageHeader
+          className="mb-0"
+          eyebrow="About the Fellowship"
+          title={"Welcome to the Wisdom at Work Fellows' Portal"}
+          description={
+            <>
+              <span className="block text-lg font-medium text-foreground">
                 Congratulations and welcome to the{' '}
-                <Link href="#" className="underline hover:opacity-80">
+                <Link
+                  href="#"
+                  className="text-primary underline decoration-primary/30 underline-offset-[3px] hover:decoration-primary"
+                >
                   Wisdom at Work Fellowship
                 </Link>
                 !
-              </p>
-              <p className="text-base text-muted-foreground leading-relaxed text-center">
+              </span>
+              <span className="mt-2 block">
                 This site is your dashboard for the WAW Syllabus, Learning Journals, Additional Resources.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+              </span>
+            </>
+          }
+          actions={
+            /* Edit link - only show to admins */
+            isAdmin ? (
+              <Button asChild variant="outline" size="sm">
+                <a href="/admin/about">
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                  Edit Page
+                </a>
+              </Button>
+            ) : undefined
+          }
+        />
 
-      {/* Team discussion image */}
-      <section className="bg-background">
-        <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+        {/* Team discussion image */}
+        <figure>
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-f3pmyp3Y4Su3IunOJebJvDjlTXdzRP.png"
             alt="Wisdom at Work Fellows in collaborative discussion"
-            className="w-full rounded-lg shadow-md"
+            className="w-full rounded-xl border border-border shadow-xs"
           />
-        </div>
-      </section>
+        </figure>
 
-      {/* Editable body content blocks */}
-      {blocks.length > 0 && (
-        <section className="bg-background">
-          <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16 space-y-12">
+        {/* Editable body content blocks */}
+        {blocks.length > 0 && (
+          <section className="space-y-10">
             {blocks.map(block => renderContentBlock(block))}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Curriculum structure section */}
-      <section className="bg-background">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
+        {/* Curriculum structure section */}
+        <figure>
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-b8MnjRcwfx4lrP2uHyE4GYgMWOaAas.png"
             alt="Wisdom at Work Three-Year Curriculum Structure"
-            className="w-full rounded-lg shadow-md"
+            className="w-full rounded-xl border border-border shadow-xs"
           />
-        </div>
-      </section>
+        </figure>
 
-      {/* Foundation attribution section */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-            <div className="sm:w-1/2">
-              <p className="text-sm text-muted-foreground italic leading-relaxed">
-                This project was made possible through the support of Grant 63617 from the John Templeton Foundation. The opinions expressed in this project are those of the grantee and do not necessarily reflect the views of the John Templeton Foundation.
-              </p>
-            </div>
-            <div className="sm:w-1/2 text-center">
+        {/* Foundation attribution section */}
+        <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+            <p className="text-sm italic leading-relaxed text-muted-foreground sm:w-1/2">
+              This project was made possible through the support of Grant 63617 from the John Templeton Foundation. The opinions expressed in this project are those of the grantee and do not necessarily reflect the views of the John Templeton Foundation.
+            </p>
+            <div className="text-center sm:w-1/2">
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-kCoiFTogFnqrrOloeNsvOSi9SOMEDN.png"
                 alt="John Templeton Foundation"
-                className="h-40 w-auto inline-block"
+                className="inline-block h-32 w-auto sm:h-40"
               />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </article>
     </StandalonePageTemplate>
   )
 }

@@ -111,7 +111,7 @@ export function CommunityCleanupSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-bold text-foreground">Community Content</h2>
+        <h2>Community Content</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Delete community posts. Bulk delete by date.
         </p>
@@ -129,8 +129,9 @@ export function CommunityCleanupSection() {
         </Alert>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
+          className="sm:max-w-xs"
           type="date"
           value={deleteDate}
           onChange={(e) => setDeleteDate(e.target.value)}
@@ -169,20 +170,20 @@ export function CommunityCleanupSection() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="gap-0 overflow-hidden pb-0">
+        <CardHeader className="border-b [.border-b]:pb-5">
           <CardTitle>Community Posts</CardTitle>
           <CardDescription>{items.length} posts found</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {isLoading ? (
-            <p className="text-muted-foreground py-8">Loading posts...</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">Loading posts...</p>
           ) : items.length === 0 ? (
-            <p className="text-muted-foreground py-8">No posts found</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">No posts found</p>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
+              <Table className="[&_td]:px-4 [&_td]:py-3">
+                <TableHeader className="bg-muted/50 [&_th]:h-auto [&_th]:px-4 [&_th]:py-3 [&_th]:text-xs [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-muted-foreground">
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox

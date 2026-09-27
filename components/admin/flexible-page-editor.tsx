@@ -253,10 +253,10 @@ export function FlexiblePageEditor({
                 <button
                   key={type}
                   onClick={() => setBlockTypeToCreate(type)}
-                  className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center gap-2 ${
+                  className={`p-3 rounded-lg border transition-colors flex flex-col items-center gap-2 ${
                     blockTypeToCreate === type
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-primary/40 bg-primary-soft text-primary'
+                      : 'border-border hover:border-border-strong'
                   }`}
                 >
                   {type === 'text' && <Type className="h-5 w-5" />}
@@ -368,8 +368,8 @@ export function FlexiblePageEditor({
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`space-y-2 rounded-lg border-2 border-dashed p-4 transition-colors ${
-                  snapshot.isDraggingOver ? 'border-primary bg-primary/5' : 'border-border'
+                className={`space-y-2 rounded-lg border border-dashed p-3 transition-colors ${
+                  snapshot.isDraggingOver ? 'border-primary/40 bg-primary-soft/60' : 'border-border'
                 }`}
               >
                 {localItems.map((item, index) => (
@@ -379,7 +379,7 @@ export function FlexiblePageEditor({
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         className={`flex items-center gap-3 rounded-lg border p-4 transition-all ${
-                          snapshot.isDragging ? 'bg-primary/10 shadow-md' : 'bg-card'
+                          snapshot.isDragging ? 'bg-accent shadow-md' : 'bg-card'
                         }`}
                       >
                         <div {...provided.dragHandleProps}>
@@ -411,10 +411,10 @@ export function FlexiblePageEditor({
                                       <button
                                         key={type}
                                         onClick={() => setEditBlockType(type)}
-                                        className={`p-3 rounded-lg border-2 transition-colors flex flex-col items-center gap-2 ${
+                                        className={`p-3 rounded-lg border transition-colors flex flex-col items-center gap-2 ${
                                           editBlockType === type
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:border-primary/50'
+                                            ? 'border-primary/40 bg-primary-soft text-primary'
+                                            : 'border-border hover:border-border-strong'
                                         }`}
                                       >
                                         {type === 'text' && <Type className="h-5 w-5" />}
@@ -552,7 +552,7 @@ export function FlexiblePageEditor({
           </Droppable>
         </DragDropContext>
       ) : (
-        <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <p className="text-sm text-muted-foreground">No content blocks yet. Add one to get started!</p>
         </div>
       )}

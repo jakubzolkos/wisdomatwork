@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header'
 import { requireAdmin } from '@/lib/auth-server'
 import { getRecentEmailLogs, getFailedEmailsForRetry } from '@/lib/email/logs'
 import { EmailLogsClient } from '@/components/email-logs/email-logs-client'
@@ -23,12 +24,12 @@ export default async function EmailLogsPage({
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <section>
-        <h1 className="font-serif text-3xl font-bold text-foreground">Email Logs</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track all emails sent in the past week. View delivery status and resend failed emails.
-        </p>
-      </section>
+      <PageHeader
+        className="mb-0"
+        eyebrow="Admin console"
+        title="Email Logs"
+        description="Track all emails sent in the past week. View delivery status and resend failed emails."
+      />
 
       {/* Email Logs Interface */}
       <EmailLogsClient

@@ -67,7 +67,7 @@ export function FeedSearchBar({
     >
       <div className="relative flex-1">
         <Search
-          className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         />
         <Input
@@ -75,7 +75,7 @@ export function FeedSearchBar({
           placeholder={placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="h-9 pl-8 pr-8"
+          className="h-9 bg-card pl-9 pr-8"
           aria-label="Search posts"
         />
         {value.length > 0 && (
@@ -86,13 +86,13 @@ export function FeedSearchBar({
               commit('')
             }}
             aria-label="Clear search"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:bg-muted"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <X className="h-4 w-4" aria-hidden="true" />
+            <X className="size-4" aria-hidden="true" />
           </button>
         )}
       </div>
-      <Button type="submit" size="sm" variant="secondary">
+      <Button type="submit" variant="outline">
         Search
       </Button>
     </form>

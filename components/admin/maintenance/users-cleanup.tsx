@@ -178,7 +178,7 @@ export function UsersCleanupSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-bold text-foreground">Users & Invitations</h2>
+        <h2>Users & Invitations</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           View and manage user accounts, pending invitations, and test users
         </p>
@@ -256,22 +256,22 @@ export function UsersCleanupSection() {
       </div>
 
       {/* Users Table */}
-      <Card>
-        <CardHeader>
+      <Card className="gap-0 overflow-hidden pb-0">
+        <CardHeader className="border-b [.border-b]:pb-5">
           <CardTitle>Users</CardTitle>
           <CardDescription>
             {users.length} user{users.length !== 1 ? 's' : ''} shown
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {isLoading ? (
-            <p className="text-center text-muted-foreground py-8">Loading users...</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">Loading users...</p>
           ) : users.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No users found</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">No users found</p>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
+              <Table className="[&_td]:px-4 [&_td]:py-3">
+                <TableHeader className="bg-muted/50 [&_th]:h-auto [&_th]:px-4 [&_th]:py-3 [&_th]:text-xs [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-muted-foreground">
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
@@ -305,7 +305,7 @@ export function UsersCleanupSection() {
                         {user.deactivated ? (
                           <Badge variant="secondary">Deactivated</Badge>
                         ) : (
-                          <Badge variant="default">Active</Badge>
+                          <Badge variant="outline" className="border-success/30 bg-success-soft text-success">Active</Badge>
                         )}
                       </TableCell>
                       <TableCell>

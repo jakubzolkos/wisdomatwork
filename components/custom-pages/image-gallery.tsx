@@ -92,7 +92,7 @@ export function ImageGallery({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
         <div>
           <CardTitle>Image Library</CardTitle>
           <CardDescription>
@@ -123,7 +123,7 @@ export function ImageGallery({
 
       <CardContent className="space-y-4">
         {isUploading && (
-          <div className="border-2 border-dashed border-primary rounded-lg p-8 text-center">
+          <div className="rounded-xl border border-dashed border-primary/40 bg-primary-soft p-8 text-center">
             <Loader2 className="h-8 w-8 text-primary mx-auto mb-3 animate-spin" />
             <p className="text-sm font-medium text-foreground">Uploading image...</p>
             <p className="text-xs text-muted-foreground mt-1">Please wait while your image is being processed</p>
@@ -144,8 +144,8 @@ export function ImageGallery({
         )}
 
         {!isUploading && images.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
+          <div className="rounded-xl border border-dashed p-10 text-center">
+            <p className="mb-4 text-sm text-muted-foreground">
               No images uploaded yet. Upload one to get started.
             </p>
             <label>
@@ -166,11 +166,11 @@ export function ImageGallery({
             </label>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {images.map((image) => (
               <div
                 key={image.id}
-                className="border rounded-lg overflow-hidden hover:shadow-lg transition"
+                className="overflow-hidden rounded-lg border transition hover:border-border-strong hover:shadow-md"
               >
                 {/* Image Preview */}
                 <button
@@ -264,13 +264,13 @@ export function ImageGallery({
                 className="w-full rounded-lg"
               />
               <div>
-                <label className="block text-sm font-medium mb-1">Alt Text</label>
+                <label className="mb-2 block text-sm font-medium">Alt Text</label>
                 <textarea
                   value={editingAlt}
                   onChange={(e) => setEditingAlt(e.target.value)}
                   placeholder="Describe the image..."
                   rows={3}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
               </div>
               <Button

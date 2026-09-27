@@ -49,7 +49,7 @@ export function CommunitySidebar() {
           </Link>
 
           <div>
-            <p className="mb-1.5 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="eyebrow mb-1.5 px-2.5">
               Community
             </p>
             <ul className="flex flex-col gap-0.5">

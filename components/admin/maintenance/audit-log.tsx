@@ -83,7 +83,7 @@ export function MaintenanceAuditLog() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-bold text-foreground">Maintenance Audit Log</h2>
+        <h2>Maintenance Audit Log</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Complete record of all portal maintenance actions performed by admins
         </p>
@@ -138,21 +138,21 @@ export function MaintenanceAuditLog() {
       </div>
 
       {/* Audit Log Table */}
-      <Card>
-        <CardHeader>
+      <Card className="gap-0 overflow-hidden pb-0">
+        <CardHeader className="border-b [.border-b]:pb-5">
           <CardTitle>Recent Actions</CardTitle>
           <CardDescription>All maintenance actions are logged for accountability</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {isLoading ? (
-            <p className="text-center text-muted-foreground py-8">Loading audit log...</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">Loading audit log...</p>
           ) : logs.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No actions logged yet</p>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">No actions logged yet</p>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
+                <Table className="[&_td]:px-4 [&_td]:py-3">
+                  <TableHeader className="bg-muted/50 [&_th]:h-auto [&_th]:px-4 [&_th]:py-3 [&_th]:text-xs [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-muted-foreground">
                     <TableRow>
                       <TableHead>Timestamp</TableHead>
                       <TableHead>Admin</TableHead>
@@ -182,7 +182,7 @@ export function MaintenanceAuditLog() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-6">
+              <div className="flex items-center justify-between border-t px-4 py-3">
                 <p className="text-sm text-muted-foreground">Page {page}</p>
                 <div className="flex gap-2">
                   <Button

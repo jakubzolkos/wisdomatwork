@@ -1,5 +1,5 @@
-import { Bell } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
+import { PageHeader } from '@/components/page-header'
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/top-bar'
 import {
@@ -97,23 +97,21 @@ export default async function NotificationsInboxPage() {
     <div className="min-h-screen bg-canvas">
       <TopBar />
       <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:py-10">
-        <header className="flex flex-col gap-2 border-b border-border pb-6">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground">
-            <Bell className="h-3.5 w-3.5" aria-hidden />
-            Inbox
-          </p>
-          <h1 className="font-serif text-3xl text-foreground text-balance sm:text-4xl">
-            Notifications
-          </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Everything the fellowship team has sent your way - announcements,
-            reminders, and alerts. Click any item to mark it read, or use{' '}
-            <span className="font-medium">Mark all read</span> to clear them at
-            once.
-          </p>
-        </header>
+        <PageHeader
+          eyebrow="Inbox"
+          title="Notifications"
+          description={
+            <>
+              Everything the fellowship team has sent your way - announcements,
+              reminders, and alerts. Click any item to mark it read, or use{' '}
+              <span className="font-medium text-foreground">Mark all read</span> to clear them at
+              once.
+            </>
+          }
+        />
 
-        <div className="pt-8">
+        <div>
+
           <NotificationsFeed items={view} hideViewAll heading="All notifications" />
         </div>
       </main>

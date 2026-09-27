@@ -189,7 +189,7 @@ export function AdminPageContentSlot({
                       <li
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`flex items-start gap-2 rounded border border-border bg-card p-3 transition-colors ${
+                        className={`flex items-start gap-2 rounded-md border border-border bg-card p-3 transition-colors ${
                           snapshot.isDragging ? 'bg-muted/50' : ''
                         }`}
                       >

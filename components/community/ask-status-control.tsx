@@ -58,7 +58,7 @@ export function AskStatusControl({ postId, currentStatus }: Props) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="text-sm font-medium text-foreground">
           Status
         </span>
         <Select value={status} onValueChange={onChange} disabled={pending}>

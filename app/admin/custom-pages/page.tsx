@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header'
 import { requireAdmin } from '@/lib/auth-server'
 import { PagesList } from '@/components/custom-pages/pages-list'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -28,51 +29,49 @@ export default async function CustomPagesPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <section className="flex items-center justify-between">
-        <div>
-          <h1 className="font-serif text-3xl font-bold text-foreground">
-            Custom Pages
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-            Create custom pages with image support, text content, and block-based layouts. Publish pages to make them available to all users.
-          </p>
-        </div>
-        <Link href="/admin/custom-pages/new">
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            New Page
+      <PageHeader
+        className="mb-0"
+        eyebrow="Admin console"
+        title="Custom Pages"
+        description="Create custom pages with image support, text content, and block-based layouts. Publish pages to make them available to all users."
+        actions={
+          <Button asChild>
+            <Link href="/admin/custom-pages/new">
+              <Plus className="h-4 w-4" />
+              New Page
+            </Link>
           </Button>
-        </Link>
-      </section>
+        }
+      />
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Pages</CardTitle>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="gap-2 py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Pages</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pages?.length || 0}</p>
+          <CardContent className="px-5">
+            <p className="text-2xl font-semibold tabular-nums">{pages?.length || 0}</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
+        <Card className="gap-2 py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
+          <CardContent className="px-5">
+            <p className="text-2xl font-semibold tabular-nums">
               {pages?.filter((p) => p.is_published).length || 0}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+        <Card className="gap-2 py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Drafts</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
+          <CardContent className="px-5">
+            <p className="text-2xl font-semibold tabular-nums">
               {pages?.filter((p) => !p.is_published).length || 0}
             </p>
           </CardContent>

@@ -29,22 +29,22 @@ export default async function ScheduleThankYouPage({
     .single()
 
   return (
-    <div className="min-h-screen bg-canvas flex items-center justify-center">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <Check className="h-6 w-6 text-green-600" />
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-success-soft">
+            <Check className="h-6 w-6 text-success" />
           </div>
-          <CardTitle className="text-2xl">Your Vote Recorded</CardTitle>
+          <CardTitle className="text-xl">Your Vote Recorded</CardTitle>
           <CardDescription>
             Thank you for setting your availability
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {schedule && (
-            <div>
-              <p className="text-sm text-muted-foreground">For</p>
-              <p className="font-medium">{schedule.title}</p>
+            <div className="rounded-lg bg-muted/60 px-4 py-3">
+              <p className="text-xs text-muted-foreground">For</p>
+              <p className="text-sm font-medium text-foreground">{schedule.title}</p>
             </div>
           )}
           <p className="text-sm text-muted-foreground">

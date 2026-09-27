@@ -227,7 +227,7 @@ export function PageEditor({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
+            <label className="mb-2 block text-sm font-medium">Title</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -236,7 +236,7 @@ export function PageEditor({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">URL Slug</label>
+            <label className="mb-2 block text-sm font-medium">URL Slug</label>
             <div className="flex gap-2">
               <span className="flex items-center px-3 bg-muted rounded-md text-sm text-muted-foreground">
                 /pages/
@@ -253,23 +253,23 @@ export function PageEditor({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="mb-2 block text-sm font-medium">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Short description for this page"
               rows={3}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
           </div>
 
           {/* Headers Section */}
-          <div className="pt-2 border-t">
-            <h3 className="text-sm font-semibold mb-3">Page Headers (optional)</h3>
+          <div className="border-t pt-5">
+            <h3 className="mb-1 text-sm font-semibold">Page Headers (optional)</h3>
             <p className="text-xs text-muted-foreground mb-3">Add up to 3 headers with different sizes. Choose where each appears.</p>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Header 1 (Largest)</label>
+              <label className="mb-2 block text-sm font-medium">Header 1 (Largest)</label>
               <Input
                 value={header1}
                 onChange={(e) => setHeader1(e.target.value)}
@@ -280,7 +280,7 @@ export function PageEditor({
                 <select
                   value={header1Position}
                   onChange={(e) => setHeader1Position(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
+                  className="h-8 px-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
                   <option value="before">Before blocks</option>
                   <option value="after">After blocks</option>
@@ -290,7 +290,7 @@ export function PageEditor({
             </div>
 
             <div className="mt-4">
-              <label className="block text-sm font-medium mb-1">Header 2 (Medium)</label>
+              <label className="mb-2 block text-sm font-medium">Header 2 (Medium)</label>
               <Input
                 value={header2}
                 onChange={(e) => setHeader2(e.target.value)}
@@ -301,7 +301,7 @@ export function PageEditor({
                 <select
                   value={header2Position}
                   onChange={(e) => setHeader2Position(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
+                  className="h-8 px-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
                   <option value="before">Before blocks</option>
                   <option value="after">After blocks</option>
@@ -311,7 +311,7 @@ export function PageEditor({
             </div>
 
             <div className="mt-4">
-              <label className="block text-sm font-medium mb-1">Header 3 (Small)</label>
+              <label className="mb-2 block text-sm font-medium">Header 3 (Small)</label>
               <Input
                 value={header3}
                 onChange={(e) => setHeader3(e.target.value)}
@@ -322,7 +322,7 @@ export function PageEditor({
                 <select
                   value={header3Position}
                   onChange={(e) => setHeader3Position(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
+                  className="h-8 px-2 text-sm rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
                   <option value="before">Before blocks</option>
                   <option value="after">After blocks</option>
@@ -332,7 +332,7 @@ export function PageEditor({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+          <div className="flex items-center gap-3 rounded-lg bg-muted/60 p-4">
             <input
               type="checkbox"
               id="show_in_menu"
@@ -415,7 +415,7 @@ export function PageEditor({
 
       {/* Content Blocks */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle>Content Blocks</CardTitle>
             <CardDescription>
@@ -446,7 +446,7 @@ export function PageEditor({
 
         <CardContent>
           {blocks.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">
+            <p className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
               No content blocks yet. Add one to get started.
             </p>
           ) : (
@@ -465,7 +465,7 @@ export function PageEditor({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={`p-4 border rounded-lg transition ${
-                              snapshot.isDragging ? 'bg-accent shadow-lg' : 'bg-card'
+                              snapshot.isDragging ? 'bg-accent shadow-md' : 'bg-card'
                             }`}
                           >
                             {/* Block Header */}
@@ -495,7 +495,7 @@ export function PageEditor({
                               {block.block_type === 'text' && (
                                 <>
                                   <div>
-                                    <label className="block text-xs font-medium mb-1">
+                                    <label className="mb-1.5 block text-xs font-medium">
                                       Content
                                     </label>
                                     <textarea
@@ -505,7 +505,7 @@ export function PageEditor({
                                       }
                                       placeholder="Enter text content (supports Markdown: # Heading, **bold**, - lists, etc.)"
                                       rows={3}
-                                      className="w-full px-2 py-2 border rounded text-sm font-mono text-xs"
+                                      className="w-full px-3 py-2 font-mono text-xs rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                     />
                                     {block.content && (
                                       <div className="mt-2 p-2 bg-muted rounded text-xs border border-border">
@@ -529,7 +529,7 @@ export function PageEditor({
 
                               {block.block_type === 'image' && (
                                 <div>
-                                  <label className="block text-xs font-medium mb-1">
+                                  <label className="mb-1.5 block text-xs font-medium">
                                     Image
                                   </label>
                                   <Select
@@ -597,8 +597,8 @@ export function PageEditor({
                       onClick={() => setSelectedImageForAdd(img.id)}
                       className={`cursor-pointer border-2 rounded-lg overflow-hidden transition ${
                         selectedImageForAdd === img.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary'
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-border hover:border-border-strong'
                       }`}
                     >
                       <img

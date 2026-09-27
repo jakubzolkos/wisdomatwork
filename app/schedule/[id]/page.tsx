@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { ScheduleVotingForm } from '@/components/schedule/voting-form'
+import { PageHeader } from '@/components/page-header'
 
 export default async function ScheduleVotingPage({
   params,
@@ -94,78 +95,73 @@ export default async function ScheduleVotingPage({
     }
 
     return (
-      <div className="min-h-screen bg-canvas flex flex-col">
-        <main className="w-full flex-1 flex flex-col">
+      <div className="flex min-h-screen flex-col bg-canvas">
+        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:py-14">
           {/* Header Section */}
-          <section className="border-b border-border bg-card">
-            <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 text-center">
-              <h1 className="font-serif text-4xl font-bold text-foreground mb-3">
-                {schedule.title}
-              </h1>
-              {schedule.description && (
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  {schedule.description}
-                </p>
-              )}
-            </div>
-          </section>
+          <PageHeader
+            eyebrow="Schedule poll"
+            title={schedule.title}
+            description={schedule.description || undefined}
+          />
 
           {/* Content Section */}
-          <section className="flex-1 bg-background">
-            <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 space-y-6">
-              {/* Meeting Details */}
-              <Card className="border border-border/50">
-                <CardHeader>
-                  <CardTitle className="text-lg">Meeting Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+          <div className="space-y-6">
+            {/* Meeting Details */}
+            <Card className="gap-0 py-0 shadow-xs">
+              <CardHeader className="gap-1 border-b border-border px-5 py-4 sm:px-6 [.border-b]:pb-4">
+                <CardTitle className="text-base">Meeting Details</CardTitle>
+              </CardHeader>
+              <CardContent className="px-5 py-5 sm:px-6">
+                <dl className="grid gap-5 sm:grid-cols-2">
                   {schedule.location && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Location</p>
-                      <p className="text-foreground font-medium">{schedule.location}</p>
+                    <div className="space-y-1">
+                      <dt className="text-xs font-medium text-muted-foreground">Location</dt>
+                      <dd className="text-sm font-medium text-foreground">{schedule.location}</dd>
                     </div>
                   )}
-                  {schedule.meeting_link && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Meeting Link</p>
-                      <a
-                        href={schedule.meeting_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline break-all font-medium"
-                      >
-                        {schedule.meeting_link}
-                      </a>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Voting Closes</p>
-                    <p className="text-foreground font-medium">
+                  <div className="space-y-1">
+                    <dt className="text-xs font-medium text-muted-foreground">Voting Closes</dt>
+                    <dd className="text-sm font-medium text-foreground">
                       {new Date(schedule.voting_closes_at).toLocaleString()}
-                    </p>
+                    </dd>
                   </div>
-                </CardContent>
-              </Card>
+                  {schedule.meeting_link && (
+                    <div className="space-y-1 sm:col-span-2">
+                      <dt className="text-xs font-medium text-muted-foreground">Meeting Link</dt>
+                      <dd>
+                        <a
+                          href={schedule.meeting_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="break-all text-sm font-medium text-primary underline-offset-[3px] hover:underline"
+                        >
+                          {schedule.meeting_link}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </CardContent>
+            </Card>
 
-              {/* Voting Form */}
-              <Card className="border border-border/50 shadow-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg">Your Availability</CardTitle>
-                  <CardDescription className="text-base">
-                    Select the time slot when you can attend
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ScheduleVotingForm
-                    scheduleId={schedule.id}
-                    options={schedule.schedule_options || []}
-                    existingVoteOptionId={existingVote?.option_id}
-                    onSubmit={submitVote}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+            {/* Voting Form */}
+            <Card className="gap-0 py-0 shadow-xs">
+              <CardHeader className="gap-1 border-b border-border px-5 py-4 sm:px-6 [.border-b]:pb-4">
+                <CardTitle className="text-base">Your Availability</CardTitle>
+                <CardDescription>
+                  Select the time slot when you can attend
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-5 py-5 sm:px-6">
+                <ScheduleVotingForm
+                  scheduleId={schedule.id}
+                  options={schedule.schedule_options || []}
+                  existingVoteOptionId={existingVote?.option_id}
+                  onSubmit={submitVote}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     )

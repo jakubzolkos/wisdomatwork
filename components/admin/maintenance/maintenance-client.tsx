@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Users, BookOpen, Library, Megaphone, Bell, FileText, History } from 'lucide-react'
 import { UsersCleanupSection } from './users-cleanup'
 import { ContentCleanupSection } from './content-cleanup'
@@ -24,43 +23,43 @@ const sections: SectionConfig[] = [
   {
     id: 'users',
     label: 'Users',
-    icon: <Users className="h-5 w-5" />,
+    icon: <Users className="size-[18px]" />,
     component: UsersCleanupSection,
   },
   {
     id: 'content',
     label: 'Content',
-    icon: <BookOpen className="h-5 w-5" />,
+    icon: <BookOpen className="size-[18px]" />,
     component: ContentCleanupSection,
   },
   {
     id: 'library',
     label: 'Library',
-    icon: <Library className="h-5 w-5" />,
+    icon: <Library className="size-[18px]" />,
     component: LibraryCleanupSection,
   },
   {
     id: 'community',
     label: 'Community',
-    icon: <Megaphone className="h-5 w-5" />,
+    icon: <Megaphone className="size-[18px]" />,
     component: CommunityCleanupSection,
   },
   {
     id: 'notifications',
     label: 'Notifications',
-    icon: <Bell className="h-5 w-5" />,
+    icon: <Bell className="size-[18px]" />,
     component: NotificationsCleanupSection,
   },
   {
     id: 'pages',
     label: 'Pages',
-    icon: <FileText className="h-5 w-5" />,
+    icon: <FileText className="size-[18px]" />,
     component: CustomPagesCleanupSection,
   },
   {
     id: 'audit',
     label: 'Audit Log',
-    icon: <History className="h-5 w-5" />,
+    icon: <History className="size-[18px]" />,
     component: MaintenanceAuditLog,
   },
 ]
@@ -74,52 +73,31 @@ export function MaintenanceClient() {
   return (
     <div className="flex flex-col gap-6">
       {/* Navigation Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => setActiveSection(section.id)}
-            className={`transition-all duration-200 ${
-              activeSection === section.id
-                ? 'ring-2 ring-primary'
-                : 'hover:shadow-md'
-            }`}
-          >
-            <Card
-              className={`cursor-pointer h-full ${
-                activeSection === section.id
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent'
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {sections.map((section) => {
+          const active = activeSection === section.id
+          return (
+            <button
+              key={section.id}
+              type="button"
+              onClick={() => setActiveSection(section.id)}
+              aria-pressed={active}
+              className={`flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center text-sm font-medium shadow-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                active
+                  ? 'border-primary/40 bg-primary-soft text-primary'
+                  : 'bg-card text-muted-foreground hover:border-border-strong hover:text-foreground hover:shadow-md'
               }`}
             >
-              <CardContent className="p-4 flex flex-col items-center justify-center gap-2 text-center h-full min-h-24">
-                <div
-                  className={`${
-                    activeSection === section.id
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {section.icon}
-                </div>
-                <span
-                  className={`font-medium text-sm ${
-                    activeSection === section.id
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {section.label}
-                </span>
-              </CardContent>
-            </Card>
-          </button>
-        ))}
+              {section.icon}
+              <span>{section.label}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Content Area */}
       {CurrentComponent && (
-        <div className="mt-4">
+        <div>
           <CurrentComponent />
         </div>
       )}

@@ -1,5 +1,6 @@
 'use client'
 
+import { PageHeader } from '@/components/page-header'
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -263,21 +264,19 @@ export default function PageEditorPageClient({ params: paramPromise }: PageEdito
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-muted-foreground">Loading page...</p>
+        <p className="text-sm text-muted-foreground">Loading page...</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-6 py-6">
-      <div>
-        <h1 className="font-serif text-3xl font-bold text-foreground">
-          {isNewPage ? 'Create Page' : 'Edit Page'}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Build your page with text, images, and custom content blocks
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        className="mb-2"
+        eyebrow="Custom pages"
+        title={isNewPage ? 'Create Page' : 'Edit Page'}
+        description="Build your page with text, images, and custom content blocks"
+      />
 
       {error && (
         <Alert variant="destructive">
@@ -286,10 +285,10 @@ export default function PageEditorPageClient({ params: paramPromise }: PageEdito
         </Alert>
       )}
 
-      <div className="space-y-12">
+      <div className="space-y-10">
         {/* Page Content Editor */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Page Content</h2>
+          <h2 className="mb-4">Page Content</h2>
           <PageEditor
             page={page}
             availableImages={images}
@@ -303,7 +302,7 @@ export default function PageEditorPageClient({ params: paramPromise }: PageEdito
 
         {/* Image Gallery */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Image Library</h2>
+          <h2 className="mb-4">Image Library</h2>
           <ImageGallery
             images={images}
             onUpload={handleUploadImage}

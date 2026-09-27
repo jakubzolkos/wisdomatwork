@@ -217,23 +217,32 @@ export function ProfileEditor({ initial }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-6 lg:flex-row lg:gap-10"
+      className="flex flex-col gap-6"
     >
+      {/* Photo + basic details card */}
+      <section className="rounded-xl border border-border bg-card shadow-xs">
+      <div className="border-b border-border px-5 py-4 sm:px-6">
+        <h2 className="text-base">Basic details</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Your photo, name and a short introduction.
+        </p>
+      </div>
+      <div className="flex flex-col gap-8 p-5 sm:p-6 lg:flex-row lg:gap-10">
       {/* Avatar column */}
-      <div className="flex flex-col items-center gap-4 lg:w-64">
+      <div className="flex flex-col items-center gap-4 lg:w-56">
         <div className="relative">
-          <Avatar className="h-32 w-32 ring-1 ring-border">
+          <Avatar className="h-28 w-28 ring-1 ring-border">
             {previewUrl ? (
               <AvatarImage src={previewUrl} alt="" />
             ) : null}
-            <AvatarFallback className="text-3xl font-medium">
+            <AvatarFallback className="bg-primary-soft text-3xl font-medium text-primary">
               {initials}
             </AvatarFallback>
           </Avatar>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card shadow-sm transition-colors hover:border-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card shadow-sm transition-colors hover:border-border-strong hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             aria-label="Upload new photo"
           >
             <Camera className="h-4 w-4" aria-hidden="true" />
@@ -279,8 +288,8 @@ export function ProfileEditor({ initial }: Props) {
       </div>
 
       {/* Fields column */}
-      <div className="flex flex-1 flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="profile-email">Email</Label>
           <Input
             id="profile-email"
@@ -293,7 +302,7 @@ export function ProfileEditor({ initial }: Props) {
           </p>
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="profile-name">Full name</Label>
           <Input
             id="profile-name"
@@ -305,7 +314,7 @@ export function ProfileEditor({ initial }: Props) {
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="profile-title">Title</Label>
           <Input
             id="profile-title"
@@ -316,7 +325,7 @@ export function ProfileEditor({ initial }: Props) {
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="profile-bio">Bio</Label>
           <Textarea
             id="profile-bio"
@@ -330,6 +339,9 @@ export function ProfileEditor({ initial }: Props) {
             {bio.length} / 4000
           </p>
         </div>
+      </div>
+      </div>
+      </section>
 
         {/*
           Beyond the basics — Community of Practice fields. Grouped
@@ -337,18 +349,21 @@ export function ProfileEditor({ initial }: Props) {
           it clear these are richer, optional details that power
           the Community directory.
         */}
-        <fieldset className="mt-2 flex flex-col gap-4 rounded-lg border border-border bg-muted/20 p-4">
-          <legend className="-mt-1 px-1 text-xs font-semibold tracking-wide text-muted-foreground">
+        <fieldset className="min-w-0 rounded-xl border border-border bg-card shadow-xs">
+          <legend className="float-left w-full px-5 pt-4 text-base font-semibold text-foreground sm:px-6">
             Community profile
           </legend>
-          <p className="-mt-2 text-xs text-muted-foreground">
+          <div className="clear-left border-b border-border px-5 pb-4 pt-0.5 sm:px-6">
+          <p className="text-sm text-muted-foreground">
             These optional fields power the Community directory. They
             help fellows find peers to learn from and collaborators
             who can help.
           </p>
+          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-5 p-5 sm:p-6">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="profile-community-role">Role in community</Label>
               <Input
                 id="profile-community-role"
@@ -365,7 +380,7 @@ export function ProfileEditor({ initial }: Props) {
               </datalist>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="profile-years-in-education">
                 Years in education
               </Label>
@@ -383,7 +398,7 @@ export function ProfileEditor({ initial }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="profile-looking-for">
               What are you looking for from the community?
             </Label>
@@ -400,7 +415,7 @@ export function ProfileEditor({ initial }: Props) {
             </p>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="profile-willing-to-help">
               What are you willing to help others with?
             </Label>
@@ -417,8 +432,8 @@ export function ProfileEditor({ initial }: Props) {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="flex flex-col gap-1.5">
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="profile-linkedin">LinkedIn</Label>
               <Input
                 id="profile-linkedin"
@@ -430,7 +445,7 @@ export function ProfileEditor({ initial }: Props) {
                 maxLength={500}
               />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="profile-twitter">Twitter / X</Label>
               <Input
                 id="profile-twitter"
@@ -442,7 +457,7 @@ export function ProfileEditor({ initial }: Props) {
                 maxLength={500}
               />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="profile-website">Website</Label>
               <Input
                 id="profile-website"
@@ -455,12 +470,13 @@ export function ProfileEditor({ initial }: Props) {
               />
             </div>
           </div>
+          </div>
         </fieldset>
 
         {error && (
           <p
             role="alert"
-            className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+            className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
           >
             {error}
           </p>
@@ -468,13 +484,13 @@ export function ProfileEditor({ initial }: Props) {
         {success && (
           <p
             role="status"
-            className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary"
+            className="rounded-lg border border-success/20 bg-success-soft px-4 py-3 text-sm text-success"
           >
             {success}
           </p>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex items-center justify-end gap-3">
           <Button type="submit" disabled={pending}>
             {pending && (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -482,7 +498,7 @@ export function ProfileEditor({ initial }: Props) {
             {pending ? 'Saving...' : 'Save changes'}
           </Button>
         </div>
-      </div>
     </form>
+
   )
 }

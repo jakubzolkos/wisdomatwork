@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
 import { requireAdmin } from '@/lib/auth-server'
 import { getAdminPageContent } from '@/app/admin/actions'
 import { AdminAboutClient } from '@/components/admin/admin-about-client'
@@ -13,26 +14,27 @@ export default async function AdminAboutPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header with back button */}
-      <div className="flex items-center justify-between border-b border-border pb-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="font-serif text-2xl text-foreground">About Page</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage editable content blocks on the public about page
-            </p>
-          </div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
+            <Link href="/admin" aria-label="Back to admin">
+              <ArrowLeft className="h-4 w-4" />
+              Admin
+            </Link>
+          </Button>
         </div>
+        <PageHeader
+          className="mb-2"
+          eyebrow="Admin console"
+          title="About Page"
+          description="Manage editable content blocks on the public about page"
+        />
       </div>
 
       {/* Main content section with flexible editor */}
-      <section className="rounded-lg border border-border bg-card p-6">
-        <h2 className="font-serif text-lg text-foreground mb-4">Page Content</h2>
-        <p className="text-sm text-muted-foreground mb-6">
+      <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
+        <h2 className="mb-1">Page Content</h2>
+        <p className="mb-6 text-sm text-muted-foreground">
           Add, edit, and reorder content blocks (text, images, or both) that appear in the main body of the about page. Drag blocks to rearrange them.
         </p>
         <AdminAboutClient

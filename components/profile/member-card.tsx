@@ -68,9 +68,9 @@ export function MemberCard({
         // brand rose and turned every label hard to read. The
         // background stays card-coloured; only the border + a
         // light shadow signal interactivity.
-        'group flex w-full items-start gap-3 rounded-md border border-border bg-card p-4 text-left transition-all',
+        'group flex w-full items-start gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-xs transition',
         interactive &&
-          'cursor-pointer hover:border-primary/60 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'cursor-pointer hover:border-border-strong hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       )}
       aria-label={interactive ? `Open profile for ${name}` : undefined}
     >
@@ -78,13 +78,13 @@ export function MemberCard({
         {profile.avatar_url ? (
           <AvatarImage src={profile.avatar_url} alt="" />
         ) : null}
-        <AvatarFallback className="text-sm font-medium">
+        <AvatarFallback className="bg-primary-soft text-sm font-medium text-primary">
           {initials}
         </AvatarFallback>
       </Avatar>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{name}</p>
+        <p className="truncate text-sm font-semibold text-foreground transition-colors group-hover:text-primary">{name}</p>
         {profile.title && (
           <p className="truncate text-xs text-muted-foreground">
             {profile.title}
@@ -97,12 +97,14 @@ export function MemberCard({
         )}
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          <Badge variant="secondary" className="text-[10px]">
+          <Badge variant="secondary" className="text-[11px] font-medium"
+>
             {roleLabelFor(profile.role)}
           </Badge>
           {/* Cohort chip is admin-only - see Props.showCohort. */}
           {showCohort && profile.cohort && (
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[11px] font-medium"
+>
               Cohort {profile.cohort}
             </Badge>
           )}
@@ -113,7 +115,8 @@ export function MemberCard({
             metadata.
           */}
           {profile.community_role && (
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-[11px] font-medium"
+>
               {profile.community_role}
             </Badge>
           )}
@@ -121,7 +124,8 @@ export function MemberCard({
               fits on the same row without forcing the chip wrap. */}
           {typeof profile.years_in_education === 'number' &&
             profile.years_in_education > 0 && (
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-[11px] font-medium"
+>
                 {profile.years_in_education}y in ed
               </Badge>
             )}

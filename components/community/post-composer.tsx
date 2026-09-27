@@ -190,8 +190,8 @@ export function PostComposer({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+        <Button>
+          <Plus aria-hidden="true" />
           {composerCta}
         </Button>
       </DialogTrigger>
@@ -202,10 +202,10 @@ export function PostComposer({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {requireStarRating ? (
             // Wins composer: framework dropdown instead of title input
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="composer-framework">
                 Which of the Practical Wisdom Framework (PWF)™ would you like to share a win about?
               </Label>
@@ -234,7 +234,7 @@ export function PostComposer({
             </div>
           ) : (
             // Standard title input for non-wins
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="composer-title">Title</Label>
               <Input
                 id="composer-title"
@@ -249,7 +249,7 @@ export function PostComposer({
           )}
 
           {requireAskCategory && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="composer-ask-category">Category</Label>
               <Select
                 value={askCategory}
@@ -274,7 +274,7 @@ export function PostComposer({
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="composer-body">
               {requireStarRating ? 'Tell us more:' : 'Content'}
             </Label>
@@ -297,7 +297,7 @@ export function PostComposer({
           </div>
 
           {offerFrameworks && !requireStarRating && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="composer-framework">
                 PWF Protocol used (optional)
               </Label>
@@ -326,23 +326,23 @@ export function PostComposer({
           )}
 
           {requireStarRating && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label>What's your star rating for this protocol?</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
                     type="button"
                     onClick={() => setStarRating(rating)}
                     disabled={pending}
-                    className="transition-colors hover:text-yellow-400"
+                    className="rounded-md p-0.5 text-muted-foreground transition-colors hover:text-warning"
                   >
                     <Star
                       className={[
-                        'h-6 w-6',
+                        'size-6',
                         starRating && rating <= starRating
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-muted-foreground',
+                          ? 'fill-warning text-warning'
+                          : '',
                       ].join(' ')}
                       aria-hidden="true"
                     />
@@ -353,7 +353,7 @@ export function PostComposer({
           )}
 
           {requireVisibilitySettings && (
-            <div className="flex flex-col gap-1.5 border-t pt-4">
+            <div className="flex flex-col gap-2 border-t pt-5">
               <Label htmlFor="visibility-select">Who can see this win?</Label>
               <Select
                 value={visibility}
@@ -384,7 +384,7 @@ export function PostComposer({
           {error && (
             <p
               role="alert"
-              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
             >
               {error}
             </p>
@@ -397,7 +397,7 @@ export function PostComposer({
               </Button>
             </DialogClose>
             <Button type="submit" disabled={pending}>
-              {pending && <Spinner className="h-3.5 w-3.5" />}
+              {pending && <Spinner className="size-3.5" />}
               {composerCta}
             </Button>
           </DialogFooter>

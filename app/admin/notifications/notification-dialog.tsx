@@ -337,7 +337,7 @@ export function NotificationDialog({
           </div>
 
           {scope === 'cohort' && (
-            <fieldset className="space-y-2 rounded-lg border border-border p-3">
+            <fieldset className="space-y-2 rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-medium">
                 Cohorts (pick one or more)
               </legend>
@@ -347,7 +347,7 @@ export function NotificationDialog({
                   return (
                     <label
                       key={code}
-                      className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm cursor-pointer hover:bg-muted"
+                      className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-accent"
                     >
                       <Checkbox
                         checked={checked}
@@ -372,7 +372,7 @@ export function NotificationDialog({
           )}
 
           {scope === 'school_team' && (
-            <fieldset className="space-y-3 rounded-lg border border-border p-3">
+            <fieldset className="space-y-3 rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-medium">
                 School teams (pick one or more)
               </legend>
@@ -427,7 +427,7 @@ export function NotificationDialog({
                       const checked = schoolTeamIds.includes(s.id)
                       return (
                         <li key={s.id}>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-accent">
                             <Checkbox
                               checked={checked}
                               onCheckedChange={() =>
@@ -454,7 +454,7 @@ export function NotificationDialog({
           )}
 
           {scope === 'users' && (
-            <fieldset className="space-y-3 rounded-lg border border-border p-3">
+            <fieldset className="space-y-3 rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-medium">
                 Fellows (filter by name and pick)
               </legend>
@@ -507,7 +507,7 @@ export function NotificationDialog({
                       const checked = userIds.includes(f.id)
                       return (
                         <li key={f.id}>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted">
+                          <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-accent">
                             <Checkbox
                               checked={checked}
                               onCheckedChange={() =>
@@ -567,7 +567,7 @@ export function NotificationDialog({
           </div>
 
           {/* Optional CTA */}
-          <fieldset className="space-y-3 rounded-lg border border-border p-3">
+          <fieldset className="space-y-3 rounded-lg border border-border p-4">
             <legend className="px-1 text-sm font-medium">
               Call-to-action (optional)
             </legend>
@@ -637,7 +637,7 @@ export function NotificationDialog({
           </div>
 
           {/* Email */}
-          <fieldset className="space-y-3 rounded-lg border border-border p-3">
+          <fieldset className="space-y-3 rounded-lg border border-border p-4">
             <legend className="px-1 text-sm font-medium">Email</legend>
             <label className="inline-flex items-start gap-2 text-sm">
               <Checkbox
@@ -691,7 +691,7 @@ export function NotificationDialog({
 
           {/* Schedule */}
           {mode === 'create' && (
-            <fieldset className="space-y-3 rounded-lg border border-border p-3">
+            <fieldset className="space-y-3 rounded-lg border border-border p-4">
               <legend className="px-1 text-sm font-medium">Delivery</legend>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {(
@@ -705,8 +705,8 @@ export function NotificationDialog({
                     key={opt.value}
                     className={`flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm ${
                       scheduleAction === opt.value
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'border-border hover:bg-muted'
+                        ? 'border-primary/40 bg-primary-soft text-primary'
+                        : 'border-border transition-colors hover:bg-accent'
                     }`}
                   >
                     <input

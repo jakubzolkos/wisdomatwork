@@ -56,13 +56,13 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
           {profile.avatar_url ? (
             <AvatarImage src={profile.avatar_url} alt="" />
           ) : null}
-          <AvatarFallback className="text-xl font-medium">
+          <AvatarFallback className="bg-primary-soft text-xl font-medium text-primary">
             {initials}
           </AvatarFallback>
         </Avatar>
 
         <div className="min-w-0 flex-1">
-          <h2 className="font-serif text-2xl text-foreground text-balance">
+          <h2 className="text-balance text-2xl text-foreground">
             {name}
           </h2>
           {profile.title && (
@@ -102,10 +102,10 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
 
       {profile.bio?.trim() && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-xs font-semibold tracking-wide text-muted-foreground">
+          <h3 className="eyebrow">
             About
           </h3>
-          <p className="whitespace-pre-wrap text-pretty text-sm leading-relaxed text-foreground">
+          <p className="whitespace-pre-wrap text-pretty font-serif text-[15px] leading-relaxed text-foreground">
             {profile.bio}
           </p>
         </section>
@@ -119,8 +119,8 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
       {(profile.looking_for?.trim() || profile.willing_to_help?.trim()) && (
         <section className="grid gap-3 sm:grid-cols-2">
           {profile.looking_for?.trim() && (
-            <div className="flex flex-col gap-1.5 rounded-md border border-border bg-card p-3">
-              <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground">
+            <div className="flex flex-col gap-1.5 rounded-lg bg-muted/60 p-4">
+              <h3 className="eyebrow inline-flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 Looking for
               </h3>
@@ -130,8 +130,8 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
             </div>
           )}
           {profile.willing_to_help?.trim() && (
-            <div className="flex flex-col gap-1.5 rounded-md border border-border bg-card p-3">
-              <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground">
+            <div className="flex flex-col gap-1.5 rounded-lg bg-muted/60 p-4">
+              <h3 className="eyebrow inline-flex items-center gap-1.5">
                 <HandHelping className="h-3.5 w-3.5" aria-hidden="true" />
                 Can help with
               </h3>
@@ -153,14 +153,15 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
         profile.twitter_url ||
         profile.website_url) && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-xs font-semibold tracking-wide text-muted-foreground">
+          <h3 className="eyebrow">
             Connect
           </h3>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
             {profile.email && (
               <a
                 href={`mailto:${profile.email}`}
-                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-[3px] hover:underline"
+
               >
                 <Mail className="h-4 w-4" aria-hidden="true" />
                 {profile.email}
@@ -171,7 +172,8 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
                 href={profile.linkedin_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-[3px] hover:underline"
+
               >
                 <Linkedin className="h-4 w-4" aria-hidden="true" />
                 LinkedIn
@@ -182,7 +184,8 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
                 href={profile.twitter_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-[3px] hover:underline"
+
               >
                 <Twitter className="h-4 w-4" aria-hidden="true" />
                 Twitter / X
@@ -193,7 +196,8 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
                 href={profile.website_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-[3px] hover:underline"
+
               >
                 <Globe className="h-4 w-4" aria-hidden="true" />
                 Website

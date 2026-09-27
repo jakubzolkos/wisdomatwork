@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader } from '@/components/page-header'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
 import { Button } from '@/components/ui/button'
@@ -351,22 +352,20 @@ export default async function AdminNotificationsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1 min-w-0">
-          <h2 className="font-serif text-2xl text-foreground">Notifications</h2>
-          <p className="text-sm text-muted-foreground max-w-xl">
-            Send announcements, reminders, and alerts to everyone, a cohort, a
-            school team, or individual fellows. Optionally email recipients
-            and schedule for later.
-          </p>
-        </div>
-        <NewNotificationButton
-          schoolTeams={schoolTeams}
-          fellows={fellows}
-          contentOptions={contentOptions}
-          variant="header"
-        />
-      </div>
+      <PageHeader
+        className="mb-2"
+        eyebrow="Admin console"
+        title="Notifications"
+        description="Send announcements, reminders, and alerts to everyone, a cohort, a school team, or individual fellows. Optionally email recipients and schedule for later."
+        actions={
+          <NewNotificationButton
+            schoolTeams={schoolTeams}
+            fellows={fellows}
+            contentOptions={contentOptions}
+            variant="header"
+          />
+        }
+      />
 
       {/* Status tabs */}
       <nav className="flex flex-wrap gap-1 border-b border-border">
@@ -376,15 +375,15 @@ export default async function AdminNotificationsPage({
             <Link
               key={t}
               href={t === 'sent' ? '/admin/notifications' : `/admin/notifications?tab=${t}`}
-              className={`inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium ${
+              className={`-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 active
-                  ? 'border-foreground text-foreground'
+                  ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {TAB_LABELS[t]}
               {tabCounts[t] > 0 && (
-                <span className="rounded-full bg-muted px-1.5 text-xs text-muted-foreground">
+                <span className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
                   {tabCounts[t]}
                 </span>
               )}
@@ -415,8 +414,8 @@ export default async function AdminNotificationsPage({
       ) : (
         <div className="space-y-3">
           {list.map((row) => (
-            <Card key={row.id} className="border-border">
-              <CardContent className="p-5 flex items-start gap-4 flex-wrap">
+            <Card key={row.id} className="py-0">
+              <CardContent className="flex flex-wrap items-start gap-4 p-5">
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${
@@ -428,7 +427,7 @@ export default async function AdminNotificationsPage({
                     }`}>
                       {NOTIFICATION_KIND_LABELS[row.kind]}
                     </span>
-                    <h3 className="font-serif text-lg text-primary truncate">
+                    <h3 className="truncate text-base font-semibold text-foreground">
                       {row.title}
                     </h3>
                     {row.pinned && (
@@ -496,7 +495,7 @@ export default async function AdminNotificationsPage({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1">
                   {(row.status === 'draft' ||
                     row.status === 'scheduled' ||
                     row.status === 'failed') && (

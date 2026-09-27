@@ -1,5 +1,6 @@
 'use server'
 
+import { PageHeader } from '@/components/page-header'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
@@ -97,47 +98,43 @@ export default async function AdminScheduleDetailPage({
 
     return (
       <div className="space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="font-serif text-3xl font-bold text-foreground">
-              {schedule.title}
-            </h1>
-            {schedule.description && (
-              <p className="mt-2 text-muted-foreground max-w-2xl">
-                {schedule.description}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge
-              variant={
-                schedule.status === 'polling' ? 'default' : 'secondary'
-              }
-            >
-              {schedule.status === 'polling'
-                ? 'Voting Open'
-                : schedule.status === 'scheduled'
-                ? 'Scheduled'
-                : 'Completed'}
-            </Badge>
-            <DeletePollModal
-              scheduleId={schedule.id}
-              scheduleTitle={schedule.title}
-              deletePoll={deletePoll}
-              variant="button"
-            />
-          </div>
-        </div>
+        <PageHeader
+          className="mb-2"
+          eyebrow="Scheduling poll"
+          title={schedule.title}
+          description={schedule.description || undefined}
+          actions={
+            <>
+              <Badge
+                variant={
+                  schedule.status === 'polling' ? 'default' : 'secondary'
+                }
+              >
+                {schedule.status === 'polling'
+                  ? 'Voting Open'
+                  : schedule.status === 'scheduled'
+                  ? 'Scheduled'
+                  : 'Completed'}
+              </Badge>
+              <DeletePollModal
+                scheduleId={schedule.id}
+                scheduleTitle={schedule.title}
+                deletePoll={deletePoll}
+                variant="button"
+              />
+            </>
+          }
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Votes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalVotes}</div>
+              <div className="text-2xl font-semibold tabular-nums">{totalVotes}</div>
               <p className="text-xs text-muted-foreground">
                 Responses received
               </p>
@@ -146,12 +143,12 @@ export default async function AdminScheduleDetailPage({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Voting Closes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm font-bold">
+              <div className="text-sm font-semibold">
                 {schedule.voting_closes_at
                   ? format(new Date(schedule.voting_closes_at), 'MMM d, h:mm a')
                   : 'N/A'}
@@ -166,12 +163,12 @@ export default async function AdminScheduleDetailPage({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Selected Option
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-sm font-bold">
+              <div className="text-sm font-semibold">
                 {schedule.selected_option_id
                   ? format(new Date(options.find((o: any) => o.id === schedule.selected_option_id)?.start_time || new Date()), 'MMM d')
                   : 'Not yet decided'}
@@ -243,7 +240,7 @@ export default async function AdminScheduleDetailPage({
                         {voteCount} vote{voteCount !== 1 ? 's' : ''} ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
+                    <div className="h-2 w-full rounded-full bg-muted">
                       <div
                         className="bg-primary h-2 rounded-full transition-all"
                         style={{ width: `${percentage}%` }}

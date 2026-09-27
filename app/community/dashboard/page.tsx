@@ -197,7 +197,7 @@ export default async function CommunityDashboardPage() {
                     src={data.memberOfWeek.avatar_url ?? undefined}
                     alt=""
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary-soft text-primary">
                     {initialsFor(
                       data.memberOfWeek.full_name,
                       data.memberOfWeek.email,
@@ -418,7 +418,7 @@ function AuthorLine({
     <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
       <Avatar className="size-5">
         <AvatarImage src={image ?? undefined} alt="" />
-        <AvatarFallback className="text-[10px]">
+        <AvatarFallback className="bg-primary-soft text-[10px] text-primary">
           {initialsFor(name, email)}
         </AvatarFallback>
       </Avatar>

@@ -74,7 +74,7 @@ export function ScheduleVotingForm({
 
             return (
               <div key={option.id}>
-                <div className="flex items-center space-x-2 p-3 rounded-lg border hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition">
+                <div className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-card p-3.5 transition hover:border-border-strong hover:bg-accent/60 has-[[data-state=checked]]:border-primary/40 has-[[data-state=checked]]:bg-primary-soft">
                   <RadioGroupItem
                     value={option.id}
                     id={`option-${option.id}`}
@@ -85,12 +85,12 @@ export function ScheduleVotingForm({
                   >
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 text-muted-foreground">
-                        <Calendar className="h-5 w-5" />
+                        <Calendar className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium">{dateStr}</div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
+                        <div className="text-sm font-medium text-foreground">{dateStr}</div>
+                        <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" />
                           <span>
                             {startTimeStr} &ndash; {endTimeStr}
                           </span>

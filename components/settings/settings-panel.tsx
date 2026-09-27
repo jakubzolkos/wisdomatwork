@@ -1,16 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Bell, Lock, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 
 interface Props {
   userId: string
   userEmail: string
+}
+
+/** One settings group: icon chip + heading row, then a divided body. */
+function SettingsSection({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: ReactNode
+  title: string
+  description?: string
+  children: ReactNode
+}) {
+  return (
+    <Card className="gap-0 py-0 shadow-xs">
+      <div className="flex items-start gap-3 border-b border-border px-5 py-4 sm:px-6">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-base">{title}</h2>
+          {description && (
+            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="px-5 py-5 sm:px-6">{children}</div>
+    </Card>
+  )
 }
 
 export function SettingsPanel({ userId, userEmail }: Props) {
@@ -26,112 +55,103 @@ export function SettingsPanel({ userId, userEmail }: Props) {
   return (
     <div className="space-y-6">
       {/* Account Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Lock className="h-5 w-5 text-foreground" />
-          <h2 className="text-lg font-semibold">Account</h2>
-        </div>
-        <Separator className="mb-6" />
-
-        <div className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">
-              Email Address
-            </Label>
-            <p className="mt-2 text-base font-medium">{userEmail}</p>
-            <p className="text-xs text-muted-foreground mt-1">
+      <SettingsSection icon={<Lock className="size-4" />} title="Account">
+        <dl className="space-y-5">
+          <div className="space-y-1">
+            <dt>
+              <Label className="text-sm font-medium text-muted-foreground">
+                Email Address
+              </Label>
+            </dt>
+            <dd className="text-sm font-medium text-foreground">{userEmail}</dd>
+            <dd className="text-xs text-muted-foreground">
               Contact support to change your email address
-            </p>
+            </dd>
           </div>
 
-          <div>
-            <Label className="text-sm font-medium text-muted-foreground">
-              User ID
-            </Label>
-            <p className="mt-2 text-sm font-mono text-muted-foreground">
+          <div className="space-y-1">
+            <dt>
+              <Label className="text-sm font-medium text-muted-foreground">
+                User ID
+              </Label>
+            </dt>
+            <dd className="break-all rounded-md bg-muted/60 px-2.5 py-1.5 font-mono text-xs text-muted-foreground">
               {userId}
-            </p>
+            </dd>
           </div>
-        </div>
-      </Card>
+        </dl>
+      </SettingsSection>
 
       {/* Notification Preferences */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <Bell className="h-5 w-5 text-foreground" />
-          <h2 className="text-lg font-semibold">Notifications</h2>
-        </div>
-        <Separator className="mb-6" />
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+      <SettingsSection icon={<Bell className="size-4" />} title="Notifications">
+        <div className="-my-4 divide-y divide-border">
+          <div className="flex items-center justify-between gap-6 py-4">
             <div>
-              <Label className="text-sm font-medium">Email Notifications</Label>
-              <p className="text-xs text-muted-foreground mt-1">
+              <Label htmlFor="settings-email-notifications" className="text-sm font-medium">
+                Email Notifications
+              </Label>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Receive email when someone interacts with your content
               </p>
             </div>
             <Switch
+              id="settings-email-notifications"
               checked={emailNotifications}
               onCheckedChange={setEmailNotifications}
             />
           </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-6 py-4">
             <div>
-              <Label className="text-sm font-medium">
+              <Label htmlFor="settings-community-updates" className="text-sm font-medium">
                 Community Updates
               </Label>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Get notified about new wins, asks, and reflections
               </p>
             </div>
             <Switch
+              id="settings-community-updates"
               checked={communityUpdates}
               onCheckedChange={setCommunityUpdates}
               disabled={!emailNotifications}
             />
           </div>
 
-          <Separator />
-
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-6 py-4">
             <div>
-              <Label className="text-sm font-medium">Weekly Digest</Label>
-              <p className="text-xs text-muted-foreground mt-1">
+              <Label htmlFor="settings-weekly-digest" className="text-sm font-medium">
+                Weekly Digest
+              </Label>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Summary email every Monday morning
               </p>
             </div>
             <Switch
+              id="settings-weekly-digest"
               checked={weeklyDigest}
               onCheckedChange={setWeeklyDigest}
               disabled={!emailNotifications}
             />
           </div>
         </div>
-      </Card>
+      </SettingsSection>
 
       {/* Session */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <LogOut className="h-5 w-5 text-foreground" />
-          <h2 className="text-lg font-semibold">Session</h2>
+      <SettingsSection icon={<LogOut className="size-4" />} title="Session">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            You will be signed out of this account on all devices.
+          </p>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            Sign out
+          </Button>
         </div>
-        <Separator className="mb-6" />
-
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="w-full sm:w-auto"
-        >
-          Sign out
-        </Button>
-        <p className="text-xs text-muted-foreground mt-3">
-          You will be signed out of this account on all devices.
-        </p>
-      </Card>
+      </SettingsSection>
     </div>
   )
 }

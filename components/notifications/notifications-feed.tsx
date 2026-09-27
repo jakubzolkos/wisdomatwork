@@ -59,19 +59,19 @@ const KIND_META: Record<
     label: 'Announcement',
     icon: Megaphone,
     tone: 'bg-secondary text-secondary-foreground',
-    accent: 'border-l-secondary',
+    accent: 'text-muted-foreground',
   },
   reminder: {
     label: 'Reminder',
     icon: Bell,
-    tone: 'bg-primary/10 text-primary',
-    accent: 'border-l-primary',
+    tone: 'bg-primary-soft text-primary',
+    accent: 'text-primary',
   },
   alert: {
     label: 'Alert',
     icon: AlertTriangle,
     tone: 'bg-destructive/10 text-destructive',
-    accent: 'border-l-destructive',
+    accent: 'text-destructive',
   },
 }
 
@@ -128,23 +128,39 @@ export function NotificationsFeed({
 
   const inner = (
     <>
-      <div className="mb-6 flex items-center justify-between gap-2">
+      <div
+        className={`flex items-center justify-between gap-2 px-5 py-4 sm:px-6 ${expanded ? 'border-b border-border' : ''}`}
+      >
         {collapsible ? (
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="flex flex-1 items-center justify-between gap-2 transition-opacity hover:opacity-75"
+            className="flex flex-1 items-center justify-between gap-2 rounded-md text-left"
             aria-expanded={expanded}
           >
-            <h3 className="font-serif text-lg text-primary">{heading}</h3>
+            <span className="flex items-center gap-2">
+              <h3 className="text-base">{heading}</h3>
+              {unreadCount > 0 && (
+                <span className="rounded-full bg-primary-soft px-2 py-px text-xs font-medium tabular-nums text-primary">
+                  {unreadCount} new
+                </span>
+              )}
+            </span>
             {expanded ? (
-              <ChevronUp className="h-5 w-5 text-text-muted" aria-hidden />
+              <ChevronUp className="h-4 w-4 text-muted-foreground" aria-hidden />
             ) : (
-              <ChevronDown className="h-5 w-5 text-text-muted" aria-hidden />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden />
             )}
           </button>
         ) : (
-          <h3 className="font-serif text-lg text-primary">{heading}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base">{heading}</h3>
+            {unreadCount > 0 && (
+              <span className="rounded-full bg-primary-soft px-2 py-px text-xs font-medium tabular-nums text-primary">
+                {unreadCount} new
+              </span>
+            )}
+          </div>
         )}
         {expanded && visibleItems.length > 0 && (
           <div className="flex items-center gap-1">
@@ -167,30 +183,38 @@ export function NotificationsFeed({
       </div>
 
       {expanded && (
-        <div className="space-y-3">
+        <div>
           {visibleItems.length === 0 ? (
-            <p className="py-4 text-sm text-text-muted">
-              You&apos;re all caught up. New notifications from the fellowship
-              team will show up here.
-            </p>
+            <div className="px-5 py-10 text-center sm:px-6">
+              <span className="mx-auto flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                <Bell className="size-4" aria-hidden />
+              </span>
+              <p className="mx-auto mt-3 max-w-sm text-sm text-muted-foreground">
+                You&apos;re all caught up. New notifications from the fellowship
+                team will show up here.
+              </p>
+            </div>
           ) : (
-            visibleItems.map((item) => (
-              <FeedRow
-                key={item.id}
-                item={item}
-                now={now ?? new Date(item.publishedAt).getTime()}
-                onDismissed={() => {
-                  setDismissedIds((prev) => new Set(prev).add(item.id))
-                  router.refresh()
-                }}
-              />
-            ))
+            <ul className="divide-y divide-border">
+              {visibleItems.map((item) => (
+                <li key={item.id}>
+                  <FeedRow
+                    item={item}
+                    now={now ?? new Date(item.publishedAt).getTime()}
+                    onDismissed={() => {
+                      setDismissedIds((prev) => new Set(prev).add(item.id))
+                      router.refresh()
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
           )}
           {!hideViewAll && visibleItems.length > 0 && (
-            <div className="pt-2">
+            <div className="border-t border-border px-5 py-3 sm:px-6">
               <Link
                 href="/notifications"
-                className="text-xs font-medium text-primary hover:underline"
+                className="text-sm font-medium text-primary underline-offset-[3px] hover:underline"
               >
                 View all notifications
               </Link>
@@ -201,11 +225,17 @@ export function NotificationsFeed({
     </>
   )
 
-  if (!collapsible) return inner
+  if (!collapsible) {
+    return (
+      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+        {inner}
+      </section>
+    )
+  }
 
   return (
-    <Card className="border-0 shadow-card">
-      <CardContent className="p-8">{inner}</CardContent>
+    <Card className="gap-0 overflow-hidden py-0 shadow-xs">
+      <CardContent className="p-0">{inner}</CardContent>
     </Card>
   )
 }
@@ -244,7 +274,7 @@ function ClearAllButton({
       type="button"
       variant="ghost"
       size="sm"
-      className="h-8 text-xs text-text-muted hover:text-destructive"
+      className="h-8 text-xs text-muted-foreground hover:text-destructive"
       disabled={pending}
       aria-label={`Clear all ${count} notifications`}
       onClick={() =>
@@ -294,63 +324,58 @@ function FeedRow({
   }
 
   /*
-    Visual weight scales with unread state so brand-new items pop:
-      - Unread: solid card surface with a left accent stripe matching
-        the notification kind, brighter background, full ring.
-      - Read:   muted card with a subtle border, no accent stripe.
-    The accent stripe + ring pattern is consistent with the kind
-    badges, so users can recognize an Alert at a glance.
+    Unread rows get a small highlight dot in the gutter, a faint
+    navy tint and a semibold title; read rows sit flat on the card.
+    The kind badge colour carries the Alert / Reminder cue.
   */
   return (
     <div
       className={[
-        'relative rounded-lg border transition-colors',
-        isUnread
-          ? `border-l-4 ${meta.accent} border-y-primary/20 border-r-primary/20 bg-primary/5 shadow-sm`
-          : 'border-border bg-background',
+        'relative transition-colors',
+        isUnread ? 'bg-primary-soft/40 hover:bg-primary-soft/70' : 'hover:bg-accent/60',
         dismissPending ? 'opacity-50 pointer-events-none' : '',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="flex items-start gap-3 p-3 sm:p-4">
-        <Avatar className="h-8 w-8 flex-shrink-0">
-          <AvatarFallback className="bg-bg-muted text-xs">
+      {isUnread && (
+        <span
+          className="absolute left-2 top-[1.9rem] inline-block size-2 rounded-full bg-highlight sm:left-2.5"
+          aria-label="Unread"
+        />
+      )}
+      <div className="flex items-start gap-3 px-5 py-4 sm:px-6">
+        <Avatar className="size-9 flex-shrink-0">
+          <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
             {item.author?.initials ?? 'WF'}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
+            <p
+              className={`text-sm ${isUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}
+            >
+              {item.title}
+            </p>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wider ${meta.tone}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${meta.tone}`}
             >
               <Icon className="h-3 w-3" aria-hidden />
               {meta.label}
             </span>
-            <p
-              className={`text-sm ${isUnread ? 'font-semibold text-foreground' : 'font-medium text-text'}`}
-            >
-              {item.title}
-            </p>
             {item.pinned && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-bg-muted px-2 py-0.5 text-xs text-text-muted">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                 <Pin className="h-3 w-3" aria-hidden />
                 Pinned
               </span>
             )}
-            {isUnread && (
-              <span
-                className="inline-block h-2 w-2 rounded-full bg-primary"
-                aria-label="Unread"
-              />
-            )}
           </div>
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-muted-foreground">
             {item.author?.name ?? 'Fellowship team'}
             {' · '}
             {formatRelativeTime(item.publishedAt, now)}
           </p>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-text">
+          <p className="whitespace-pre-line pt-0.5 text-sm leading-relaxed text-foreground/90">
             {item.body}
           </p>
 
@@ -361,12 +386,12 @@ function FeedRow({
             set in the notification dialog. Both can coexist.
           */}
           {(item.content || (item.ctaUrl && item.ctaLabel)) && (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-2">
               {item.content && (
                 <Link
                   href={item.content.href}
                   onClick={markRead}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-bg-muted"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-foreground shadow-xs transition-colors hover:bg-accent"
                 >
                   <BookOpen className="h-3.5 w-3.5" aria-hidden />
                   Open: {item.content.title}
@@ -384,7 +409,7 @@ function FeedRow({
                       : undefined
                   }
                   onClick={markRead}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary-hover"
                 >
                   {item.ctaLabel}
                   {/^https?:\/\//.test(item.ctaUrl) && (
@@ -401,7 +426,7 @@ function FeedRow({
             type="button"
             onClick={dismiss}
             disabled={dismissPending}
-            className="-mr-1 -mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            className="-mr-1 -mt-1 inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Clear this notification"
           >
             <X className="h-4 w-4" aria-hidden />
@@ -411,7 +436,8 @@ function FeedRow({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-xs"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+
               disabled={readPending}
               onClick={markRead}
             >

@@ -55,8 +55,8 @@ export function PagesList({ pages, onDelete }: PagesListProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <Card className="overflow-hidden pb-0">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
           <div>
             <CardTitle>Custom Pages</CardTitle>
             <CardDescription>
@@ -71,10 +71,10 @@ export function PagesList({ pages, onDelete }: PagesListProps) {
           </Link>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="px-0">
           {pages.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
+            <div className="mx-6 mb-6 rounded-xl border border-dashed p-10 text-center">
+              <p className="mb-4 text-sm text-muted-foreground">
                 No custom pages yet. Create one to get started.
               </p>
               <Link href="/admin/custom-pages/new">
@@ -85,11 +85,11 @@ export function PagesList({ pages, onDelete }: PagesListProps) {
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border border-t border-border">
               {pages.map((page) => (
                 <div
                   key={page.id}
-                  className="flex items-center gap-4 p-3 rounded-lg border hover:bg-accent/50 transition"
+                  className="flex items-center gap-4 px-6 py-3 transition-colors hover:bg-accent/60"
                 >
                   {/* Page Info */}
                   <div className="flex-1 min-w-0">
@@ -97,11 +97,14 @@ export function PagesList({ pages, onDelete }: PagesListProps) {
                       href={`/admin/custom-pages/${page.id}`}
                       className="hover:underline"
                     >
-                      <h3 className="font-medium truncate">{page.title}</h3>
+                      <h3 className="truncate text-sm font-medium">{page.title}</h3>
                     </Link>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                      <span>/pages/{page.slug}</span>
-                      <Badge variant={page.is_published ? 'default' : 'secondary'}>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-mono">/pages/{page.slug}</span>
+                      <Badge
+                        variant={page.is_published ? 'outline' : 'secondary'}
+                        className={page.is_published ? 'border-success/30 bg-success-soft text-success' : undefined}
+                      >
                         {page.is_published ? 'Published' : 'Draft'}
                       </Badge>
                     </div>

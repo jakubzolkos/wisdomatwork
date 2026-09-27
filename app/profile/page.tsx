@@ -1,5 +1,5 @@
-import { UserCircle } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
+import { PageHeader } from '@/components/page-header'
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/top-bar'
 import { ProfileEditor } from '@/components/profile/profile-editor'
@@ -66,22 +66,14 @@ export default async function ProfilePage() {
     <div className="min-h-screen bg-canvas">
       <TopBar />
       <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-10">
-        <header className="flex flex-col gap-2 border-b border-border pb-6">
-          <p className="inline-flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground">
-            <UserCircle className="h-3.5 w-3.5" aria-hidden="true" />
-            Your profile
-          </p>
-          <h1 className="font-serif text-3xl text-foreground text-balance sm:text-4xl">
-            Profile
-          </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            This is what your teammates and the wider Fellowship see in the
-            Team and Community directories. Photos make the directory feel
-            personal - upload one if you can.
-          </p>
-        </header>
+        <PageHeader
+          eyebrow="Your profile"
+          title="Profile"
+          description="This is what your teammates and the wider Fellowship see in the Team and Community directories. Photos make the directory feel personal - upload one if you can."
+        />
 
-        <section className="mt-8">
+        <section>
+
           <ProfileEditor initial={initial} />
         </section>
       </main>
