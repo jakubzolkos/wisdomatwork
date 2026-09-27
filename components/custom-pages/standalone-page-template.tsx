@@ -15,7 +15,7 @@ interface StandalonePageTemplateProps {
  */
 export function StandalonePageTemplate({ metadata, children }: StandalonePageTemplateProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <TopBar />
       <main className="w-full">
         {children}

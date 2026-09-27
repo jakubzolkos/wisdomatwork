@@ -38,31 +38,17 @@ export function NotificationsBell() {
       asChild
       variant="ghost"
       size="icon"
-      className="relative text-white hover:bg-primary-light"
+      className="relative text-muted-foreground hover:text-foreground"
       aria-label={
         hasUnread ? `Notifications (${count} unread)` : 'Notifications'
       }
     >
       <Link href="/notifications">
-        {/*
-          When there are unread notifications we layer two cues on
-          top of the bell so it's hard to miss:
-            1. A faint outward ping ring around the icon (animate-ping)
-            2. A solid badge in the top-right corner with the count
-          The ping is purely decorative and aria-hidden.
-        */}
-        {hasUnread && (
-          <span
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-            aria-hidden
-          >
-            <span className="absolute h-7 w-7 animate-ping rounded-full bg-destructive/40" />
-          </span>
-        )}
+        {/* Unread count badge in the top-right corner of the bell. */}
         <Bell className="relative h-5 w-5" aria-hidden />
         {hasUnread ? (
           <span
-            className="absolute -right-1 -top-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[11px] font-semibold leading-[18px] text-white shadow-sm ring-2 ring-primary"
+            className="absolute right-0.5 top-0.5 inline-flex min-w-[17px] items-center justify-center rounded-full bg-highlight px-1 text-[10px] font-semibold leading-[17px] text-highlight-foreground ring-2 ring-background"
             aria-hidden
           >
             {display}

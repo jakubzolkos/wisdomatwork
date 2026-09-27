@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const customPages = await getMenuCustomPages()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:py-12">
         <AdminBreadcrumb />

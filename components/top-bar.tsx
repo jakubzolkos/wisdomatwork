@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { Settings, LogOut, User as UserIcon, Shield, Edit2, Check, X } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Settings, LogOut, User as UserIcon, Shield, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +13,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useMaybeUser } from '@/lib/user-context'
 import { createClient } from '@/lib/supabase/client'
 import { roleLabels } from '@/lib/roles'
+import { cn } from '@/lib/utils'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
 import { PreviewCohortMenu } from '@/components/admin/preview-cohort-menu'
 import type { CustomPage } from '@/lib/custom-pages/types'
@@ -26,19 +27,34 @@ interface TopBarProps {
   customPages?: CustomPage[]
 }
 
+type LabelKey = 'dashboard' | 'about' | 'library' | 'community'
+
+const PRIMARY_NAV: { key: LabelKey; href: string; match: string[] }[] = [
+  { key: 'dashboard', href: '/dashboard', match: ['/dashboard', '/phases'] },
+  { key: 'about', href: '/about', match: ['/about'] },
+  { key: 'library', href: '/resources', match: ['/resources'] },
+  { key: 'community', href: '/community', match: ['/community'] },
+]
+
+const DEFAULT_LABELS: Record<LabelKey, string> = {
+  dashboard: 'Dashboard',
+  about: 'About',
+  library: 'Library',
+  community: 'Community',
+}
+
+function isActive(pathname: string, prefixes: string[]) {
+  return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
 export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
   const { user } = useMaybeUser()
   const router = useRouter()
-  const [editingLabel, setEditingLabel] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState<string>('')
-  const [labels, setLabels] = useState({
-    dashboard: 'Dashboard',
-    about: 'About',
-    library: 'Library',
-    community: 'Community',
-  })
+  const pathname = usePathname() ?? ''
+  const [labels, setLabels] = useState<Record<LabelKey, string>>(DEFAULT_LABELS)
   const [customPages, setCustomPages] = useState<CustomPage[]>(initialCustomPages)
-  const [isLoading, setIsLoading] = useState(true)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const isAdmin = user?.role === 'admin'
 
   // Load labels from API on mount
   useEffect(() => {
@@ -48,16 +64,14 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
         if (response.ok) {
           const data = await response.json()
           setLabels({
-            dashboard: data.dashboard || 'Dashboard',
-            about: data.about || 'About',
-            library: data.library || 'Library',
-            community: data.community || 'Community',
+            dashboard: data.dashboard || DEFAULT_LABELS.dashboard,
+            about: data.about || DEFAULT_LABELS.about,
+            library: data.library || DEFAULT_LABELS.library,
+            community: data.community || DEFAULT_LABELS.community,
           })
         }
       } catch (error) {
-        console.error('[v0] Error loading navigation labels:', error)
-      } finally {
-        setIsLoading(false)
+        console.error('Error loading navigation labels:', error)
       }
     }
 
@@ -74,12 +88,17 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
           setCustomPages(Array.isArray(pages) ? pages : [])
         }
       } catch (error) {
-        console.error('[v0] Error loading custom pages:', error)
+        console.error('Error loading custom pages:', error)
       }
     }
 
     loadCustomPages()
   }, [user?.id, user?.role])
+
+  // Close the mobile menu after navigating.
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -88,364 +107,207 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
     router.refresh()
   }
 
-  const handleEditStart = (key: string, currentLabel: string, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setEditingLabel(key)
-    setEditValue(currentLabel)
-  }
-
-  const handleEditSave = async (key: string) => {
-    if (!editValue.trim()) {
-      setEditingLabel(null)
-      return
-    }
-
-    const newLabels = {
-      ...labels,
-      [key]: editValue.trim(),
-    }
-
-    try {
-      const response = await fetch('/api/admin/navigation-labels', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newLabels),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setLabels(newLabels)
-        console.log('[v0] Navigation labels updated successfully')
-      } else {
-        console.error('[v0] Failed to save navigation label')
-      }
-    } catch (error) {
-      console.error('[v0] Error saving navigation label:', error)
-    }
-
-    setEditingLabel(null)
-    setEditValue('')
-  }
-
-  const handleEditCancel = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    setEditingLabel(null)
-    setEditValue('')
-  }
-
   const initials = user?.fullName
     ? user.fullName
         .split(' ')
         .map((n) => n[0])
         .slice(0, 2)
         .join('')
+        .toUpperCase()
     : '?'
 
+  const navLinkClass = (active: boolean) =>
+    cn(
+      'relative inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition-colors',
+      active
+        ? 'text-foreground after:absolute after:inset-x-3 after:-bottom-[13px] after:h-0.5 after:rounded-full after:bg-primary'
+        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+    )
+
+  const mobileLinkClass = (active: boolean) =>
+    cn(
+      'flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+      active ? 'bg-primary-soft text-primary' : 'text-foreground hover:bg-accent',
+    )
+
   return (
-    <header 
-      className="sticky top-0 z-50 h-20 border-b border-border flex items-center justify-between px-6 shadow-card"
-      style={{ backgroundColor: '#274d80' }}
-    >
-      {/* Left: Practical Wisdom Project Logo + Portal Name */}
-      <Link href="/dashboard" className="flex items-center gap-3">
-        <Image 
-          src="/pwp-logo.png" 
-          alt="Practical Wisdom Project - Abigail Adams Institute" 
-          width={140}
-          height={90}
-          className="h-16 w-auto"
-          priority
-        />
-        <div className="text-lg font-vollkorn font-semibold text-white hidden sm:block">
-          WaW Fellows Portal
-        </div>
-      </Link>
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr]">
+        {/* Brand */}
+        <Link href="/dashboard" className="flex shrink-0 items-center gap-3 justify-self-start">
+          <Image
+            src="/aai-mark.png"
+            alt="Abigail Adams Institute"
+            width={240}
+            height={144}
+            className="h-8 w-auto"
+            priority
+          />
+          <span className="hidden border-l border-border pl-3 leading-tight sm:block">
+            <span className="block font-display text-[15px] font-semibold text-foreground">
+              Wisdom at Work
+            </span>
+            <span className="block text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              Fellows Portal
+            </span>
+          </span>
+        </Link>
 
-      {/* Center: Horizontal Nav */}
-      <nav className="hidden md:flex items-center gap-8">
-        <div className="relative group">
-          {editingLabel === 'dashboard' ? (
-            <div className="flex items-center gap-1">
-              <Input
-                autoFocus
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 px-2 text-sm w-24"
-              />
-              <button
-                onClick={() => handleEditSave('dashboard')}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <Check className="h-4 w-4 text-green-300" />
-              </button>
-              <button
-                onClick={(e) => handleEditCancel(e)}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <X className="h-4 w-4 text-red-300" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 group/nav">
+        {/* Desktop nav */}
+        <nav aria-label="Primary" className="hidden items-center justify-center gap-1 lg:flex">
+          {PRIMARY_NAV.map((item) => {
+            const active = isActive(pathname, item.match)
+            return (
               <Link
-                href="/dashboard"
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
+                key={item.key}
+                href={item.href}
+                className={navLinkClass(active)}
+                aria-current={active ? 'page' : undefined}
               >
-                {labels.dashboard}
+                {labels[item.key]}
               </Link>
-              {user?.role === 'admin' && (
-                <button
-                  onClick={(e) => handleEditStart('dashboard', labels.dashboard, e)}
-                  className="p-0.5 hover:bg-primary-light rounded transition-opacity"
-                  title="Edit label"
-                >
-                  <Edit2 className="h-3 w-3 text-white/60" />
-                </button>
-              )}
+            )
+          })}
+
+          {customPages.map((page) => {
+            const href = `/pages/${page.slug}`
+            const active = isActive(pathname, [href])
+            return (
+              <Link
+                key={page.id}
+                href={href}
+                className={navLinkClass(active)}
+                aria-current={active ? 'page' : undefined}
+              >
+                {page.title}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* Right cluster */}
+        <div className="flex items-center justify-end gap-1.5 justify-self-end">
+          {isAdmin && (
+            <div className="hidden items-center gap-1 lg:flex">
+              <Link
+                href="/admin"
+                className={cn(navLinkClass(isActive(pathname, ['/admin'])), 'gap-1.5')}
+              >
+                <Shield className="h-4 w-4" />
+                Admin
+              </Link>
+              <PreviewCohortMenu />
+              <span className="mx-1.5 h-5 w-px bg-border" aria-hidden />
             </div>
           )}
-        </div>
 
-        <div className="relative group">
-          {editingLabel === 'about' ? (
-            <div className="flex items-center gap-1">
-              <Input
-                autoFocus
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 px-2 text-sm w-20"
-              />
+          {user ? <NotificationsBell /> : null}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <button
-                onClick={() => handleEditSave('about')}
-                className="p-1 hover:bg-primary-light rounded"
+                type="button"
+                className="rounded-full ring-offset-2 ring-offset-background transition hover:ring-2 hover:ring-border"
+                aria-label="User menu"
               >
-                <Check className="h-4 w-4 text-green-300" />
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
               </button>
-              <button
-                onClick={(e) => handleEditCancel(e)}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <X className="h-4 w-4 text-red-300" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 group/nav">
-              <Link
-                href="/about"
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-              >
-                {labels.about}
-              </Link>
-              {user?.role === 'admin' && (
-                <button
-                  onClick={(e) => handleEditStart('about', labels.about, e)}
-                  className="p-0.5 hover:bg-primary-light rounded transition-opacity"
-                  title="Edit label"
-                >
-                  <Edit2 className="h-3 w-3 text-white/60" />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="relative group">
-          {editingLabel === 'library' ? (
-            <div className="flex items-center gap-1">
-              <Input
-                autoFocus
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 px-2 text-sm w-24"
-              />
-              <button
-                onClick={() => handleEditSave('library')}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <Check className="h-4 w-4 text-green-300" />
-              </button>
-              <button
-                onClick={(e) => handleEditCancel(e)}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <X className="h-4 w-4 text-red-300" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 group/nav">
-              <Link
-                href="/resources"
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-              >
-                {labels.library}
-              </Link>
-              {user?.role === 'admin' && (
-                <button
-                  onClick={(e) => handleEditStart('library', labels.library, e)}
-                  className="p-0.5 hover:bg-primary-light rounded transition-opacity"
-                  title="Edit label"
-                >
-                  <Edit2 className="h-3 w-3 text-white/60" />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="relative group">
-          {editingLabel === 'community' ? (
-            <div className="flex items-center gap-1">
-              <Input
-                autoFocus
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="h-8 px-2 text-sm w-24"
-              />
-              <button
-                onClick={() => handleEditSave('community')}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <Check className="h-4 w-4 text-green-300" />
-              </button>
-              <button
-                onClick={(e) => handleEditCancel(e)}
-                className="p-1 hover:bg-primary-light rounded"
-              >
-                <X className="h-4 w-4 text-red-300" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 group/nav">
-              <Link
-                href="/community"
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-              >
-                {labels.community}
-              </Link>
-              {user?.role === 'admin' && (
-                <button
-                  onClick={(e) => handleEditStart('community', labels.community, e)}
-                  className="p-0.5 hover:bg-primary-light rounded transition-opacity"
-                  title="Edit label"
-                >
-                  <Edit2 className="h-3 w-3 text-white/60" />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Custom Pages */}
-        {customPages.map((page) => (
-          <Link
-            key={page.id}
-            href={`/pages/${page.slug}`}
-            className="text-sm font-medium text-white/80 hover:text-white transition-colors"
-          >
-            {page.title}
-          </Link>
-        ))}
-
-        {user?.role === 'admin' && (
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-white/80 hover:text-white transition-colors flex items-center gap-1"
-          >
-            <Shield className="h-4 w-4" />
-            Admin
-          </Link>
-        )}
-
-        {user?.role === 'admin' && <PreviewCohortMenu />}
-      </nav>
-
-      {/* Right: notifications bell + user menu. The bell shows an
-          unread badge driven by /api/notifications/unread-count and
-          links to the full /notifications inbox. */}
-      <div className="flex items-center gap-4">
-        {user ? <NotificationsBell /> : null}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-primary-light"
-              aria-label="User menu"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary-light text-white font-serif">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-60">
-            <div className="px-2 py-1.5">
-              <p className="text-sm font-medium text-text">
-                {user?.fullName ?? 'Signed out'}
-              </p>
-              <p className="text-xs text-text-muted">
-                {user ? (
-                  <>
-                    {roleLabels[user.role]}
-                    {user.schoolName ? ` · ${user.schoolName}` : ''}
-                  </>
-                ) : (
-                  'No active session'
-                )}
-              </p>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <UserIcon className="h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/settings"
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            {user?.role === 'admin' && (
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <div className="px-2 py-2">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {user?.fullName ?? 'Signed out'}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user ? (
+                    <>
+                      {roleLabels[user.role]}
+                      {user.schoolName ? ` · ${user.schoolName}` : ''}
+                    </>
+                  ) : (
+                    'No active session'
+                  )}
+                </p>
+              </div>
+              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span>Admin console</span>
+                <Link href="/profile" className="cursor-pointer">
+                  <UserIcon />
+                  Profile
                 </Link>
               </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault()
-                handleSignOut()
-              }}
-              className="flex items-center gap-2 cursor-pointer text-destructive"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">
+                  <Settings />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin" className="cursor-pointer">
+                    <Shield />
+                    Admin console
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={(e) => {
+                  e.preventDefault()
+                  handleSignOut()
+                }}
+                className="cursor-pointer"
+              >
+                <LogOut />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Mobile nav */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 gap-0 p-0">
+              <SheetHeader className="border-b border-border">
+                <SheetTitle className="font-display text-base">Wisdom at Work</SheetTitle>
+              </SheetHeader>
+              <nav aria-label="Mobile" className="flex flex-col gap-0.5 p-3">
+                {PRIMARY_NAV.map((item) => (
+                  <Link key={item.key} href={item.href} className={mobileLinkClass(isActive(pathname, item.match))}>
+                    {labels[item.key]}
+                  </Link>
+                ))}
+                {customPages.map((page) => (
+                  <Link
+                    key={page.id}
+                    href={`/pages/${page.slug}`}
+                    className={mobileLinkClass(isActive(pathname, [`/pages/${page.slug}`]))}
+                  >
+                    {page.title}
+                  </Link>
+                ))}
+                {isAdmin && (
+                  <>
+                    <div className="my-2 h-px bg-border" />
+                    <Link href="/admin" className={mobileLinkClass(isActive(pathname, ['/admin']))}>
+                      <Shield className="h-4 w-4" />
+                      Admin console
+                    </Link>
+                  </>
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   )

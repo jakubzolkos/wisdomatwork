@@ -32,7 +32,7 @@ export default async function CommunityLayout({
   const customPages = await getMenuCustomPages()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">

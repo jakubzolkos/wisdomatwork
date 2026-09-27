@@ -35,7 +35,7 @@ export function PreviewCohortMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         disabled={pending}
-        className="text-sm font-medium text-white/80 hover:text-white transition-colors flex items-center gap-1 disabled:opacity-60"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
       >
         <Eye className="h-4 w-4" />
         Preview

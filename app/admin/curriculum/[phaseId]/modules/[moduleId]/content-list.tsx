@@ -185,7 +185,7 @@ export function ContentList({
                     <ul
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`divide-y divide-border ${snapshot.isDraggingOver ? 'bg-accent/5' : ''}`}
+                      className={`divide-y divide-border ${snapshot.isDraggingOver ? 'bg-primary-soft/60' : ''}`}
                     >
                       {categoryItems.map((item, index) => (
                         <Draggable

@@ -180,7 +180,7 @@ export function AdminPageContentSlot({
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 className={`space-y-2 rounded-lg border border-dashed border-border p-3 transition-colors ${
-                  snapshot.isDraggingOver ? 'bg-accent/5' : ''
+                  snapshot.isDraggingOver ? 'bg-primary-soft/60' : ''
                 }`}
               >
                 {localItems.map((item, index) => (

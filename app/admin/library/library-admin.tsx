@@ -376,7 +376,7 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
               href={row.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto inline-flex items-center gap-1 text-xs text-accent hover:underline"
+              className="ml-auto inline-flex items-center gap-1 text-xs text-highlight hover:underline"
             >
               Open
               <ExternalLink className="h-3 w-3" aria-hidden="true" />

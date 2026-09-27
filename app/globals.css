@@ -4,112 +4,127 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Abigail Adams Institute Brand Palette
+  /* Abigail Adams Institute palette, modernised
      ---------------------------------------------------------------
-     The WaW Learning Portal visual identity: calm, cool, collected.
-     Classical university press aesthetic for sustained reading/reflection.
-     ---------------------------------------------------------------
-  */
+     Navy is the single brand colour for primary actions and the
+     active state. Crimson is a rare highlight (progress, "live",
+     current item) and never a hover or error colour. Everything
+     else is a cool neutral scale so content, not chrome, carries
+     the page.
+     --------------------------------------------------------------- */
 
-  /* AAI Brand core */
-  --color-navy: #274d80;          /* primary — headers, buttons, links, key UI */
-  --color-paper: #fefefe;          /* main canvas background */
-  --color-parchment: #faf7f2;      /* content surface — cards, lesson body bg */
-  --color-ink: #1a2f4f;            /* body text, deeper than navy for reading */
-  --color-navy-muted: #6b86ad;     /* secondary text, inactive states, borders */
-  --color-navy-tint: #e8eef5;      /* subtle fills, hover states on light surfaces */
-  
-  /* Accent — use sparingly */
-  --color-crimson: #bb4658;        /* progress, current state, live indicators */
-  --color-crimson-soft: #f4e2e4;   /* crimson background fills (badges, highlights) */
+  /* Brand */
+  --brand-navy: #274d80;
+  --brand-navy-hover: #1f3f6b;
+  --brand-navy-soft: #edf2f8;
+  --brand-crimson: #b43f52;
+  --brand-crimson-soft: #fbeef0;
 
-  /* Functional colors */
-  --success: #4a7c59;
-  --warning: #c68b3c;
-  --error: #a13d3d;
+  /* Neutrals (cool, navy-tinted slate) */
+  --neutral-0: #ffffff;
+  --neutral-25: #fafbfc;
+  --neutral-50: #f5f7fa;
+  --neutral-100: #eef1f5;
+  --neutral-200: #e2e7ee;
+  --neutral-300: #cfd6e0;
+  --neutral-500: #66758b;
+  --neutral-700: #334257;
+  --neutral-900: #111c2e;
 
-  /* Border weights */
-  --border-subtle: rgba(39, 77, 128, 0.12);
-  --border-default: rgba(39, 77, 128, 0.20);
-  --border-strong: rgba(39, 77, 128, 0.35);
+  /* Semantic surface + text */
+  --canvas: var(--neutral-50);
+  --background: var(--neutral-0);
+  --foreground: var(--neutral-900);
+  --card: var(--neutral-0);
+  --card-foreground: var(--neutral-900);
+  --popover: var(--neutral-0);
+  --popover-foreground: var(--neutral-900);
 
-  /* Legacy/compatibility mapping — preserve existing token references */
-  --primary: var(--color-navy);
-  --primary-light: #1d3d66;
-  --accent: var(--color-crimson);
-  --bg: var(--color-paper);
-  --bg-subtle: var(--color-parchment);
-  --bg-muted: var(--color-crimson-soft);
-  --text: var(--color-ink);
-  --text-muted: var(--color-navy-muted);
-  --border: rgba(39, 77, 128, 0.15);
-
-  /* shadcn compatibility tokens */
-  --background: var(--bg);
-  --foreground: var(--text);
-  --card: var(--bg-subtle);
-  --card-foreground: var(--text);
-  --popover: var(--bg);
-  --popover-foreground: var(--text);
-  --primary-token: var(--primary);
+  --primary: var(--brand-navy);
+  --primary-hover: var(--brand-navy-hover);
   --primary-foreground: #ffffff;
-  --secondary: var(--bg-subtle);
-  --secondary-foreground: var(--text);
-  --muted: var(--bg-muted);
-  --muted-foreground: var(--text-muted);
-  --accent-token: var(--accent);
-  --accent-foreground: #ffffff;
-  --destructive: var(--accent);
-  --destructive-foreground: #ffffff;
-  --border-token: var(--border);
-  --input: var(--border);
-  --ring: var(--accent);
+  --primary-soft: var(--brand-navy-soft);
 
-  /* Chart colors: brand-first ordering */
-  --chart-1: var(--color-navy);
-  --chart-2: var(--color-crimson);
-  --chart-3: #0c4a80;
-  --chart-4: var(--color-navy-tint);
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-900);
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-500);
+
+  /* shadcn "accent" = neutral hover/selected surface */
+  --accent: var(--neutral-100);
+  --accent-foreground: var(--neutral-900);
+
+  /* Brand highlight, use sparingly */
+  --highlight: var(--brand-crimson);
+  --highlight-soft: var(--brand-crimson-soft);
+  --highlight-foreground: #ffffff;
+
+  /* Status */
+  --destructive: #c4323f;
+  --destructive-foreground: #ffffff;
+  --success: #2f7d55;
+  --success-soft: #e9f5ee;
+  --warning: #b26b12;
+  --warning-soft: #fdf3e3;
+
+  --border: var(--neutral-200);
+  --border-strong: var(--neutral-300);
+  --input: var(--neutral-300);
+  --ring: var(--brand-navy);
+
+  --chart-1: var(--brand-navy);
+  --chart-2: var(--brand-crimson);
+  --chart-3: #5b8bc4;
+  --chart-4: #9fb4cf;
   --chart-5: var(--success);
 
-  /* Sidebar tokens */
-  --sidebar: var(--bg-subtle);
-  --sidebar-foreground: var(--text);
-  --sidebar-primary: var(--primary);
+  --sidebar: var(--neutral-0);
+  --sidebar-foreground: var(--neutral-900);
+  --sidebar-primary: var(--brand-navy);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--accent);
+  --sidebar-accent: var(--neutral-100);
+  --sidebar-accent-foreground: var(--neutral-900);
+  --sidebar-border: var(--neutral-200);
+  --sidebar-ring: var(--brand-navy);
 
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 }
 
 @theme inline {
-  --font-serif: 'Vollkorn', serif;
-  --font-sans: 'Lora', serif;
-  --font-mono: 'JetBrains Mono', 'Geist Mono', 'Geist Mono Fallback', monospace;
-  
+  /* next/font exposes hashed family names through these variables */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-display: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Code', Menlo, monospace;
+
+  --color-canvas: var(--canvas);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary-token);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary-light: var(--primary-light);
+  --color-primary-soft: var(--primary-soft);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent-token);
+  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
-  --color-border: var(--border-token);
+  --color-warning-soft: var(--warning-soft);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -117,12 +132,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -131,78 +141,115 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Legacy aliases still referenced by older components */
+  --color-primary-light: var(--primary-hover);
+  --color-bg: var(--canvas);
+  --color-bg-subtle: var(--muted);
+  --color-bg-muted: var(--muted);
+  --color-text: var(--foreground);
+  --color-text-muted: var(--muted-foreground);
+  --color-error: var(--destructive);
+
+  --radius-xs: 4px;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-xs: 0 1px 2px 0 rgb(17 28 46 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(17 28 46 / 0.05), 0 1px 3px 0 rgb(17 28 46 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(17 28 46 / 0.08), 0 2px 4px -2px rgb(17 28 46 / 0.04);
+  --shadow-lg: 0 12px 32px -8px rgb(17 28 46 / 0.14), 0 4px 8px -4px rgb(17 28 46 / 0.06);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans leading-relaxed;
+    @apply bg-canvas text-foreground font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif font-bold text-primary;
-  }
-  
+
+  /* Page titles get the serif; everything below is UI-weight sans so
+     component headings (dialogs, cards, menus) stay compact. */
   h1 {
-    @apply text-4xl leading-snug;
+    @apply font-display text-3xl font-semibold leading-tight tracking-tight text-foreground;
   }
-  
+
   h2 {
-    @apply text-3xl leading-snug;
+    @apply text-xl font-semibold leading-snug tracking-tight text-foreground;
   }
-  
+
   h3 {
-    @apply text-2xl leading-snug;
+    @apply text-base font-semibold leading-snug text-foreground;
   }
-  
-  h4 {
-    @apply text-xl leading-snug;
+
+  h4,
+  h5,
+  h6 {
+    @apply text-sm font-semibold leading-snug text-foreground;
   }
-  
-  h5, h6 {
-    @apply text-lg leading-snug;
-  }
-  
+
   a {
-    @apply text-accent hover:text-primary-light transition-colors;
+    @apply transition-colors;
   }
-  
-  a:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary rounded;
+
+  a:focus-visible,
+  button:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  ::selection {
+    background: var(--brand-navy-soft);
+    color: var(--brand-navy);
   }
 }
 
-/* Minimal shadows per spec */
+@layer components {
+  /* Long-form reading content: lesson bodies, custom pages, bios */
+  .rich-text {
+    @apply font-serif text-[1.0625rem] leading-[1.75] text-foreground;
+  }
+  .rich-text > * + * {
+    margin-top: 1em;
+  }
+  .rich-text h1,
+  .rich-text h2,
+  .rich-text h3 {
+    @apply font-display font-semibold tracking-tight;
+    margin-top: 1.75em;
+  }
+  .rich-text h1 { @apply text-3xl; }
+  .rich-text h2 { @apply text-2xl; }
+  .rich-text h3 { @apply text-xl; }
+  .rich-text a {
+    @apply text-primary underline decoration-primary/30 underline-offset-[3px] hover:decoration-primary;
+  }
+  .rich-text ul { @apply list-disc pl-6; }
+  .rich-text ol { @apply list-decimal pl-6; }
+  .rich-text li + li { margin-top: 0.35em; }
+  .rich-text blockquote {
+    @apply border-l-2 border-primary/30 pl-4 italic text-muted-foreground;
+  }
+  .rich-text img { @apply rounded-lg; }
+  .rich-text code { @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.875em]; }
+
+  /* Eyebrow label above page titles */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+}
+
 @layer utilities {
-  .shadow-minimal {
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  }
-  
-  .shadow-card {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  }
-  
-  /* Spacing utilities based on 4px base unit */
-  .gap-xs {
-    @apply gap-1;
-  }
-  
-  .gap-sm {
-    @apply gap-2;
-  }
-  
-  .gap-md {
-    @apply gap-4;
-  }
-  
-  .gap-lg {
-    @apply gap-6;
-  }
-  
-  .gap-xl {
-    @apply gap-8;
-  }
+  /* Legacy shadow names */
+  .shadow-minimal { box-shadow: var(--shadow-xs); }
+  .shadow-card { box-shadow: var(--shadow-sm); }
 }

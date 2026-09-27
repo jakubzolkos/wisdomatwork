@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Cardo, Vollkorn, Lora, Inter } from 'next/font/google'
+import { Inter, Source_Serif_4 } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { UserProvider } from '@/lib/user-context'
 import { getCurrentUser } from '@/lib/auth-server'
@@ -10,45 +10,20 @@ import './globals.css'
 // Skip prerendering for the entire app since it requires Supabase which may not be available at build time
 export const dynamic = 'force-dynamic'
 
-/* AAI Brand Typography Stack */
-const cardo = Cardo({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-cardo',
-  display: 'swap',
-})
-
-const vollkorn = Vollkorn({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-vollkorn',
-  display: 'swap',
-})
-
-const lora = Lora({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-lora',
-  display: 'swap',
-})
-
-const interFont = Inter({
+/* UI sans + reading/display serif. Exposed as CSS variables that
+   app/globals.css maps onto font-sans / font-serif / font-display. */
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
 })
 
-/* Legacy font for backward compatibility */
-const _serif = Lora({
+const sourceSerif = Source_Serif_4({
   subsets: ['latin'],
   weight: ['400', '600', '700'],
-  variable: '--font-serif',
-})
-
-const _sans = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
+  style: ['normal', 'italic'],
+  variable: '--font-source-serif',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -82,13 +57,7 @@ export default async function RootLayout({
   const user = await getCurrentUser()
 
   return (
-    <html 
-      lang="en" 
-      className="bg-background"
-      style={{
-        fontFamily: `${cardo.style.fontFamily}, ${vollkorn.style.fontFamily}, ${lora.style.fontFamily}, ${interFont.style.fontFamily}`,
-      }}
-    >
+    <html lang="en" className={`${inter.variable} ${sourceSerif.variable}`}>
       {/* `suppressHydrationWarning` here is scoped to <body> only -
           it silences the false-positive caused by browser extensions
           (Grammarly, LastPass, etc.) that inject `data-gr-*` /
@@ -97,7 +66,7 @@ export default async function RootLayout({
           tree still surface as warnings. */}
       <body
         suppressHydrationWarning
-        className={`${_sans.variable} ${_serif.variable} ${cardo.variable} ${vollkorn.variable} ${lora.variable} ${interFont.variable} font-sans antialiased`}
+        className="font-sans antialiased"
       >
         <SkipNav />
         <UserProvider initialUser={user}>

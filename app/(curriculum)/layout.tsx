@@ -35,7 +35,7 @@ export default async function CurriculumLayout({
   ])
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 lg:flex-row lg:items-start lg:gap-10">
         <aside

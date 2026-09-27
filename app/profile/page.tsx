@@ -63,7 +63,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <TopBar />
       <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-10">
         <header className="flex flex-col gap-2 border-b border-border pb-6">

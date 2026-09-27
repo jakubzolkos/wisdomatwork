@@ -12,7 +12,7 @@ export default async function PagesLayout({
   const customPages = await getMenuCustomPages()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
       {children}
       <Footer />

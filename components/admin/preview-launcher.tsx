@@ -65,10 +65,10 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
   }
 
   return (
-    <Card className="border-accent/30 bg-accent/5">
+    <Card className="border-highlight/30 bg-highlight-soft">
       <CardHeader className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent/15 text-accent">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-highlight-soft text-highlight">
             <Eye className="h-4 w-4" aria-hidden="true" />
           </span>
           <CardTitle className="font-serif text-lg">Preview as fellow</CardTitle>
@@ -140,7 +140,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
                         className={cn(
                           'flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors',
                           'hover:bg-muted/50 focus:bg-muted focus:outline-none',
-                          selected && 'bg-accent/10',
+                          selected && 'bg-primary-soft',
                         )}
                       >
                         <div className="min-w-0">
@@ -190,7 +190,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
                     className={cn(
                       'flex flex-col items-center gap-1 rounded-md border px-4 py-3 text-sm font-medium transition-colors',
                       active
-                        ? 'border-accent bg-accent/10 text-foreground'
+                        ? 'border-primary bg-primary-soft text-primary'
                         : 'border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground',
                     )}
                   >

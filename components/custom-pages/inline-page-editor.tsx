@@ -90,7 +90,7 @@ export function InlinePageEditor({ page }: InlinePageEditorProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-canvas">
       <div className="fixed top-4 right-4 z-50 flex gap-2">
         <Button
           onClick={handleSave}

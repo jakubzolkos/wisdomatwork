@@ -235,7 +235,7 @@ export default async function AdminUsersPage({
 
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-accent/10 text-accent">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-highlight-soft text-highlight">
               <Building2 className="h-5 w-5" />
             </span>
             <div>
