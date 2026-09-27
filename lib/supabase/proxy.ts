@@ -44,12 +44,15 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  // Do not run code between createServerClient and supabase.auth.getUser().
+  // Do not run code between createServerClient and supabase.auth.getClaims().
   // A simple mistake could make it very hard to debug issues with users
   // being randomly logged out.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  //
+  // getClaims() refreshes an expiring session (writing new cookies via
+  // setAll above) and verifies the JWT locally against the project's
+  // cached ES256 JWKS, so unlike getUser() it costs no Auth round-trip.
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims ?? null
 
   const { pathname } = request.nextUrl
 

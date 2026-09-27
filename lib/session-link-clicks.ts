@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth-server'
 
 /**
  * Per-login link-click ledger.
@@ -69,23 +69,19 @@ function parseCookie(value: string | undefined): ClickPayload | null {
 }
 
 /**
- * Returns the current login session's signature - the value of
- * `auth.users.last_sign_in_at` for the signed-in user. Used to tag
- * the click cookie so a logout/login round-trip auto-invalidates
- * the previous session's ledger.
+ * Returns the current login session's signature - the JWT's
+ * `session_id`, which Supabase issues fresh on every sign-in. Used to
+ * tag the click cookie so a logout/login round-trip auto-invalidates
+ * the previous session's ledger. Read from verified claims, so it
+ * costs no Auth round-trip.
  *
  * Returns null when there is no signed-in user.
  */
 async function getSessionTag(): Promise<string | null> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) return null
-  // Fall back to user.id when last_sign_in_at is unavailable
-  // (e.g. service-role contexts) so the tag is at least stable
-  // per-user.
-  return (user.last_sign_in_at as string | null) ?? user.id
+  // Fall back to the user id so the tag is at least stable per-user.
+  return user.sessionId ?? user.id
 }
 
 /**

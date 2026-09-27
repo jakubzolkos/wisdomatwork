@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import { PageRenderer } from '@/components/custom-pages/page-renderer'
 import { InlinePageEditor } from '@/components/custom-pages/inline-page-editor'
+import { getSessionUser } from '@/lib/auth-server'
 import { CustomPageTemplate } from '@/components/custom-pages/page-template'
 
 // Skip prerendering since this page requires authentication
@@ -68,7 +69,7 @@ export default async function PublicPage({ params }: PageProps) {
   // Check if user is admin for inline editing
   let userIsAdmin = false
   try {
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getSessionUser()
     if (user) {
       // Check if user has admin role
       const { data: profile } = await supabase

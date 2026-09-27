@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { getSessionUser } from '@/lib/auth-server'
 
 /**
  * Wire shape returned by `loadReflectionFeed`. Each row is one
@@ -72,9 +73,7 @@ export async function loadReflectionFeed(options?: {
   const supabase = await createClient()
   const limit = Math.max(1, Math.min(options?.limit ?? 50, 200))
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   const currentUserId = user?.id
 
   // Fetch reflections with author and content in one query

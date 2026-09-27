@@ -26,10 +26,8 @@ export default async function CommunityLayout({
 }: {
   children: React.ReactNode
 }) {
-  await requireUser()
-
-  // Fetch custom pages for the menu
-  const customPages = await getMenuCustomPages()
+  // Independent, so run them in parallel rather than back to back.
+  const [, customPages] = await Promise.all([requireUser(), getMenuCustomPages()])
 
   return (
     <div className="min-h-screen bg-canvas">

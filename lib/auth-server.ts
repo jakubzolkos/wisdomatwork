@@ -48,6 +48,50 @@ function buildUserFromProfile(
   }
 }
 
+const PROFILE_COLUMNS =
+  'id, full_name, email, title, avatar_url, role, school_id, school_team_id, deactivated_at, cohort, schools(name), school_teams(id, school_id, cohort_id)'
+
+export interface SessionUser {
+  id: string
+  email: string
+  userMetadata: Record<string, unknown>
+  /** Stable per-login id from the JWT; changes on every sign-in. */
+  sessionId: string | null
+}
+
+/**
+ * The signed-in account, read from the session JWT.
+ *
+ * Uses `getClaims()` rather than `getUser()`: the project signs JWTs
+ * with an asymmetric (ES256) key, so the signature is verified locally
+ * against the cached JWKS instead of round-tripping to Supabase Auth
+ * on every call. The proxy refreshes expiring sessions, so claims are
+ * current. Per-request `cache()` makes repeat calls free.
+ */
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getClaims()
+  if (error || !data?.claims?.sub) return null
+  const claims = data.claims
+  return {
+    id: claims.sub,
+    email: typeof claims.email === 'string' ? claims.email : '',
+    userMetadata: (claims.user_metadata as Record<string, unknown> | undefined) ?? {},
+    sessionId: typeof claims.session_id === 'string' ? claims.session_id : null,
+  }
+})
+
+/** Profile row for a user id, fetched at most once per request. */
+const getProfile = cache(async (userId: string): Promise<ProfileRow | null> => {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select(PROFILE_COLUMNS)
+    .eq('id', userId)
+    .maybeSingle<ProfileRow>()
+  return data ?? null
+})
+
 /**
  * Read the signed-in user + their profile + school metadata.
  * Returns null if there is no session.
@@ -63,30 +107,19 @@ function buildUserFromProfile(
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   try {
-    const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
+    const user = await getSessionUser()
     if (!user) return null
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select(
-        'id, full_name, email, title, avatar_url, role, school_id, school_team_id, deactivated_at, cohort, schools(name), school_teams(id, school_id, cohort_id)',
-      )
-      .eq('id', user.id)
-      .maybeSingle<ProfileRow>()
+    const profile = await getProfile(user.id)
 
     // No profile row yet - minimal fallback so the UI can still render.
     if (!profile) {
       return {
         id: user.id,
-        email: user.email ?? '',
+        email: user.email,
         fullName:
-          (user.user_metadata?.full_name as string | undefined) ??
-          (user.email ?? 'Unknown User'),
+          (user.userMetadata.full_name as string | undefined) ??
+          (user.email || 'Unknown User'),
         role: 'fellow',
         schoolName: '',
       }
@@ -102,13 +135,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
         }
 
         if (preview.type === 'by_fellow') {
-          const { data: target } = await supabase
-            .from('profiles')
-            .select(
-              'id, full_name, email, title, avatar_url, role, school_id, school_team_id, deactivated_at, cohort, schools(name), school_teams(id, school_id, cohort_id)',
-            )
-            .eq('id', preview.fellowId)
-            .maybeSingle<ProfileRow>()
+          const target = await getProfile(preview.fellowId)
 
           if (target && target.role === 'fellow') {
             return buildUserFromProfile(target, target.email ?? '', {
@@ -141,12 +168,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       }
     }
 
-    return buildUserFromProfile(profile, user.email ?? '')
+    return buildUserFromProfile(profile, user.email)
   } catch (error) {
     // If Supabase client initialization fails (e.g., missing env vars or during build),
     // log the error and return null. This allows the app to render without crashing
     // even if Supabase is temporarily unavailable.
-    console.error('[v0] Error in getCurrentUser:', error instanceof Error ? error.message : String(error))
+    console.error('Error in getCurrentUser:', error instanceof Error ? error.message : String(error))
     return null
   }
 })
@@ -167,20 +194,10 @@ export async function requireUser(): Promise<CurrentUser> {
  * jump to another management screen without losing access.
  */
 export async function requireAdmin(): Promise<CurrentUser> {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getSessionUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select(
-      'id, full_name, email, title, avatar_url, role, school_id, deactivated_at, cohort, schools(name)',
-    )
-    .eq('id', user.id)
-    .maybeSingle<ProfileRow>()
-
+  const profile = await getProfile(user.id)
   if (!profile || profile.role !== 'admin') redirect('/dashboard')
-  return buildUserFromProfile(profile, user.email ?? '')
+  return buildUserFromProfile(profile, user.email)
 }

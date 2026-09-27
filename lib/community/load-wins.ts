@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { CommunityPostListItem } from '@/components/community/post-feed'
+import { getSessionUser } from '@/lib/auth-server'
 
 export interface WinsStats {
   total: number
@@ -25,7 +26,7 @@ export interface WinsOverTime {
 /** Load aggregate wins statistics. */
 export async function loadWinsStats(): Promise<WinsStats> {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getSessionUser()
 
   // Get all wins
   const { data: allWins } = await supabase

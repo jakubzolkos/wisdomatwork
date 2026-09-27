@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import type { CustomPage } from '@/lib/custom-pages/types'
 
@@ -6,7 +7,7 @@ import type { CustomPage } from '@/lib/custom-pages/types'
  * Note: Cannot use unstable_cache here because createClient() accesses cookies()
  * which is dynamic data. Use revalidateTag() in API routes to refresh this data when pages change.
  */
-export async function getMenuCustomPages(): Promise<CustomPage[]> {
+export const getMenuCustomPages = cache(async (): Promise<CustomPage[]> => {
   try {
     const supabase = await createClient()
     const { data: pages, error } = await supabase
@@ -39,4 +40,4 @@ export async function getMenuCustomPages(): Promise<CustomPage[]> {
     console.error('[v0] Error fetching custom pages:', error)
     return []
   }
-}
+})

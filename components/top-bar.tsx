@@ -43,6 +43,34 @@ const DEFAULT_LABELS: Record<LabelKey, string> = {
   community: 'Community',
 }
 
+// Module-level caches. Each section layout mounts its own TopBar, so
+// without these every section switch refetched both endpoints (each
+// one another trip through the proxy + Supabase) and flashed defaults.
+let labelsCache: Record<LabelKey, string> | null = null
+let labelsRequest: Promise<Record<LabelKey, string> | null> | null = null
+const customPagesCache = new Map<string, CustomPage[]>()
+
+function loadLabels(): Promise<Record<LabelKey, string> | null> {
+  labelsRequest ??= fetch('/api/admin/navigation-labels')
+    .then((response) => (response.ok ? response.json() : null))
+    .then((data) => {
+      if (!data) return null
+      labelsCache = {
+        dashboard: data.dashboard || DEFAULT_LABELS.dashboard,
+        about: data.about || DEFAULT_LABELS.about,
+        library: data.library || DEFAULT_LABELS.library,
+        community: data.community || DEFAULT_LABELS.community,
+      }
+      return labelsCache
+    })
+    .catch((error) => {
+      console.error('Error loading navigation labels:', error)
+      labelsRequest = null
+      return null
+    })
+  return labelsRequest
+}
+
 function isActive(pathname: string, prefixes: string[]) {
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
@@ -51,49 +79,57 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
   const { user } = useMaybeUser()
   const router = useRouter()
   const pathname = usePathname() ?? ''
-  const [labels, setLabels] = useState<Record<LabelKey, string>>(DEFAULT_LABELS)
-  const [customPages, setCustomPages] = useState<CustomPage[]>(initialCustomPages)
+  const [labels, setLabels] = useState<Record<LabelKey, string>>(labelsCache ?? DEFAULT_LABELS)
+  const pagesKey = `${user?.id ?? 'anon'}:${user?.role ?? ''}`
+  const [customPages, setCustomPages] = useState<CustomPage[]>(
+    initialCustomPages.length > 0 ? initialCustomPages : (customPagesCache.get(pagesKey) ?? []),
+  )
   const [mobileOpen, setMobileOpen] = useState(false)
   const isAdmin = user?.role === 'admin'
 
-  // Load labels from API on mount
+  // Labels are fetched once per page load and shared across remounts.
   useEffect(() => {
-    const loadLabels = async () => {
-      try {
-        const response = await fetch('/api/admin/navigation-labels')
-        if (response.ok) {
-          const data = await response.json()
-          setLabels({
-            dashboard: data.dashboard || DEFAULT_LABELS.dashboard,
-            about: data.about || DEFAULT_LABELS.about,
-            library: data.library || DEFAULT_LABELS.library,
-            community: data.community || DEFAULT_LABELS.community,
-          })
-        }
-      } catch (error) {
-        console.error('Error loading navigation labels:', error)
-      }
+    if (labelsCache) return
+    let cancelled = false
+    loadLabels().then((loaded) => {
+      if (loaded && !cancelled) setLabels(loaded)
+    })
+    return () => {
+      cancelled = true
     }
-
-    loadLabels()
   }, [])
 
-  // Fetch custom pages when user changes (e.g., after login/logout or role change)
+  // Custom pages come from the server layout on first render; refetch
+  // only when the viewer changes (login/logout/role or preview switch),
+  // and remember the result so remounts on other sections reuse it.
   useEffect(() => {
-    const loadCustomPages = async () => {
-      try {
-        const response = await fetch('/api/custom-pages?menu=true')
-        if (response.ok) {
-          const pages = await response.json()
-          setCustomPages(Array.isArray(pages) ? pages : [])
-        }
-      } catch (error) {
-        console.error('Error loading custom pages:', error)
-      }
+    // Fresh server data wins; otherwise reuse what an earlier mount fetched.
+    if (initialCustomPages.length > 0) {
+      customPagesCache.set(pagesKey, initialCustomPages)
+      setCustomPages(initialCustomPages)
+      return
     }
-
-    loadCustomPages()
-  }, [user?.id, user?.role])
+    const cached = customPagesCache.get(pagesKey)
+    if (cached) {
+      setCustomPages(cached)
+      return
+    }
+    if (!user) return
+    let cancelled = false
+    fetch('/api/custom-pages?menu=true')
+      .then((response) => (response.ok ? response.json() : []))
+      .then((pages) => {
+        const list = Array.isArray(pages) ? (pages as CustomPage[]) : []
+        customPagesCache.set(pagesKey, list)
+        if (!cancelled) setCustomPages(list)
+      })
+      .catch((error) => console.error('Error loading custom pages:', error))
+    return () => {
+      cancelled = true
+    }
+    // initialCustomPages is server data for this mount; pagesKey is the trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagesKey])
 
   // Close the mobile menu after navigating.
   useEffect(() => {

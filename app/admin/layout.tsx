@@ -7,8 +7,7 @@ import { getMenuCustomPages } from '@/lib/custom-pages/menu'
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   // Middleware blocks all /admin routes when preview cookie is set,
   // so this check is only reached when the admin is NOT in preview mode.
-  await requireAdmin()
-  const customPages = await getMenuCustomPages()
+  const [, customPages] = await Promise.all([requireAdmin(), getMenuCustomPages()])
 
   return (
     <div className="min-h-screen bg-canvas">
