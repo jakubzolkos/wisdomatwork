@@ -38,11 +38,18 @@ export async function readPreviewCookie(): Promise<PreviewState | null> {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as Partial<PreviewState>
+    // Only same-origin paths, so exiting preview can't redirect off-site.
+    const referrer =
+      typeof parsed.referrer === 'string' &&
+      parsed.referrer.startsWith('/') &&
+      !parsed.referrer.startsWith('//')
+        ? parsed.referrer
+        : undefined
     if (parsed.type === 'by_fellow' && typeof parsed.fellowId === 'string') {
-      return { type: 'by_fellow', fellowId: parsed.fellowId }
+      return { type: 'by_fellow', fellowId: parsed.fellowId, referrer }
     }
     if (parsed.type === 'by_cohort' && isCohort(parsed.cohort)) {
-      return { type: 'by_cohort', cohort: parsed.cohort }
+      return { type: 'by_cohort', cohort: parsed.cohort, referrer }
     }
     return null
   } catch {

@@ -3,9 +3,9 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from '@/lib/auth-server'
 import {
   clearPreviewCookie,
+  readPreviewCookie,
   setPreviewCookie,
 } from '@/lib/admin-preview'
 import { isCohort } from '@/lib/cohorts'
@@ -70,9 +70,9 @@ export async function startPreviewAsCohort(formData: FormData): Promise<void> {
 /** Exit preview mode and return to the admin's own session. */
 export async function endPreview(formData: FormData): Promise<void> {
   // Get the stored referrer from the preview cookie before clearing it
-  const user = await getCurrentUser()
-  const referrer = (user?.preview as any)?.referrer || '/admin'
-  
+  const preview = await readPreviewCookie()
+  const referrer = preview?.referrer || '/admin'
+
   // Clearing the cookie is safe even for non-admins (it's a no-op for
   // them since they wouldn't have one), so we don't gate this. We do
   // still need to be authenticated, which middleware handles.

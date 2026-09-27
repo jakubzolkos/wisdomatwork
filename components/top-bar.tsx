@@ -19,6 +19,7 @@ import { useMaybeUser } from '@/lib/user-context'
 import { createClient } from '@/lib/supabase/client'
 import { roleLabels } from '@/lib/roles'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
+import { PreviewCohortMenu } from '@/components/admin/preview-cohort-menu'
 import type { CustomPage } from '@/lib/custom-pages/types'
 
 interface TopBarProps {
@@ -362,6 +363,8 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
             Admin
           </Link>
         )}
+
+        {user?.role === 'admin' && <PreviewCohortMenu />}
       </nav>
 
       {/* Right: notifications bell + user menu. The bell shows an
