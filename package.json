@@ -2,6 +2,7 @@
   "name": "waw-fellows-portal",
   "version": "0.1.0",
   "private": true,
+  "trustedDependencies": [],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
