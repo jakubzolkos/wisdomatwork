@@ -38,7 +38,7 @@ Copy `.env.example` to `.env.local` and fill it in. `.env.local` is gitignored; 
 
 If the Supabase URL or anon key is missing, the proxy skips its auth check and `getCurrentUser()` returns `null`, so every page redirects to login.
 
-**Database:** there is no migration runner. SQL files live in `scripts/` (plus `lib/sql/migrations/navigation_labels.sql`) and are applied by hand in the Supabase SQL editor. Several numbers are used twice, so see SCHEMA.md for the order that actually applies. Storage buckets: `avatars`, `resource-covers` and `custom-page-images` (created by `scripts/setup-storage.sql` or `POST /api/admin/custom-pages/setup`).
+**Database:** there is no migration runner. SQL files live in `scripts/` (plus `lib/sql/migrations/navigation_labels.sql`) and are applied by hand in the Supabase SQL editor. Several numbers are used twice, so see SCHEMA.md for the order that actually applies. Storage buckets: `avatars`, `resource-covers`, `custom-page-images` and the private `course-files` (058) (created by `scripts/setup-storage.sql` or `POST /api/admin/custom-pages/setup`).
 
 ## Deployment
 

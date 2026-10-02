@@ -14,13 +14,11 @@ import { isEmbeddableVideo } from '@/lib/video-embed'
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import {
-  canFellowSeeContent,
-  canFellowSeeModule,
-  canFellowSeePhase,
   getResourceType,
   type ContentCategory,
   type ResourceType,
 } from '@/lib/curriculum'
+import { canUserSeeItem } from '@/lib/content-access'
 import {
   findAdjacentItems,
   loadFullCurriculum,
@@ -107,24 +105,9 @@ export default async function ContentItemPage({
   ])
 
   if (!phase || !module || !item) notFound()
-
-  if (user.role === 'fellow') {
-    const userCohort = user.cohort ?? null
-    if (!canFellowSeePhase(phase.cohorts, userCohort)) notFound()
-    if (!canFellowSeeModule(module.cohorts, phase.cohorts, userCohort)) {
-      notFound()
-    }
-    if (
-      !canFellowSeeContent(
-        item.cohorts,
-        phase.cohorts,
-        userCohort,
-        module.cohorts,
-      )
-    ) {
-      notFound()
-    }
-  }
+  // Shared with the stored-file route so the page and its files are
+  // always gated by the same rule.
+  if (!canUserSeeItem(user, phase, module, item)) notFound()
 
   // Look up per-user state for the gates and the completion radio.
   // Completion + reflection are persisted in Postgres (scoped to the

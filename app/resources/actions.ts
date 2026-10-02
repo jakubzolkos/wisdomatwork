@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireUser } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { deriveCoverFromUrl } from '@/lib/library/derive-cover'
+import { isStoredFileUrl } from '@/lib/stored-files'
 
 /**
  * Result envelope used by every Library mutation. Returning a plain
@@ -18,6 +19,17 @@ export type LibraryActionResult =
 const VALID_TYPES = new Set(['document', 'video', 'link', 'reading'])
 /** Canonical cohort labels accepted by the visibility multi-select. */
 const VALID_COHORTS = new Set(['A', 'B', 'C'])
+
+/** Absolute URL, or an in-app link to a file in our own bucket. */
+function isValidResourceUrl(url: string): boolean {
+  if (isStoredFileUrl(url)) return true
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const MAX_TITLE_LEN = 200
 const MAX_DESC_LEN = 1_000
@@ -105,9 +117,7 @@ export async function addLibraryResource(
     // Lightweight URL sanity check. We don't require http/https here
     // because facilitators may legitimately link to internal LMS
     // schemes - but we do reject obvious garbage.
-    try {
-      new URL(url)
-    } catch {
+    if (!isValidResourceUrl(url)) {
       return { ok: false, message: 'URL must be a valid web address.' }
     }
     if (!VALID_TYPES.has(resourceType)) {
@@ -347,9 +357,7 @@ export async function updateLibraryResource(
       return { ok: false, message: `Description must be ${MAX_DESC_LEN} characters or fewer.` }
     }
     if (!url) return { ok: false, message: 'URL is required.' }
-    try {
-      new URL(url)
-    } catch {
+    if (!isValidResourceUrl(url)) {
       return { ok: false, message: 'URL must be a valid web address.' }
     }
     if (!VALID_TYPES.has(resourceType)) {

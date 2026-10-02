@@ -1,5 +1,5 @@
 import { requireUser } from '@/lib/auth-server'
-import { fellowCanAccess } from '@/lib/cohorts'
+import { canUserSeeLibraryResource } from '@/lib/content-access'
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/top-bar'
 import {
@@ -27,7 +27,7 @@ const VALID_TYPES = new Set(['document', 'video', 'link', 'reading'])
  *  - Cohort-gated rows for fellows (is_universal=false): strict assignment
  *    only. A fellow ONLY sees resources explicitly assigned to their cohort.
  *    A Cohort C fellow does NOT see resources assigned to A or B.
- *    Uses `fellowCanAccess` for exact cohort matching (not cumulative).
+ *    Uses `canUserSeeLibraryResource` (exact cohort matching, not cumulative).
  *  - Facilitators / admins: see every resource so they can curate.
  *
  * Test cases:
@@ -51,23 +51,14 @@ export default async function LibraryPage() {
     .order('created_at', { ascending: false })
 
   const all = rows ?? []
-  const isFellow = user.role === 'fellow'
 
-  // Two parallel slices, each gated independently. Universal rows
-  // are visible to everyone authenticated, so the only check is the
-  // is_universal flag. Cohort-gated rows use strict assignment (fellowCanAccess)
-  // for fellows; staff bypass and see everything.
+  // Two parallel slices. Visibility comes from the same rule the
+  // stored-file route uses (canUserSeeLibraryResource), so a row a
+  // fellow can't see here can't be downloaded either.
   const universalRows = all.filter((r) => r.is_universal === true)
   const cohortGatedRows = all
     .filter((r) => r.is_universal !== true)
-    .filter((r) => {
-      if (!isFellow) return true
-      // Strict cohort assignment: fellow only sees if their cohort is in the list
-      return fellowCanAccess(
-        r.cohorts as string[] | null,
-        user.cohort ?? null,
-      )
-    })
+    .filter((r) => canUserSeeLibraryResource(user, r))
 
   // Map raw rows -> view shape. Old rows that pre-date 033 may have
   // an unexpected resource_type from a hand edit; we coerce anything

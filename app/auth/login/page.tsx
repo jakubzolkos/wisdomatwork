@@ -534,7 +534,7 @@ function PasswordSetupPanel({
 
 export default function Page() {
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md">
       <Suspense fallback={null}>
         <LoginForm />
       </Suspense>

@@ -58,3 +58,7 @@ Every feature ships with a Playwright test; run the suite before each deploy.
 [ ] Wk 18 (Feb 1)   Communications queue w/ human approval (build on notifications/dispatch + email_logs)
 [ ] Wk 19 (Feb 8)   Communications queue: finish, test, nothing sends without approval
 [ ] Wk 20 (Feb 15)  Breakout room planning; review what's left for Phase 3
+
+
+Questions:
+Lab Three Field Guide file is in trash

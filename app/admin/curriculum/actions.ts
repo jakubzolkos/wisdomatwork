@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
 import { COHORTS } from '@/lib/cohorts'
+import { isStoredFileUrl } from '@/lib/stored-files'
 import {
   isContentCategory,
   isResourceType,
@@ -360,7 +361,9 @@ function readContentInputs(formData: FormData): ContentInputs | string {
   } catch (e) {
     return e instanceof Error ? e.message : 'Invalid selection'
   }
-  if (url && !/^https?:\/\//i.test(url)) {
+  // Stored-file links are in-app paths; leave them alone so saving an
+  // item that serves a bucket file doesn't fail validation.
+  if (url && !/^https?:\/\//i.test(url) && !isStoredFileUrl(url)) {
     return 'URL must start with http:// or https://'
   }
   // Live sessions need somewhere to join - require the URL up-front so
