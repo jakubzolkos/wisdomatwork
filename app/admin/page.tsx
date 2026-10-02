@@ -1,16 +1,5 @@
 import Link from 'next/link'
-import {
-  BookOpen,
-  Building2,
-  CalendarDays,
-  Library,
-  Megaphone,
-  MessagesSquare,
-  Users,
-  Mail,
-  FileText,
-  Trash2,
-} from 'lucide-react'
+import { ADMIN_NAV_GROUPS } from '@/components/admin/admin-nav-items'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
 import { PageHeader } from '@/components/page-header'
@@ -51,66 +40,17 @@ export default async function AdminHomePage() {
       {/* Quick management actions */}
       <section aria-label="Admin tools">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ActionCard
-            href="/admin/users"
-            icon={<Users className="size-[18px]" />}
-            title="Users & cohorts"
-            description="Invite fellows, set roles, assign cohort labels, deactivate accounts."
-          />
-          <ActionCard
-            href="/admin/schools"
-            icon={<Building2 className="size-[18px]" />}
-            title="Schools & teams"
-            description="Group fellows by school team for collaborative reporting and rosters."
-          />
-          <ActionCard
-            href="/admin/curriculum"
-            icon={<BookOpen className="size-[18px]" />}
-            title="Curriculum"
-            description="Author phases, items, and content blocks. Assign each to one or more cohorts."
-          />
-          <ActionCard
-            href="/admin/library"
-            icon={<Library className="size-[18px]" />}
-            title="Library"
-            description="Add, edit, and remove curated books, videos, podcasts, and other resources. Gate by cohort or publish as Recommended Resources."
-          />
-          <ActionCard
-            href="/admin/community"
-            icon={<MessagesSquare className="size-[18px]" />}
-            title="Community"
-            description="Moderate posts and events surfaced in the fellow community feed."
-          />
-          <ActionCard
-            href="/admin/notifications"
-            icon={<Megaphone className="size-[18px]" />}
-            title="Notifications"
-            description="Send announcements, reminders, and alerts. Targeted by cohort, school team, or specific fellows. Optionally email."
-          />
-          <ActionCard
-            href="/admin/schedule"
-            icon={<CalendarDays className="size-[18px]" />}
-            title="Scheduling"
-            description="Create scheduling polls, invite specific fellows to vote on availability, and finalize event times like WhenToMeet."
-          />
-          <ActionCard
-            href="/admin/email-logs"
-            icon={<Mail className="size-[18px]" />}
-            title="Email logs"
-            description="Track all emails sent in the past week. Monitor delivery status and resend failed emails."
-          />
-          <ActionCard
-            href="/admin/custom-pages"
-            icon={<FileText className="size-[18px]" />}
-            title="Custom pages"
-            description="Create and manage custom pages with rich content blocks, images, and text. Publish to the public site with custom URLs."
-          />
-          <ActionCard
-            href="/admin/maintenance"
-            icon={<Trash2 className="size-[18px]" />}
-            title="Portal maintenance"
-            description="Clean up test data, duplicate content, and unused resources. Manage invitations, archive drafts, and review audit logs."
-          />
+          {ADMIN_NAV_GROUPS.flatMap((group) => group.items)
+            .filter((item) => item.description)
+            .map(({ href, label, icon: Icon, description }) => (
+              <ActionCard
+                key={href}
+                href={href}
+                icon={<Icon className="size-[18px]" />}
+                title={label}
+                description={description!}
+              />
+            ))}
         </div>
       </section>
     </div>

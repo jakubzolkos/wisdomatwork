@@ -34,9 +34,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <p className="font-display text-4xl font-semibold leading-tight tracking-tight xl:text-[2.75rem]">
             Wisdom at Work Fellowship
           </p>
-          <p className="text-[15px] leading-relaxed text-primary-foreground/75">
-            A program of the Abigail Adams Institute.
-          </p>
         </div>
       </aside>
 

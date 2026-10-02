@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { requireAdmin } from '@/lib/auth-server'
 import { TopBar } from '@/components/top-bar'
 import { AdminBreadcrumb } from '@/components/admin/admin-breadcrumb'
+import { AdminSidebar } from '@/components/admin/admin-sidebar'
 import { getMenuCustomPages } from '@/lib/custom-pages/menu'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -12,9 +13,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:py-12">
-        <AdminBreadcrumb />
-        <main>{children}</main>
+      <div className="mx-auto flex w-full max-w-7xl">
+        <AdminSidebar />
+        <div className="flex min-w-0 flex-1 flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+          <AdminBreadcrumb />
+          <main>{children}</main>
+        </div>
       </div>
     </div>
   )

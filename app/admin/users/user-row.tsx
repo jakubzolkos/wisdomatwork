@@ -211,14 +211,19 @@ export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolT
         </Select>
       </div>
 
-      <div className="col-span-6 md:col-span-3">
+      <div className="col-span-6 min-w-0 md:col-span-3">
         <Select
           value={schoolTeamId}
           onValueChange={handleSchoolTeamChange}
           disabled={pending}
         >
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="No team" />
+          <SelectTrigger
+            className="h-9 w-full min-w-0"
+            title={cohorts.find((c) => c.id === schoolTeamId)?.name}
+          >
+            {/* block! overrides the trigger's flex on the value so long
+                school names truncate with an ellipsis instead of overflowing. */}
+            <SelectValue placeholder="No team" className="min-w-0 block! truncate text-left" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={NONE_TEAM}>No team</SelectItem>

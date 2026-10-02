@@ -1,0 +1,60 @@
+========================================================================
+PRE-LAUNCH (Sep 29 – Oct 6) — Cohort A (Oct 7) + Cohort B (starts launch week)
+Budget: 20h. Estimates in brackets.
+========================================================================
+
+[ ] [1h]   Production safety: remove demo accounts (029_seed_demo_fellows.sql,
+           031_rotate_demo_password_wisdom123.sql); set NEXT_PUBLIC_APP_URL
+           (falls back to leadership.app), EMAIL_FROM (resend.dev lands in spam), CRON_SECRET
+[ ] [2h]   Audit RLS: cohort-gated tables (phases, modules, items, library) + storage bucket
+[ ] [4h]   Load real Cohort A + B fellows (cohort = 'A' / 'B'), both syllabi, dates,
+           assignments; tag library resources per cohort (A / B / both)
+[ ] [4h]   Move Drive files into a private Supabase bucket; serve via an authenticated
+           route with short-lived signed URLs (I upload files; no admin UI yet)
+[ ] [1.5h] Quick wins using what already exists:
+           - Surveys (temporary): module-linked items with self-mark completion
+           - Appointment link (Calendly / Google appointment schedule)
+           - Ecosystem links via custom pages (blog/Substack, WAW pages, podcast)
+           - Hide community section (Phase 3, clutter)
+[ ] [4h]   Playwright: setup + test fellows A/B + admin in a test DB, and 3 critical tests:
+           - Cohort A cannot reach Cohort B pages/resources, and vice versa
+           - logged-out user is redirected; file URLs return 401/403
+           - fellow cannot open /admin
+[ ] [2h]   Manual smoke test: login + email codes, dashboards per cohort, real iPhone +
+           Android, 2–3 team members try it
+[ ] [1.5h] Fix issues, code freeze, invite Cohort A + Cohort B
+           (confirm Cohort B first-session date so invites go out before it)
+
+Deferred to post-launch (Wk 1–2): admin file upload UI, "Where am I" dashboard polish,
+remaining Playwright tests (login, per-cohort dashboard, mobile viewports).
+NOT before launch: watermarking, native surveys, admin role split, exports, attendance.
+
+========================================================================
+POST-LAUNCH — 20 weeks × 5h
+Budget each week: ~3h features + ~2h reserved for retainer support.
+If support is quiet, pull the next item forward.
+Every feature ships with a Playwright test; run the suite before each deploy.
+========================================================================
+
+[ ] Wk 1  (Oct 5)   Launch support + hotfixes (both cohorts); admin file upload/replace UI
+[ ] Wk 2  (Oct 12)  "Where am I" dashboard polish; remaining Playwright tests
+                    (login, per-cohort dashboard, mobile viewports)
+[ ] Wk 3  (Oct 19)  Native surveys: builder, per-module, auto-completion
+[ ] Wk 4  (Oct 26)  Native surveys: responses by instrument, export; move existing instruments in
+[ ] Wk 5  (Nov 2)   Watermark + PWP footer on PDFs when viewed/printed
+[ ] Wk 6  (Nov 9)   Admin roles: Tech / Research / Ops / Comms (extend lib/roles.ts + RLS)
+[ ] Wk 7  (Nov 16)  Completion/status view by cohort, school, person + CSV export (replaces Master Tracker)
+[ ] Wk 8  (Nov 23)  Thanksgiving, light: written feedback boxes (route to PWP email + log)
+[ ] Wk 9  (Nov 30)  Session-by-session attendance check-off  → PHASE 1 COMPLETE
+[ ] Wk 10 (Dec 7)   Admin guide + staff walkthrough (contract deliverable); audio feedback
+[ ] Wk 11 (Dec 14)  Buffer + cleanup (duplicate migration numbers, leftover @vercel/blob use);
+                    Phase 3 scoping note (prep for Dec/Jan website-platform conversation)
+[ ] Wk 12 (Dec 21)  Holidays: support only
+[ ] Wk 13 (Dec 28)  Holidays: support only
+[ ] Wk 14 (Jan 4)   Phase 2: onboarding flow — only confirmed Fellows get access
+[ ] Wk 15 (Jan 11)  Phase 2: guided onboarding steps unlock full portal; new vs veteran Fellows
+[ ] Wk 16 (Jan 18)  RPP compliance + Bill.com status tracking
+[ ] Wk 17 (Jan 25)  Flag thin survey responses; reviewers mark "good to go" / "PI to follow up"
+[ ] Wk 18 (Feb 1)   Communications queue w/ human approval (build on notifications/dispatch + email_logs)
+[ ] Wk 19 (Feb 8)   Communications queue: finish, test, nothing sends without approval
+[ ] Wk 20 (Feb 15)  Breakout room planning; review what's left for Phase 3
