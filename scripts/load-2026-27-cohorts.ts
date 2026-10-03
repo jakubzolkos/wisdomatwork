@@ -310,7 +310,7 @@ async function deepLearning() {
   })
 
   await upsertModule(MOD_SYLLABUS, PHASE_DEEP_LEARNING, {
-    title: 'Syllabus for Modules 1 through 5',
+    title: 'Syllabus',
     description:
       'Walk through your roadmap of five Modules over seven months—each one with three parts (Wisdom Lab Prep, Wisdom Lab, and Wisdom Lab Field Work) described below.',
     order_index: 2,

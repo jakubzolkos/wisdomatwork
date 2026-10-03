@@ -44,7 +44,7 @@ export default async function CurriculumLayout({
           // pane scrolls. max-h tracks the viewport minus topbar
           // (h-16) and a bit of padding, with internal overflow so
           // long curricula scroll independently.
-          className="w-full shrink-0 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:w-80 lg:overflow-y-auto lg:pr-2"
+          className="w-full shrink-0 lg:sticky lg:top-20 lg:max-h-[calc(100vh-5rem)] lg:w-80 lg:overflow-y-auto xl:w-[22rem] lg:pr-2"
         >
           <CurriculumTree phases={curriculum.phases} />
         </aside>

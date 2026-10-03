@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, Lock } from 'lucide-react'
+import { Check, ChevronDown, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CompletionRadio } from './completion-radio'
 import type { CurriculumItem, CurriculumPhase } from '@/lib/curriculum-tree'
@@ -286,9 +286,11 @@ export function CurriculumTree({ phases }: Props) {
                   </p>
                 ) : (
                   <ul className="flex flex-col">
-                    {phase.modules.map((module, idx) => {
+                    {phase.modules.map((module) => {
                       const moduleOpen = openIds.has(module.id)
-                      const headerLabel = `${idx + 1}. ${module.title}`
+                      const { name, theme } = splitModuleTitle(module.title)
+                      const done = module.items.filter((it) => it.isCompleted).length
+                      const total = module.items.length
                       // Sequence-locked: a flat, non-interactive row
                       // saying what to finish first. Its items aren't
                       // linked so fellows can't open them early.
@@ -297,22 +299,19 @@ export function CurriculumTree({ phases }: Props) {
                           <li
                             key={module.id}
                             className="border-t border-border first:border-t-0"
-                            aria-label={`${headerLabel} (locked)`}
+                            aria-label={`${module.title} (locked)`}
                           >
-                            <div className="flex w-full items-start justify-between gap-3 px-3 py-3 text-sm">
-                              <span className="min-w-0">
-                                <span className="block truncate font-semibold text-muted-foreground">
-                                  {headerLabel}
-                                </span>
-                                {module.blockedBy && (
-                                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                                    Complete {module.blockedBy} to unlock
-                                  </span>
-                                )}
-                              </span>
-                              <Lock
-                                className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-                                aria-hidden="true"
+                            <div className="flex w-full items-start gap-3 px-3 py-3">
+                              <ModuleMarker state="locked" />
+                              <ModuleTitle
+                                name={name}
+                                theme={theme}
+                                muted
+                                note={
+                                  module.blockedBy
+                                    ? `Complete ${splitModuleTitle(module.blockedBy).name} to unlock`
+                                    : null
+                                }
                               />
                             </div>
                           </li>
@@ -323,24 +322,33 @@ export function CurriculumTree({ phases }: Props) {
                           key={module.id}
                           className="border-t border-border first:border-t-0"
                         >
-                          {/* Module header */}
+                          {/* Module header: status marker, name with
+                              the theme on its own line, progress. */}
                           <button
                             type="button"
                             onClick={() => toggle(module.id)}
                             aria-expanded={moduleOpen}
                             aria-controls={`module-${module.id}`}
-                            className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted/60"
+                            className="flex w-full items-start gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/60"
                           >
-                            <span className="min-w-0 truncate">
-                              {headerLabel}
-                            </span>
-                            <ChevronDown
-                              className={cn(
-                                'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
-                                moduleOpen ? 'rotate-0' : '-rotate-90',
-                              )}
-                              aria-hidden="true"
+                            <ModuleMarker
+                              state={total > 0 && done === total ? 'done' : 'open'}
                             />
+                            <ModuleTitle name={name} theme={theme} />
+                            <span className="mt-0.5 flex shrink-0 items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                              {total > 0 && (
+                                <span aria-label={`${done} of ${total} complete`}>
+                                  {done}/{total}
+                                </span>
+                              )}
+                              <ChevronDown
+                                className={cn(
+                                  'h-4 w-4 transition-transform',
+                                  moduleOpen ? 'rotate-0' : '-rotate-90',
+                                )}
+                                aria-hidden="true"
+                              />
+                            </span>
                           </button>
 
                           {moduleOpen && (
@@ -365,6 +373,67 @@ export function CurriculumTree({ phases }: Props) {
 }
 
 /**
+ * "Wisdom Lab One: Formative Leadership" -> name "Wisdom Lab One",
+ * theme "Formative Leadership". Display-only: the narrow rail can't
+ * fit both on one line, so the theme gets its own line. Titles
+ * without a colon come back as a name with no theme.
+ */
+function splitModuleTitle(title: string): { name: string; theme: string | null } {
+  const at = title.indexOf(': ')
+  if (at <= 0) return { name: title, theme: null }
+  return { name: title.slice(0, at), theme: title.slice(at + 2) }
+}
+
+/** Status marker in front of a module: empty ring, a check once done, a lock when locked. */
+function ModuleMarker({ state }: { state: 'open' | 'done' | 'locked' }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'flex size-5 shrink-0 items-center justify-center rounded-full',
+        state === 'done' && 'bg-primary text-primary-foreground',
+        state === 'open' && 'border-2 border-border bg-background',
+        state === 'locked' && 'bg-muted text-muted-foreground',
+      )}
+    >
+      {state === 'done' && <Check className="size-3" />}
+      {state === 'locked' && <Lock className="size-3" />}
+    </span>
+  )
+}
+
+function ModuleTitle({
+  name,
+  theme,
+  muted = false,
+  note = null,
+}: {
+  name: string
+  theme: string | null
+  muted?: boolean
+  note?: string | null
+}) {
+  return (
+    <span className="min-w-0 flex-1 pt-0.5">
+      <span
+        className={cn(
+          'block text-pretty text-sm font-semibold leading-snug',
+          muted ? 'text-muted-foreground' : 'text-foreground',
+        )}
+      >
+        {name}
+      </span>
+      {theme && (
+        <span className="mt-0.5 block text-pretty text-xs leading-snug text-muted-foreground">
+          {theme}
+        </span>
+      )}
+      {note && <span className="mt-1 block text-xs italic text-muted-foreground">{note}</span>}
+    </span>
+  )
+}
+
+/**
  * Inner body of an open module. Splits items into Before / During /
  * After Lab groups (each with an eyebrow heading) and a
  * trailing flat list for any other category. Empty groups are
@@ -383,7 +452,7 @@ function ModuleBody({
     return (
       <ul
         id={`module-${moduleId}`}
-        className="flex flex-col pb-2"
+        className="flex flex-col pb-2 pl-6"
       >
         <li className="px-3 py-3 text-xs italic text-muted-foreground">
           No content yet.
@@ -395,7 +464,7 @@ function ModuleBody({
   const { labGroups, other } = groupItemsByCategory(items)
 
   return (
-    <div id={`module-${moduleId}`} className="flex flex-col gap-3 pb-2 pt-1">
+    <div id={`module-${moduleId}`} className="flex flex-col gap-3 pb-2 pl-6 pt-1">
       {labGroups.map((group) => (
         <div key={group.category} className="flex flex-col">
           {/* Stage label (Before / During / After the Lab). */}

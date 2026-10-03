@@ -24,7 +24,7 @@ update public.modules set is_sequential = false
 where id in (
   'b2e8be92-4984-426f-a12b-973d6f94229d', -- Pre-Program Survey
   '954c9a0a-355f-420c-9be4-046d77f14907', -- Listening Launch (was School Team Listening Session)
-  '25dd43f1-68a8-4529-a739-5f72449d9748', -- Syllabus for Modules 1 through 5
+  '25dd43f1-68a8-4529-a739-5f72449d9748', -- Syllabus
   '44555aa9-149c-4150-aad2-48fb9c345e85', -- North Star School Team Discussion
   '57296daa-74fc-447f-932f-e0c91283cf03'  -- Wisdom Coaching: Pre-Program Survey
 );
