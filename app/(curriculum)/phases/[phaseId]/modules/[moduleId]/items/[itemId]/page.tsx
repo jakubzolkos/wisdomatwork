@@ -27,6 +27,7 @@ import {
 import { LockedModuleNotice } from '@/components/curriculum/locked-module-notice'
 import { ResearchIdCard } from '@/components/profile/research-id-card'
 import { getResearchId } from '@/lib/research-id'
+import { COMPLETION_GATE_MESSAGES, completionGate } from '@/lib/completion-gates'
 import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
 
@@ -208,7 +209,7 @@ export default async function ContentItemPage({
     }
   }
 
-  const { next } = findAdjacentItems(curriculum, item.id)
+  const { next, nextBlockedBy } = findAdjacentItems(curriculum, item.id)
 
   // Gate states. Only block the FIRST completion - once an item is
   // already complete the fellow can freely uncheck/redo. Reflection
@@ -222,6 +223,12 @@ export default async function ContentItemPage({
     !isCompleted &&
     reflectionRequired &&
     !reflectionMeetsMinimum(reflectionResponse)
+  // A scheduled session can't be completed before it has ended (same
+  // rule as the action and the sidebar, lib/completion-gates.ts).
+  const sessionNotEnded =
+    !isCompleted &&
+    !user.preview &&
+    completionGate(item, { linkClicked, reflection: reflectionResponse }) === 'session_not_ended'
 
   return (
     <article className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-border bg-card shadow-xs">
@@ -346,6 +353,8 @@ export default async function ContentItemPage({
         needsLinkClick={needsLinkClick}
         needsReflection={needsReflection}
         nextHref={next?.href ?? null}
+        nextBlockedBy={nextBlockedBy}
+        waitMessage={sessionNotEnded ? COMPLETION_GATE_MESSAGES.session_not_ended : null}
         autoComplete={liveSessionScheduled && !reflectionRequired}
         incompleteHint={
           isLiveSession && !liveSessionScheduled && !needsReflection

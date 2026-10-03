@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toggleContentCompletion } from '@/app/(curriculum)/phases/actions'
+import { useCompletion } from './completion-state'
+import { COMPLETION_GATE_MESSAGES, type CompletionGate } from '@/lib/completion-gates'
 
 interface Props {
   contentId: string
@@ -12,6 +14,8 @@ interface Props {
   isCompleted: boolean
   /** Item title - used for the screen-reader label. */
   itemTitle: string
+  /** What still blocks ticking it; null when it can be ticked. */
+  gate?: CompletionGate | null
 }
 
 /**
@@ -23,17 +27,12 @@ interface Props {
  * Wrapped in a stop-propagation handler so it doesn't trigger the
  * parent <Link> navigation when the user clicks the radio itself.
  */
-export function CompletionRadio({ contentId, isCompleted, itemTitle }: Props) {
+export function CompletionRadio({ contentId, isCompleted, itemTitle, gate = null }: Props) {
   const router = useRouter()
-  const [optimistic, setOptimistic] = useState(isCompleted)
+  // Shared with the item footer and progress counts; see
+  // completion-state.tsx for why it outlives the request.
+  const { completed: optimistic, set, reset } = useCompletion(contentId, isCompleted)
   const [pending, startTransition] = useTransition()
-
-  // If the server-rendered prop changes (e.g. after a router.refresh),
-  // sync local state. This is fine because optimistic updates only
-  // ever flip the value once.
-  if (!pending && optimistic !== isCompleted) {
-    setOptimistic(isCompleted)
-  }
 
   // When the server rejects (e.g. the fellow hasn't opened the link
   // or submitted a required reflection), we revert the optimistic
@@ -47,16 +46,31 @@ export function CompletionRadio({ contentId, isCompleted, itemTitle }: Props) {
     e.stopPropagation()
     setErrorMessage(null)
     const next = !optimistic
-    setOptimistic(next)
+    set(next)
     startTransition(async () => {
       const res = await toggleContentCompletion(contentId, next)
       if (!res.ok) {
-        setOptimistic(!next)
+        reset()
         setErrorMessage(res.message)
         return
       }
       router.refresh()
     })
+  }
+
+  // Can't be ticked yet: show why instead of a toggle that would tick
+  // and bounce back. Not a button, so a click falls through to the
+  // row's link and opens the item, where the requirement can be met.
+  if (gate && !optimistic) {
+    const reason = COMPLETION_GATE_MESSAGES[gate]
+    return (
+      <span
+        role="img"
+        aria-label={`"${itemTitle}" can't be completed yet. ${reason}`}
+        title={reason}
+        className="block h-5 w-5 shrink-0 rounded-full border border-dashed border-muted-foreground/40"
+      />
+    )
   }
 
   const label = optimistic

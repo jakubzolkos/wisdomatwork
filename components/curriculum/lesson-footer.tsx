@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toggleContentCompletion } from '@/app/(curriculum)/phases/actions'
+import { useCompletion } from './completion-state'
 
 interface Props {
   contentId: string
@@ -19,6 +20,17 @@ interface Props {
   needsReflection: boolean
   /** Next item href, or null when this is the last item. */
   nextHref: string | null
+  /**
+   * When there's no next item because the next module is still
+   * locked: the module to finish first. Shown instead of letting
+   * "Go to next item" jump past the lock.
+   */
+  nextBlockedBy?: string | null
+  /**
+   * Set while the item can't be completed yet for a reason the fellow
+   * can only wait out (a scheduled session that hasn't ended).
+   */
+  waitMessage?: string | null
   /**
    * When true, the manual "Mark complete" button is suppressed
    * - completion is driven by external state (e.g. a scheduled live
@@ -61,36 +73,36 @@ export function LessonFooter({
   needsLinkClick,
   needsReflection,
   nextHref,
+  nextBlockedBy = null,
+  waitMessage = null,
   autoComplete = false,
   incompleteHint,
 }: Props) {
   const router = useRouter()
-  const [optimistic, setOptimistic] = useState(isCompleted)
+  // Shared with the sidebar radio; see completion-state.tsx for why
+  // it outlives the request.
+  const { completed: optimistic, set, reset } = useCompletion(contentId, isCompleted)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
-  // Sync server state when the page revalidates, but never clobber
-  // an in-flight optimistic update.
-  if (!pending && optimistic !== isCompleted) {
-    setOptimistic(isCompleted)
-  }
-
-  const blocked = !optimistic && (needsLinkClick || needsReflection)
+  const blocked = !optimistic && (needsLinkClick || needsReflection || !!waitMessage)
   // The link gate is enforced silently - the button is just disabled
   // until the fellow opens the resource, with no inline hint. The
   // reflection gate still surfaces a hint because the textarea sits
   // right above the footer and a nudge there is helpful.
   const blockMessage = needsReflection
     ? 'Submit your reflection above before you can mark this complete.'
-    : null
+    : waitMessage && !autoComplete
+      ? waitMessage
+      : null
 
   function handleMarkComplete() {
     setError(null)
-    setOptimistic(true)
+    set(true)
     startTransition(async () => {
       const res = await toggleContentCompletion(contentId, true)
       if (!res.ok) {
-        setOptimistic(false)
+        reset()
         setError(res.message)
         return
       }
@@ -103,11 +115,11 @@ export function LessonFooter({
   // always allowed and won't trip the link/reflection checks.
   function handleReopen() {
     setError(null)
-    setOptimistic(false)
+    set(false)
     startTransition(async () => {
       const res = await toggleContentCompletion(contentId, false)
       if (!res.ok) {
-        setOptimistic(true)
+        reset()
         setError(res.message)
         return
       }
@@ -121,11 +133,11 @@ export function LessonFooter({
       // then navigate. This is for reflection items that have met
       // the minimum but no link gate to click.
       setError(null)
-      setOptimistic(true)
+      set(true)
       startTransition(async () => {
         const res = await toggleContentCompletion(contentId, true)
         if (!res.ok) {
-          setOptimistic(false)
+          reset()
           setError(res.message)
           return
         }
@@ -177,6 +189,12 @@ export function LessonFooter({
       {showIncompleteHint && (
         <p className="text-sm text-muted-foreground" role="status">
           {incompleteHint}
+        </p>
+      )}
+
+      {!nextHref && nextBlockedBy && !blocked && (
+        <p className="text-sm text-muted-foreground" role="status">
+          Finish every item in {nextBlockedBy} to unlock the next module.
         </p>
       )}
 
@@ -236,6 +254,12 @@ export function LessonFooter({
             disabled={pending || blocked}
           >
             {pending ? 'Marking...' : 'Mark complete'}
+          </Button>
+        ) : waitMessage && !autoComplete ? (
+          // Session hasn't ended yet and needs a manual tick after it
+          // (e.g. it has a reflection): visible but disabled.
+          <Button type="button" disabled>
+            Mark complete
           </Button>
         ) : autoComplete ? (
           // Completion is owned by an external mechanism (e.g. the

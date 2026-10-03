@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Check, ChevronDown, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CompletionRadio } from './completion-radio'
+import { useCompletionLookup } from './completion-state'
 import type { CurriculumItem, CurriculumPhase } from '@/lib/curriculum-tree'
 import { getCategory, type ContentCategory } from '@/lib/curriculum'
 
@@ -85,6 +86,9 @@ function formatDuration(mins: number | null): string | null {
  */
 export function CurriculumTree({ phases }: Props) {
   const pathname = usePathname()
+  // Counts follow ticks the fellow just made, before the server
+  // round-trip lands.
+  const isDone = useCompletionLookup()
 
   // Derive the active item from the path (works when the tree lives
   // alongside a content viewer, though today it only renders on the
@@ -218,6 +222,10 @@ export function CurriculumTree({ phases }: Props) {
         }
 
         const phaseOpen = openIds.has(phase.id)
+        const phaseDone = phase.modules.reduce(
+          (n, m) => n + m.items.filter((it) => isDone(it.id, it.isCompleted)).length,
+          0,
+        )
         return (
           <section
             key={phase.id}
@@ -248,12 +256,12 @@ export function CurriculumTree({ phases }: Props) {
                     aria-label={`${phase.title} progress`}
                     aria-valuemin={0}
                     aria-valuemax={phase.itemCount}
-                    aria-valuenow={phase.completedCount}
+                    aria-valuenow={phaseDone}
                   >
                     <div
                       className="h-full rounded-full bg-primary transition-[width] duration-500"
                       style={{
-                        width: `${Math.round((phase.completedCount / phase.itemCount) * 100)}%`,
+                        width: `${Math.round((phaseDone / phase.itemCount) * 100)}%`,
                       }}
                     />
                   </div>
@@ -262,7 +270,7 @@ export function CurriculumTree({ phases }: Props) {
               <div className="flex shrink-0 items-center gap-3 self-start text-xs text-muted-foreground">
                 {phase.itemCount > 0 && (
                   <span>
-                    {phase.completedCount}/{phase.itemCount}
+                    {phaseDone}/{phase.itemCount}
                   </span>
                 )}
                 <ChevronDown
@@ -289,7 +297,7 @@ export function CurriculumTree({ phases }: Props) {
                     {phase.modules.map((module) => {
                       const moduleOpen = openIds.has(module.id)
                       const { name, theme } = splitModuleTitle(module.title)
-                      const done = module.items.filter((it) => it.isCompleted).length
+                      const done = module.items.filter((it) => isDone(it.id, it.isCompleted)).length
                       const total = module.items.length
                       // Sequence-locked: a flat, non-interactive row
                       // saying what to finish first. Its items aren't
@@ -523,6 +531,7 @@ function ItemRow({
             contentId={item.id}
             isCompleted={item.isCompleted}
             itemTitle={item.title}
+            gate={item.completionGate}
           />
         </span>
         <span className="min-w-0 flex-1">

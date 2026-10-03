@@ -10,6 +10,8 @@ import {
 } from '@/lib/curriculum'
 import { computeModuleLocks, liveSessionHasEnded } from '@/lib/module-locks'
 import { readPreviewCompletions } from '@/lib/preview-completions'
+import { completionGate, type CompletionGate } from '@/lib/completion-gates'
+import { readSessionLinkClicks } from '@/lib/session-link-clicks'
 
 /**
  * Server-side data layer for the fellow curriculum view.
@@ -37,6 +39,12 @@ export interface CurriculumItem {
   href: string
   /** Whether the current user has marked this item complete. */
   isCompleted: boolean
+  /**
+   * What still stops the user ticking this item (session not over,
+   * link not opened, reflection missing); null when it can be ticked
+   * or is already complete. lib/completion-gates.ts.
+   */
+  completionGate: CompletionGate | null
 }
 
 export interface CurriculumModule {
@@ -53,6 +61,8 @@ export interface CurriculumModule {
   isLocked: boolean
   /** Title of the module to finish first, when locked. */
   blockedBy: string | null
+  /** Part of the phase's unlock sequence (061). */
+  isSequential: boolean
 }
 
 export interface CurriculumPhase {
@@ -104,6 +114,8 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     { data: moduleRows },
     { data: itemRows },
     { data: completionRows },
+    { data: reflectionRows },
+    linkClicks,
   ] = await Promise.all([
     supabase
       .from('years')
@@ -136,9 +148,11 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     supabase
       .from('labs')
       .select(
-        'id, year_id, module_id, title, category, cohorts, duration_minutes, order_index, resource_type, scheduled_at, reflection_enabled',
+        'id, year_id, module_id, title, category, cohorts, duration_minutes, order_index, resource_type, scheduled_at, reflection_enabled, url',
       )
       .order('order_index', { ascending: true })
+      // Tie-break so equal order_index rows keep one stable order.
+      .order('created_at', { ascending: true })
       .returns<
         Array<{
           id: string
@@ -152,6 +166,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
           resource_type: string | null
           scheduled_at: string | null
           reflection_enabled: boolean
+          url: string | null
         }>
       >(),
     // Filter by profile explicitly: RLS (027) also lets fellows read
@@ -165,7 +180,18 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
           .eq('profile_id', user.id)
           .returns<Array<{ content_id: string }>>()
       : Promise.resolve({ data: [] as Array<{ content_id: string }> }),
+    // Inputs to the completion gates, so the tree can disable a tick
+    // the server would refuse.
+    hasRealId
+      ? supabase
+          .from('user_content_reflections')
+          .select('content_id, response')
+          .eq('profile_id', user.id)
+          .returns<Array<{ content_id: string; response: string }>>()
+      : Promise.resolve({ data: [] as Array<{ content_id: string; response: string }> }),
+    readSessionLinkClicks(),
   ])
+  const reflectionById = new Map((reflectionRows ?? []).map((r) => [r.content_id, r.response]))
 
   const completedSet = new Set((completionRows ?? []).map((c) => c.content_id))
   // Preview toggles are kept in a cookie, never the database.
@@ -234,6 +260,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       }
     }
     const list = itemsByModule.get(item.module_id) ?? []
+    const isCompleted = completedSet.has(item.id) || liveSessionHasEnded(item, now)
     list.push({
       id: item.id,
       title: item.title,
@@ -242,9 +269,26 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
       // An ended live session counts as done even if the fellow never
       // reopened its page (where the completion row gets written).
-      isCompleted: completedSet.has(item.id) || liveSessionHasEnded(item, now),
+      isCompleted,
+      // Preview toggles skip the gates (see toggleContentCompletion).
+      completionGate:
+        isCompleted || user.preview
+          ? null
+          : completionGate(
+              item,
+              { linkClicked: linkClicks.has(item.id), reflection: reflectionById.get(item.id) ?? null },
+              now,
+            ),
     })
     itemsByModule.set(item.module_id, list)
+  }
+
+  // Display order inside a module: Before / During / After the Lab,
+  // then anything else, each group in order_index order (the sort is
+  // stable). The tree renders these groups and Continue walks the
+  // same list, so the two always agree.
+  for (const list of itemsByModule.values()) {
+    list.sort((a, b) => categoryRank(a.category) - categoryRank(b.category))
   }
 
   // Stitch everything together in display order. Locked phases
@@ -272,6 +316,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       items: itemsByModule.get(m.id) ?? [],
       isLocked: locks?.get(m.id)?.isLocked ?? false,
       blockedBy: locks?.get(m.id)?.blockedBy ?? null,
+      isSequential: m.is_sequential,
     }))
     let itemCount = 0
     let completedCount = 0
@@ -296,24 +341,6 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
 }
 
 /**
- * Flatten a curriculum into its openable items in render order
- * (items in locked modules are skipped). Useful for prev/next
- * navigation.
- */
-export function flattenCurriculumItems(
-  curriculum: FullCurriculum,
-): CurriculumItem[] {
-  const flat: CurriculumItem[] = []
-  for (const phase of curriculum.phases) {
-    for (const module of phase.modules) {
-      if (module.isLocked) continue
-      for (const item of module.items) flat.push(item)
-    }
-  }
-  return flat
-}
-
-/**
  * Where an item sits in the user's curriculum. Null when the user
  * can't see it at all (cohort rules); check `module.isLocked` for the
  * sequence lock. The single access answer shared by the item page,
@@ -332,19 +359,63 @@ export function findCurriculumItem(
   return null
 }
 
+/** Lab stages first, in session order; other categories after. */
+const CATEGORY_ORDER: readonly ContentCategory[] = ['before_lab', 'during_lab', 'after_lab']
+
+function categoryRank(category: ContentCategory): number {
+  const i = CATEGORY_ORDER.indexOf(category)
+  return i === -1 ? CATEGORY_ORDER.length : i
+}
+
 /**
- * Compute the previous and next visible items relative to a given
- * content id. Used by the viewer's "Continue" button.
+ * Previous and next items for the viewer's "Go to next item".
+ *
+ * Walks items in display order and never skips past a locked module:
+ * when the next item sits in a module that stays locked even once the
+ * current item is complete, there is no next item and `nextBlockedBy`
+ * names the module to finish. Locks are re-evaluated with the current
+ * item counted as done because "Go to next item" completes it first,
+ * so finishing the last item of a lab still continues into the next.
  */
 export function findAdjacentItems(
   curriculum: FullCurriculum,
   contentId: string,
-): { prev: CurriculumItem | null; next: CurriculumItem | null } {
-  const flat = flattenCurriculumItems(curriculum)
-  const idx = flat.findIndex((i) => i.id === contentId)
-  if (idx === -1) return { prev: null, next: null }
-  return {
-    prev: idx > 0 ? flat[idx - 1] : null,
-    next: idx < flat.length - 1 ? flat[idx + 1] : null,
+): {
+  prev: CurriculumItem | null
+  next: CurriculumItem | null
+  nextBlockedBy: string | null
+} {
+  const flat: Array<{ item: CurriculumItem; module: CurriculumModule; phase: CurriculumPhase }> = []
+  for (const phase of curriculum.phases) {
+    for (const module of phase.modules) {
+      for (const item of module.items) flat.push({ item, module, phase })
+    }
   }
+  const idx = flat.findIndex((e) => e.item.id === contentId)
+  if (idx === -1) return { prev: null, next: null, nextBlockedBy: null }
+
+  const before = flat[idx - 1]
+  const prev = before && !before.module.isLocked ? before.item : null
+
+  const after = flat[idx + 1]
+  if (!after) return { prev, next: null, nextBlockedBy: null }
+  if (!after.module.isLocked) return { prev, next: after.item, nextBlockedBy: null }
+
+  // Locks are per phase, so the current item can only unlock modules
+  // in its own phase.
+  const current = flat[idx]
+  let blockedBy = after.module.blockedBy
+  if (after.phase.id === current.phase.id) {
+    const lock = computeModuleLocks(
+      current.phase.modules.map((m) => ({
+        id: m.id,
+        title: m.title,
+        isSequential: m.isSequential,
+        items: m.items.map((i) => ({ isCompleted: i.isCompleted || i.id === contentId })),
+      })),
+    ).get(after.module.id)
+    if (!lock?.isLocked) return { prev, next: after.item, nextBlockedBy: null }
+    blockedBy = lock.blockedBy
+  }
+  return { prev, next: null, nextBlockedBy: blockedBy }
 }

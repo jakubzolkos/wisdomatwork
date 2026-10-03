@@ -12,7 +12,6 @@ import {
 import {
   MIN_REFLECTION_WORDS,
   countWords,
-  reflectionMeetsMinimum,
 } from '@/lib/reflections'
 import {
   hasSessionLinkClick,
@@ -20,6 +19,7 @@ import {
 } from '@/lib/session-link-clicks'
 import { findCurriculumItem, loadFullCurriculum } from '@/lib/curriculum-tree'
 import { setPreviewCompletion } from '@/lib/preview-completions'
+import { COMPLETION_GATE_MESSAGES, completionGate } from '@/lib/completion-gates'
 
 // ----------------------------------------------------------------------------
 // Preview guard
@@ -47,6 +47,8 @@ interface ItemWithCascade {
   url: string | null
   resource_type: ResourceType | null
   reflection_enabled: boolean
+  scheduled_at: string | null
+  duration_minutes: number | null
   cohorts: string[] | null
   modules: { cohorts: string[] | null } | null
   years: { cohorts: string[] | null } | null
@@ -71,7 +73,7 @@ async function loadVisibleItem(
   const { data: item, error } = await supabase
     .from('labs')
     .select(
-      'id, year_id, module_id, url, resource_type, reflection_enabled, cohorts, modules:module_id (cohorts), years:year_id (cohorts)',
+      'id, year_id, module_id, url, resource_type, reflection_enabled, scheduled_at, duration_minutes, cohorts, modules:module_id (cohorts), years:year_id (cohorts)',
     )
     .eq('id', contentId)
     .maybeSingle<ItemWithCascade>()
@@ -112,13 +114,10 @@ export type ToggleResult =
 /**
  * Toggle the current user's completion of a content item.
  *
- * Going from incomplete -> complete enforces the per-item gates the
- * admin configured:
- *
- *   - If the item has a URL, the fellow must have opened it (a row
- *     in `user_content_link_clicks`).
- *   - If `reflection_enabled` is true, the fellow must have submitted
- *     a reflection (a row in `user_content_reflections`).
+ * Going from incomplete -> complete enforces lib/completion-gates.ts:
+ * a scheduled session must have ended, a linked resource must have
+ * been opened this login session, and a required reflection must
+ * meet the minimum length.
  *
  * Going the other direction (uncheck) always works.
  */
@@ -145,47 +144,25 @@ export async function toggleContentCompletion(
     }
 
     if (nextCompleted) {
-      // Gate 1: link click. Live sessions are exempt - the fellow
-      // may have joined via Google Calendar or the email invite, so
-      // forcing them to also click the in-app link before marking
-      // the session attended is needlessly clunky. The reflection
-      // gate (gate 2) still applies if the admin enabled one.
-      const linkGated = !!item.url && item.resource_type !== 'live_session'
-      if (linkGated) {
-        // Session-scoped: the gate clears only after the fellow
-        // opens the link in *this* login session. A persisted DB
-        // click from a previous login no longer counts.
-        const clicked = await hasSessionLinkClick(contentId)
-        if (!clicked) {
-          return {
-            ok: false,
-            message: 'Open the linked resource before marking complete.',
-          }
-        }
-      }
-      // Gate 2: reflection submitted AND long enough (if required).
-      // Mirrors the client-side disable on the combined CTA so a
-      // motivated tab-clicker can't bypass the word-count rule.
-      if (item.reflection_enabled) {
-        const { data: reflectionRow } = await supabase
-          .from('user_content_reflections')
-          .select('response')
-          .eq('profile_id', user.id)
-          .eq('content_id', contentId)
-          .maybeSingle<{ response: string }>()
-        if (!reflectionRow) {
-          return {
-            ok: false,
-            message: 'Submit your reflection before marking complete.',
-          }
-        }
-        if (!reflectionMeetsMinimum(reflectionRow.response)) {
-          return {
-            ok: false,
-            message: `Your reflection needs at least ${MIN_REFLECTION_WORDS} words before you can mark this complete.`,
-          }
-        }
-      }
+      // Same rule the tree and footer use to disable the control
+      // (lib/completion-gates.ts): session has ended, link opened in
+      // this login session, reflection long enough.
+      const [linkClicked, reflectionRes] = await Promise.all([
+        hasSessionLinkClick(contentId),
+        item.reflection_enabled
+          ? supabase
+              .from('user_content_reflections')
+              .select('response')
+              .eq('profile_id', user.id)
+              .eq('content_id', contentId)
+              .maybeSingle<{ response: string }>()
+          : Promise.resolve({ data: null }),
+      ])
+      const gate = completionGate(item, {
+        linkClicked,
+        reflection: reflectionRes.data?.response ?? null,
+      })
+      if (gate) return { ok: false, message: COMPLETION_GATE_MESSAGES[gate] }
 
       const { error: insertError } = await supabase
         .from('user_content_completions')
@@ -354,19 +331,15 @@ export async function submitReflection(
     if (error) return { ok: false, message: error.message }
 
     // One-step "submit & complete" flow: only when the caller asks
-    // for it AND the link gate is either absent or already cleared.
-    // We mirror the live-session exemption here so the rules stay
-    // consistent across actions.
+    // for it AND every other gate (lib/completion-gates.ts) is clear,
+    // checked against the reflection just saved.
     let completed = false
     if (opts?.markComplete) {
-      const linkGated = !!item.url && item.resource_type !== 'live_session'
-      let linkOk = !linkGated
-      if (linkGated) {
-        // Same session-scoped check as `toggleContentCompletion`:
-        // we trust the per-login cookie, not the DB audit row.
-        linkOk = await hasSessionLinkClick(contentId)
-      }
-      if (linkOk) {
+      const gate = completionGate(item, {
+        linkClicked: await hasSessionLinkClick(contentId),
+        reflection: trimmed,
+      })
+      if (!gate) {
         const { error: completeErr } = await supabase
           .from('user_content_completions')
           .upsert(

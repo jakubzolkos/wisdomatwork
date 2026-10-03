@@ -1,5 +1,6 @@
 import { TopBar } from '@/components/top-bar'
 import { CurriculumTree } from '@/components/curriculum/curriculum-tree'
+import { CompletionStateProvider } from '@/components/curriculum/completion-state'
 import { loadFullCurriculum } from '@/lib/curriculum-tree'
 import { getMenuCustomPages } from '@/lib/custom-pages/menu'
 
@@ -37,6 +38,7 @@ export default async function CurriculumLayout({
   return (
     <div className="min-h-screen bg-canvas">
       <TopBar customPages={customPages} />
+      <CompletionStateProvider>
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-8 lg:flex-row lg:items-start lg:gap-10">
         <aside
           aria-label="Course outline"
@@ -53,6 +55,7 @@ export default async function CurriculumLayout({
           {children}
         </main>
       </div>
+      </CompletionStateProvider>
     </div>
   )
 }
