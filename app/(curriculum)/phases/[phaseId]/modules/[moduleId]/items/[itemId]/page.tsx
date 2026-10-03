@@ -21,8 +21,12 @@ import {
 import { canUserSeeItem } from '@/lib/content-access'
 import {
   findAdjacentItems,
+  findCurriculumItem,
   loadFullCurriculum,
 } from '@/lib/curriculum-tree'
+import { LockedModuleNotice } from '@/components/curriculum/locked-module-notice'
+import { ResearchIdCard } from '@/components/profile/research-id-card'
+import { getResearchId } from '@/lib/research-id'
 import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
 
@@ -109,6 +113,20 @@ export default async function ContentItemPage({
   // always gated by the same rule.
   if (!canUserSeeItem(user, phase, module, item)) notFound()
 
+  // Sequence lock: a deep link (notification, bookmark, dashboard
+  // card) into a module that isn't open yet shows why instead of the
+  // content. React.cache makes this the same load as the layout's.
+  const placement = findCurriculumItem(await loadFullCurriculum(), item.id)
+  if (!placement) notFound()
+  if (placement.module.isLocked) {
+    return (
+      <LockedModuleNotice
+        moduleTitle={placement.module.title}
+        blockedBy={placement.module.blockedBy}
+      />
+    )
+  }
+
   // Look up per-user state for the gates and the completion radio.
   // Completion + reflection are persisted in Postgres (scoped to the
   // user via RLS). The link-click gate, however, is intentionally
@@ -140,7 +158,9 @@ export default async function ContentItemPage({
     loadFullCurriculum(),
   ])
 
-  let isCompleted = !!completion
+  // Preview completions live in a cookie (lib/preview-completions.ts),
+  // which the tree already overlays onto the real ones.
+  let isCompleted = user.preview ? placement.item.isCompleted : !!completion
   const reflectionResponse = reflection?.response ?? null
   const resource = item.resource_type ? getResourceType(item.resource_type) : null
   // "External link" says nothing the link button doesn't already show.
@@ -149,6 +169,10 @@ export default async function ContentItemPage({
   const hasBody = !!item.body && item.body.trim().length > 0
   const hasUrl = !!item.url
   const isLiveSession = item.resource_type === 'live_session'
+  // Survey forms ask for the fellow's research ID, so show it right
+  // above the link.
+  const researchId =
+    item.resource_type === 'survey' && hasUrl ? await getResearchId(user.id) : null
   // Reflection is required as soon as the admin toggles it on. The
   // prompt is enforced separately at admin save time, so it'll
   // always be present here in practice - but we don't bypass the
@@ -242,6 +266,13 @@ export default async function ContentItemPage({
             title so the click target reads as the thing the fellow
             is opening. Live sessions without a scheduled_at fall
             through to this branch and use the legacy Join button. */}
+      {researchId && (
+        <ResearchIdCard
+          researchId={researchId}
+          hint="The survey will ask for this. Copy it before you open the form."
+        />
+      )}
+
       {hasUrl &&
         (liveSessionScheduled ? (
           <LiveSessionStatus

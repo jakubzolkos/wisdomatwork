@@ -30,6 +30,8 @@ interface Props {
     description: string
     /** null = inherit; [] = locked; [...] = override */
     cohorts: string[] | null
+    /** Part of the phase's unlock sequence (lib/module-locks.ts). */
+    isSequential: boolean
   }
 }
 
@@ -153,6 +155,25 @@ export function ModuleDetailsForm({ phaseId, phaseCohorts, module }: Props) {
             </div>
           )}
         </div>
+
+        <label className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-4 text-sm">
+          <input
+            type="checkbox"
+            name="is_sequential"
+            defaultChecked={module.isSequential}
+            className="mt-0.5"
+          />
+          <span>
+            <span className="font-medium text-foreground">
+              Part of the unlock sequence
+            </span>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              Fellows can open this module only after finishing every earlier
+              module in the sequence, and must finish it to unlock later ones.
+              Untick for always-available modules like surveys or a syllabus.
+            </span>
+          </span>
+        </label>
 
         {errorText && (
           <p className="text-sm text-destructive" role="alert">

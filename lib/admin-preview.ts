@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { isCohort, type Cohort } from '@/lib/cohorts'
+import { PREVIEW_COMPLETIONS_COOKIE } from '@/lib/preview-completions'
 
 /**
  * "Preview as fellow" - a server-side impersonation feature exclusive
@@ -70,9 +71,12 @@ const COOKIE_OPTIONS = {
 export async function setPreviewCookie(state: PreviewState): Promise<void> {
   const store = await cookies()
   store.set(PREVIEW_COOKIE, JSON.stringify(state), COOKIE_OPTIONS)
+  // Each preview starts from the previewed fellow's real progress.
+  store.set(PREVIEW_COMPLETIONS_COOKIE, '', { ...COOKIE_OPTIONS, maxAge: 0 })
 }
 
 export async function clearPreviewCookie(): Promise<void> {
   const store = await cookies()
   store.set(PREVIEW_COOKIE, '', { ...COOKIE_OPTIONS, maxAge: 0 })
+  store.set(PREVIEW_COMPLETIONS_COOKIE, '', { ...COOKIE_OPTIONS, maxAge: 0 })
 }

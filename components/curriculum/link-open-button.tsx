@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { recordLinkClick } from '@/app/(curriculum)/phases/actions'
+import { isStoredFileUrl } from '@/lib/stored-files'
 
 interface Props {
   contentId: string
@@ -48,6 +49,18 @@ export function LinkOpenButton({
   }
 
   function handleClick() {
+    // Stored files open in the in-app viewer, so stay in this tab.
+    // Record the open before navigating away, or the gate could miss it.
+    if (isStoredFileUrl(url)) {
+      startTransition(async () => {
+        if (!optimistic) {
+          setOptimistic(true)
+          await recordLinkClick(contentId)
+        }
+        router.push(url)
+      })
+      return
+    }
     // Open first so the popup blocker treats this as a user gesture.
     window.open(url, '_blank', 'noopener,noreferrer')
     if (optimistic) return
@@ -73,7 +86,9 @@ export function LinkOpenButton({
   return (
     <Button onClick={handleClick} className="inline-flex items-center gap-1.5">
       <span className="line-clamp-1 text-left">{text}</span>
-      <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      {!isStoredFileUrl(url) && (
+        <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      )}
     </Button>
   )
 }

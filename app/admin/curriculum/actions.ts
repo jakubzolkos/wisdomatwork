@@ -221,6 +221,7 @@ export async function updateModule(formData: FormData): Promise<ActionResult> {
     const title = trim(formData.get('title'))
     const description = nullable(formData.get('description'))
     const cohorts = readInheritableCohorts(formData)
+    const isSequential = formData.get('is_sequential') === 'on'
     if (!id) return fail('Missing module id')
     if (!phaseId) return fail('Missing phase id')
     if (!title) return fail('Module title is required')
@@ -228,7 +229,7 @@ export async function updateModule(formData: FormData): Promise<ActionResult> {
     const supabase = await createClient()
     const { error } = await supabase
       .from('modules')
-      .update({ title, description, cohorts })
+      .update({ title, description, cohorts, is_sequential: isSequential })
       .eq('id', id)
     if (error) return fail(error.message)
 

@@ -289,6 +289,35 @@ export function CurriculumTree({ phases }: Props) {
                     {phase.modules.map((module, idx) => {
                       const moduleOpen = openIds.has(module.id)
                       const headerLabel = `${idx + 1}. ${module.title}`
+                      // Sequence-locked: a flat, non-interactive row
+                      // saying what to finish first. Its items aren't
+                      // linked so fellows can't open them early.
+                      if (module.isLocked) {
+                        return (
+                          <li
+                            key={module.id}
+                            className="border-t border-border first:border-t-0"
+                            aria-label={`${headerLabel} (locked)`}
+                          >
+                            <div className="flex w-full items-start justify-between gap-3 px-3 py-3 text-sm">
+                              <span className="min-w-0">
+                                <span className="block truncate font-semibold text-muted-foreground">
+                                  {headerLabel}
+                                </span>
+                                {module.blockedBy && (
+                                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                                    Complete {module.blockedBy} to unlock
+                                  </span>
+                                )}
+                              </span>
+                              <Lock
+                                className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                                aria-hidden="true"
+                              />
+                            </div>
+                          </li>
+                        )
+                      }
                       return (
                         <li
                           key={module.id}

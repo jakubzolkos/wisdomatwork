@@ -30,6 +30,7 @@ import {
   TabsContent,
 } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { linkTargetProps } from '@/lib/stored-files'
 import { AddResourceDialog } from '@/components/library/add-resource-dialog'
 import { PageHeader } from '@/components/page-header'
 // Lives in a leaf module so AddResourceDialog can also import it
@@ -592,8 +593,7 @@ function GridCard({
   return (
     <a
       href={resource.url}
-      target="_blank"
-      rel="noreferrer"
+      {...linkTargetProps(resource.url)}
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs transition hover:border-border-strong hover:shadow-md"
     >
       {/* Hero: cover image or icon fallback. We use object-contain
@@ -688,8 +688,7 @@ function ListRow({
     <li>
       <a
         href={resource.url}
-        target="_blank"
-        rel="noreferrer"
+        {...linkTargetProps(resource.url)}
         className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 shadow-xs transition hover:border-border-strong hover:shadow-md"
       >
         {/* Portrait thumbnail mirrors the 3:4 hero used by the grid

@@ -16,7 +16,7 @@ values ('course-files', 'course-files', false)
 on conflict (id) do update set public = false;
 
 -- Storage key of the file inside the bucket. When set, the row's
--- `url` holds the in-app link /api/files/<kind>/<id>.
+-- `url` holds the in-app link /files/<kind>/<id> (see 060).
 alter table public.labs
   add column if not exists file_path text;
 alter table public.community_resources

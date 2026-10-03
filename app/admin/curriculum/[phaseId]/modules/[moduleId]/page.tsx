@@ -23,6 +23,7 @@ type ModuleDetailRow = {
   title: string
   description: string | null
   cohorts: string[] | null
+  is_sequential: boolean
 }
 
 export type ContentRow = {
@@ -68,7 +69,7 @@ export default async function AdminModuleDetailPage({
       .maybeSingle<PhaseRow>(),
     supabase
       .from('modules')
-      .select('id, phase_id, title, description, cohorts')
+      .select('id, phase_id, title, description, cohorts, is_sequential')
       .eq('id', moduleId)
       .eq('phase_id', phaseId)
       .maybeSingle<ModuleDetailRow>(),
@@ -114,6 +115,7 @@ export default async function AdminModuleDetailPage({
           title: module.title,
           description: module.description ?? '',
           cohorts: module.cohorts,
+          isSequential: module.is_sequential,
         }}
       />
 

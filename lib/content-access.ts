@@ -2,9 +2,11 @@
  * Single source of truth for "may this user open this thing?".
  *
  * The page that renders an item and the file route that serves the
- * item's stored file both call these, so any future gate (release
- * dates, completing the previous module, ...) added here locks the
- * page and its files together.
+ * item's stored file both call these, so the page and its files are
+ * always gated together. These are the cohort rules only; the
+ * sequence lock (earlier modules must be complete) needs the user's
+ * progress and is answered by findCurriculumItem in
+ * lib/curriculum-tree.ts, which the same callers also check.
  */
 
 import { fellowCanAccess } from '@/lib/cohorts'

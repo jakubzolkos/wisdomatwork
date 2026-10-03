@@ -5,9 +5,12 @@
  * The bucket has no read policy for fellows, so nobody can fetch an
  * object directly. A row that points at a stored file keeps the
  * storage key in `file_path` and stores `storedFileUrl(...)` in its
- * `url` column. That URL hits app/api/files/[kind]/[id]/route.ts, which
- * re-runs the same access check as the page the row is shown on and
- * only then redirects to a short-lived signed URL.
+ * `url` column. That URL is the in-app viewer page
+ * (app/files/[kind]/[id]/page.tsx); the viewer embeds
+ * `storedFileApiUrl(...)`, the route that re-runs the access check and
+ * redirects to a short-lived signed URL. Because the address bar only
+ * ever shows our own URL, reloading or bookmarking it never hits an
+ * expired storage link.
  */
 
 export const STORED_FILES_BUCKET = 'course-files'
@@ -21,12 +24,25 @@ export function isStoredFileKind(value: unknown): value is StoredFileKind {
   return value === 'labs' || value === 'library'
 }
 
-/** The in-app URL a row's `url` column holds when its file is stored with us. */
+/** The viewer page a row's `url` column holds when its file is stored with us. */
 export function storedFileUrl(kind: StoredFileKind, id: string): string {
+  return `/files/${kind}/${encodeURIComponent(id)}`
+}
+
+/** The route that checks access and redirects to a fresh signed URL. */
+export function storedFileApiUrl(kind: StoredFileKind, id: string): string {
   return `/api/files/${kind}/${encodeURIComponent(id)}`
 }
 
-/** True for URLs produced by {@link storedFileUrl}. */
+/** True for URLs produced by {@link storedFileUrl} or {@link storedFileApiUrl}. */
 export function isStoredFileUrl(url: string): boolean {
-  return /^\/api\/files\/(labs|library)\/[^/]+$/.test(url)
+  return /^(\/api)?\/files\/(labs|library)\/[^/?]+$/.test(url)
+}
+
+/**
+ * Anchor props for a resource link: stored files open in the in-app
+ * viewer in the same tab; external links keep opening in a new tab.
+ */
+export function linkTargetProps(url: string): { target?: string; rel?: string } {
+  return isStoredFileUrl(url) ? {} : { target: '_blank', rel: 'noreferrer' }
 }

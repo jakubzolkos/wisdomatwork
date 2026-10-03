@@ -18,6 +18,8 @@ import {
   hasSessionLinkClick,
   recordSessionLinkClick,
 } from '@/lib/session-link-clicks'
+import { findCurriculumItem, loadFullCurriculum } from '@/lib/curriculum-tree'
+import { setPreviewCompletion } from '@/lib/preview-completions'
 
 // ----------------------------------------------------------------------------
 // Preview guard
@@ -89,6 +91,12 @@ async function loadVisibleItem(
     ) {
       return { ok: false, message: 'Not allowed' }
     }
+    // Sequence lock: nothing in a module that hasn't opened yet can
+    // be completed, clicked through or reflected on.
+    const placement = findCurriculumItem(await loadFullCurriculum(), contentId)
+    if (!placement || placement.module.isLocked) {
+      return { ok: false, message: 'Finish the earlier modules to unlock this one.' }
+    }
   }
   return { ok: true, item }
 }
@@ -127,9 +135,14 @@ export async function toggleContentCompletion(
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
 
-    // Preview: report success so "Mark complete" / "Go to next item"
-    // behave normally, but persist nothing.
-    if (isPreviewing(user)) return { ok: true, completed: nextCompleted }
+    // Preview: nothing is written to the database. The toggle goes to
+    // a preview-only cookie so the admin can walk the module sequence
+    // and watch later modules unlock.
+    if (isPreviewing(user)) {
+      await setPreviewCompletion(user, contentId, nextCompleted)
+      revalidatePath('/dashboard')
+      return { ok: true, completed: nextCompleted }
+    }
 
     if (nextCompleted) {
       // Gate 1: link click. Live sessions are exempt - the fellow

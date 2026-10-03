@@ -219,7 +219,7 @@ Much of the server code uses `createAdminClient()` (service role). RLS mainly pr
 | `avatars` | yes | users, only inside `{auth.uid()}/…` | 039 | `app/profile/actions.ts` |
 | `resource-covers` | yes | admin/facilitator | 040_resource_covers | `app/resources/actions.ts` |
 | `custom-page-images` | yes | admin (insert/delete) | `scripts/setup-storage.sql`; also auto-created by `lib/custom-pages/setup.ts` | custom-page image upload/delete API |
-| `course-files` | **no** (no fellow policy; served only via `/api/files/[kind]/[id]` with 60 s signed URLs) | admin/facilitator | 058 | `app/api/files/[kind]/[id]/route.ts`; `labs.file_path`, `community_resources.file_path` |
+| `course-files` | **no** (no fellow policy; rows link to the viewer `/files/[kind]/[id]`, which embeds `/api/files/[kind]/[id]` = access check + 60 s signed URL) | admin/facilitator | 058, 060 | `app/files/[kind]/[id]/page.tsx`, `app/api/files/[kind]/[id]/route.ts`; `labs.file_path`, `community_resources.file_path` |
 
 `schools.icon_url` and older page images point at Vercel Blob URLs. Custom-page uploads have since moved to Supabase Storage.
 
