@@ -223,7 +223,8 @@ export function CurriculumTree({ phases }: Props) {
 
         const phaseOpen = openIds.has(phase.id)
         const phaseDone = phase.modules.reduce(
-          (n, m) => n + m.items.filter((it) => isDone(it.id, it.isCompleted)).length,
+          (n, m) =>
+            n + m.items.filter((it) => !it.isPending && isDone(it.id, it.isCompleted)).length,
           0,
         )
         return (
@@ -297,8 +298,10 @@ export function CurriculumTree({ phases }: Props) {
                     {phase.modules.map((module) => {
                       const moduleOpen = openIds.has(module.id)
                       const { name, theme } = splitModuleTitle(module.title)
-                      const done = module.items.filter((it) => isDone(it.id, it.isCompleted)).length
-                      const total = module.items.length
+                      // Placeholder surveys (no link yet) aren't counted.
+                      const counted = module.items.filter((it) => !it.isPending)
+                      const done = counted.filter((it) => isDone(it.id, it.isCompleted)).length
+                      const total = counted.length
                       // Sequence-locked: a flat, non-interactive row
                       // saying what to finish first. Its items aren't
                       // linked so fellows can't open them early.

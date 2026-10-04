@@ -18,10 +18,34 @@ export const STORED_FILES_BUCKET = 'course-files'
 /** Signed URLs are minted per click, so they only need to outlive the redirect. */
 export const SIGNED_URL_TTL_SECONDS = 60
 
-export type StoredFileKind = 'labs' | 'library'
+/**
+ * `labs` / `library`: id is the row id. `mine`: id is a personal
+ * document key, always resolved inside the signed-in user's own folder.
+ */
+export type StoredFileKind = 'labs' | 'library' | 'mine'
 
 export function isStoredFileKind(value: unknown): value is StoredFileKind {
-  return value === 'labs' || value === 'library'
+  return value === 'labs' || value === 'library' || value === 'mine'
+}
+
+/**
+ * Per-fellow documents, stored at `fellows/<profile id>/<key>.pdf`.
+ * Only the owner can open them: the path comes from the session, never
+ * from the URL. Uploaded by scripts/upload-orientation-guides.ts.
+ */
+export const PERSONAL_DOCUMENTS = {
+  'orientation-guide': 'Your Orientation Guide',
+  'research-partnership-agreement': 'Your signed Research Partnership Agreement',
+} as const
+
+export type PersonalDocumentKey = keyof typeof PERSONAL_DOCUMENTS
+
+export function isPersonalDocumentKey(value: string): value is PersonalDocumentKey {
+  return Object.prototype.hasOwnProperty.call(PERSONAL_DOCUMENTS, value)
+}
+
+export function personalDocumentPath(profileId: string, key: PersonalDocumentKey): string {
+  return `fellows/${profileId}/${key}.pdf`
 }
 
 /** The viewer page a row's `url` column holds when its file is stored with us. */
@@ -36,7 +60,7 @@ export function storedFileApiUrl(kind: StoredFileKind, id: string): string {
 
 /** True for URLs produced by {@link storedFileUrl} or {@link storedFileApiUrl}. */
 export function isStoredFileUrl(url: string): boolean {
-  return /^(\/api)?\/files\/(labs|library)\/[^/?]+$/.test(url)
+  return /^(\/api)?\/files\/(labs|library|mine)\/[^/?]+$/.test(url)
 }
 
 /**

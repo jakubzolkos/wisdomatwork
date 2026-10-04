@@ -14,6 +14,7 @@
 import { randomBytes } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import {
+  STAFF,
   DEEP_LEARNING_LABS,
   DEEP_LEARNING_ZOOM,
   DEMO_TEAM_COHORT_ID,
@@ -40,6 +41,19 @@ const MOD_SYLLABUS = '25dd43f1-68a8-4529-a739-5f72449d9748'
 const MOD_LISTENING = '954c9a0a-355f-420c-9be4-046d77f14907'
 const MOD_NORTH_STAR = '44555aa9-149c-4150-aad2-48fb9c345e85'
 const MOD_WC_PRE_SURVEY = '57296daa-74fc-447f-932f-e0c91283cf03'
+const MOD_DL_POST_SURVEY = '4b19b629-4f7d-463d-b80b-94062f4be85f'
+const MOD_DL_CAPSTONE = 'a4c3cabb-0fb1-414d-b5df-f700b2709c4e'
+const MOD_WC_POST_SURVEY = 'b27cc044-51ef-416b-9f6d-140d6311acf9'
+const MOD_WC_CAPSTONE = '0a5645ca-bbfb-4859-883e-76932a670487'
+
+// Placeholder copy for surveys the WaW team publishes later. A survey
+// item without a URL can't be ticked and doesn't hold back the module
+// sequence (lib/completion-gates.ts); adding the link activates it.
+const ROL_AFTER_LAB = 'Complete at the close of the Wisdom Lab.'
+const ROP_AFTER_FIELD_WORK =
+  'Complete after your field work. The survey link will be shared here after the Wisdom Lab.'
+const ROP_AFTER_SESSION =
+  'Complete after you try your strategy in practice. The survey link will be shared here after the session.'
 
 let failures = 0
 function log(msg: string) {
@@ -266,8 +280,17 @@ type Item = {
   cohorts?: string[] | null
 }
 
-/** Update the item matching (module, any of `matchTitles`) or insert it. */
-async function upsertItem(phaseId: string, moduleId: string, item: Item, matchTitles: string[] = [item.title]) {
+/**
+ * Update the item matching (module, any of `matchTitles`) or insert it.
+ * Existing rows keep their position unless `reorder` is set.
+ */
+async function upsertItem(
+  phaseId: string,
+  moduleId: string,
+  item: Item,
+  matchTitles: string[] = [item.title],
+  { reorder = false }: { reorder?: boolean } = {},
+) {
   const { data: existing } = await sb
     .from('labs')
     .select('id, title')
@@ -279,9 +302,8 @@ async function upsertItem(phaseId: string, moduleId: string, item: Item, matchTi
   log(`  ${existing ? 'update' : 'insert'} item "${item.title}"${item.scheduled_at ? ` @ ${item.scheduled_at}` : ''}${item.url ? ' (link)' : ''}`)
   if (!APPLY) return
   if (existing) {
-    // Keep the existing position; order_index only matters for new rows.
     const { order_index: _keep, ...changes } = item
-    check(await sb.from('labs').update(changes).eq('id', existing.id), `item ${item.title}`)
+    check(await sb.from('labs').update(reorder ? item : changes).eq('id', existing.id), `item ${item.title}`)
   }
   else check(await sb.from('labs').insert({ ...item, year_id: phaseId, module_id: moduleId }), `item ${item.title}`)
 }
@@ -348,15 +370,38 @@ async function deepLearning() {
       },
       ['Wisdom Lab', 'Wisdom Lab Two'],
     )
-    const rol = SURVEYS.dlRoL[i]
-    await upsertItem(PHASE_DEEP_LEARNING, lab.moduleId, {
-      title: 'Reflection on Learning',
-      resource_type: 'survey',
-      category: 'after_lab',
-      order_index: 3,
-      cohorts: onlyB,
-      ...(rol ? { url: rol } : {}),
-    })
+    // After the Lab, in order: Reflection on Learning (at the close
+    // of the lab), Field Work, Reflection on Practice (after field
+    // work). RoP forms aren't published yet: placeholders. The old
+    // Lab Two RoP link was last year's form, so it's cleared.
+    await upsertItem(
+      PHASE_DEEP_LEARNING,
+      lab.moduleId,
+      {
+        title: 'Reflection on Learning', resource_type: 'survey', category: 'after_lab', order_index: 1,
+        description: ROL_AFTER_LAB, url: SURVEYS.dlRoL[i], cohorts: onlyB,
+      },
+      undefined,
+      { reorder: true },
+    )
+    log('  field work -> after the lab, position 2')
+    if (APPLY) {
+      check(
+        await sb.from('labs').update({ category: 'after_lab', order_index: 2 })
+          .eq('module_id', lab.moduleId).like('title', 'Wisdom Lab Field Work%'),
+        'field work order',
+      )
+    }
+    await upsertItem(
+      PHASE_DEEP_LEARNING,
+      lab.moduleId,
+      {
+        title: 'Reflection on Practice', resource_type: 'survey', category: 'after_lab', order_index: 3,
+        description: ROP_AFTER_FIELD_WORK, url: SURVEYS.dlRoP[i], cohorts: onlyB,
+      },
+      undefined,
+      { reorder: true },
+    )
   }
 
   await upsertModule(MOD_NORTH_STAR, PHASE_DEEP_LEARNING, {
@@ -368,6 +413,59 @@ async function deepLearning() {
   await upsertItem(PHASE_DEEP_LEARNING, MOD_NORTH_STAR, {
     title: 'North Star School Team Discussion', resource_type: 'live_session', category: 'during_lab', order_index: 1,
     description: 'February 10 or February 17, 2027. The WaW team will share the time and link for your school team.',
+  })
+
+  await closingModules(PHASE_DEEP_LEARNING, {
+    postSurveyModuleId: MOD_DL_POST_SURVEY,
+    capstoneModuleId: MOD_DL_CAPSTONE,
+    order: 10,
+    cohorts: onlyB,
+    postSurveyDue: 'May 5, 2027',
+    postSurveyUrl: SURVEYS.dlPostProgram,
+    capstoneDates: 'May 12 or May 19, 2027',
+    capstoneUrl: SURVEYS.dlCapstoneSignup,
+  })
+}
+
+/** Post-Program Survey + Capstone/Feedback sign-ups at the end of a phase; links come later. */
+async function closingModules(
+  phaseId: string,
+  o: {
+    postSurveyModuleId: string
+    capstoneModuleId: string
+    order: number
+    cohorts?: string[]
+    postSurveyDue: string
+    postSurveyUrl: string | null
+    capstoneDates: string
+    capstoneUrl: string | null
+  },
+) {
+  await upsertModule(o.postSurveyModuleId, phaseId, {
+    title: 'Post-Program Survey', description: `Due ${o.postSurveyDue}.`, order_index: o.order, cohorts: o.cohorts,
+  })
+  await upsertItem(phaseId, o.postSurveyModuleId, {
+    title: 'Post-Program Survey', resource_type: 'survey', category: 'general_resources', order_index: 1,
+    description: `Due ${o.postSurveyDue}. The survey link will be shared here closer to the date.`,
+    url: o.postSurveyUrl,
+  })
+
+  await upsertModule(o.capstoneModuleId, phaseId, {
+    title: 'Capstone Interview & Feedback Session',
+    description: `Capstone Interview with Dr. Mark Pacheco (${o.capstoneDates}) and a Feedback Session on the Toolkit, Portal, or Leadership Assessment Inventory (before May 19, 2027).`,
+    order_index: o.order + 1,
+    cohorts: o.cohorts,
+  })
+  await upsertItem(phaseId, o.capstoneModuleId, {
+    title: 'Sign up for your Capstone Interview', resource_type: 'survey', category: 'general_resources', order_index: 1,
+    description: `A live session with your team and WaW team leadership on ${o.capstoneDates}. The sign-up form will be shared here.`,
+    url: o.capstoneUrl,
+  })
+  await upsertItem(phaseId, o.capstoneModuleId, {
+    title: 'Sign up for a Feedback Session', resource_type: 'survey', category: 'general_resources', order_index: 2,
+    description:
+      'One meeting before May 19, 2027 to give input on the Toolkit, Portal, or Leadership Assessment Inventory. The sign-up form will be shared here.',
+    url: SURVEYS.feedbackSignup,
   })
 }
 
@@ -395,25 +493,79 @@ async function wisdomCoaching() {
       title: 'Live Wisdom Coaching', resource_type: 'live_session', category: 'during_lab', order_index: 2,
       url: WISDOM_COACHING_ZOOM, scheduled_at: s.startsAt, duration_minutes: 60,
     })
-    // Only Session One's Reflection on Learning form exists so far.
-    if (i === 0) {
-      await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
-        title: 'Reflection on Learning', resource_type: 'survey', category: 'after_lab', order_index: 3, url: SURVEYS.wcLab1RoL,
-      })
-    }
+    // Forms are published one at a time after each session; until
+    // then these are placeholders.
+    await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
+      title: 'Reflection on Learning', resource_type: 'survey', category: 'after_lab', order_index: 3,
+      description: 'Complete at the close of the session.', url: SURVEYS.wcRoL[i],
+    })
+    await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
+      title: 'Reflection on Practice', resource_type: 'survey', category: 'after_lab', order_index: 4,
+      description: ROP_AFTER_SESSION, url: SURVEYS.wcRoP[i],
+    })
   }
+
+  await closingModules(PHASE_WISDOM_COACHING, {
+    postSurveyModuleId: MOD_WC_POST_SURVEY,
+    capstoneModuleId: MOD_WC_CAPSTONE,
+    order: WISDOM_COACHING_SESSIONS.length + 2,
+    postSurveyDue: 'March 10, 2027',
+    postSurveyUrl: SURVEYS.wcPostProgram,
+    capstoneDates: 'April 7 or May 5, 2027',
+    capstoneUrl: SURVEYS.wcCapstoneSignup,
+  })
 }
 
 /** Sequential-unlock flag from 061; skipped quietly until 061 has run. */
 async function markNonSequential() {
-  const ids = [MOD_NORTH_STAR, MOD_WC_PRE_SURVEY]
-  log('mark North Star + Wisdom Coaching pre-survey as non-sequential (if 061 applied)')
+  const ids = [
+    MOD_NORTH_STAR,
+    MOD_WC_PRE_SURVEY,
+    MOD_DL_POST_SURVEY,
+    MOD_DL_CAPSTONE,
+    MOD_WC_POST_SURVEY,
+    MOD_WC_CAPSTONE,
+  ]
+  log('mark North Star, pre/post surveys and capstone modules as non-sequential')
   if (!APPLY) return
   const { error } = await sb.from('modules').update({ is_sequential: false }).in('id', ids)
   if (error && !/is_sequential/.test(error.message)) check({ data: null, error }, 'is_sequential')
 }
 
-// ------------------------------------------------------------ 5. library
+// ------------------------------------------------------------ 5. staff
+
+/** Make sure each listed staff member has an account with the right role (no email is sent). */
+async function staff(users: Map<string, string>) {
+  console.log('\n== Staff')
+  for (const a of STAFF) {
+    const email = a.email.toLowerCase()
+    let id = users.get(email)
+    log(`${id ? 'ensure' : 'create'} ${a.role} ${a.fullName} <${email}>`)
+    if (!APPLY) continue
+    if (!id) {
+      const { data, error } = await sb.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { full_name: a.fullName },
+      })
+      if (error || !data.user) {
+        check({ data: null, error: error ?? { message: 'no user returned' } }, `create ${email}`)
+        continue
+      }
+      id = data.user.id
+      users.set(email, id)
+    }
+    check(
+      await sb.from('profiles').upsert(
+        { id, email, full_name: a.fullName, title: a.title, role: a.role, cohort: null, deactivated_at: null },
+        { onConflict: 'id' },
+      ),
+      `staff profile ${email}`,
+    )
+  }
+}
+
+// ------------------------------------------------------------ 6. library
 
 async function library() {
   console.log('\n== Library')
@@ -439,6 +591,7 @@ async function main() {
   await cleanup(users)
   const teams = await ensureTeams()
   await loadFellows(users, teams)
+  await staff(users)
   await deepLearning()
   await wisdomCoaching()
   await markNonSequential()

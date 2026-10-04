@@ -26,5 +26,9 @@ where id in (
   '954c9a0a-355f-420c-9be4-046d77f14907', -- Listening Launch (was School Team Listening Session)
   '25dd43f1-68a8-4529-a739-5f72449d9748', -- Syllabus
   '44555aa9-149c-4150-aad2-48fb9c345e85', -- North Star School Team Discussion
-  '57296daa-74fc-447f-932f-e0c91283cf03'  -- Wisdom Coaching: Pre-Program Survey
+  '57296daa-74fc-447f-932f-e0c91283cf03', -- Wisdom Coaching: Pre-Program Survey
+  '4b19b629-4f7d-463d-b80b-94062f4be85f', -- Deep Learning: Post-Program Survey
+  'a4c3cabb-0fb1-414d-b5df-f700b2709c4e', -- Deep Learning: Capstone Interview & Feedback Session
+  'b27cc044-51ef-416b-9f6d-140d6311acf9', -- Wisdom Coaching: Post-Program Survey
+  '0a5645ca-bbfb-4859-883e-76932a670487'  -- Wisdom Coaching: Capstone Interview & Feedback Session
 );

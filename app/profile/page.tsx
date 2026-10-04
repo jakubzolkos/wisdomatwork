@@ -5,6 +5,8 @@ import { TopBar } from '@/components/top-bar'
 import { ProfileEditor } from '@/components/profile/profile-editor'
 import { ResearchIdCard } from '@/components/profile/research-id-card'
 import { getResearchId } from '@/lib/research-id'
+import { PersonalDocumentsCard } from '@/components/profile/personal-documents-card'
+import { listPersonalDocuments } from '@/lib/stored-files-server'
 
 export const metadata = {
   title: 'Your profile | Leadership Fellowship',
@@ -24,7 +26,10 @@ export default async function ProfilePage() {
   const user = await requireUser()
   const supabase = await createClient()
 
-  const researchId = await getResearchId(user.id)
+  const [researchId, documents] = await Promise.all([
+    getResearchId(user.id),
+    listPersonalDocuments(user.id),
+  ])
   const { data: row } = await supabase
     .from('profiles')
     .select(
@@ -75,9 +80,10 @@ export default async function ProfilePage() {
           description="This is what your teammates and the wider Fellowship see in the Team and Community directories. Photos make the directory feel personal - upload one if you can."
         />
 
-        {researchId && (
-          <div className="mb-6">
-            <ResearchIdCard researchId={researchId} />
+        {(researchId || documents.length > 0) && (
+          <div className="mb-6 flex flex-col gap-3">
+            {researchId && <ResearchIdCard researchId={researchId} />}
+            <PersonalDocumentsCard documents={documents} />
           </div>
         )}
 

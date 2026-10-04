@@ -27,7 +27,8 @@ import {
 import { LockedModuleNotice } from '@/components/curriculum/locked-module-notice'
 import { ResearchIdCard } from '@/components/profile/research-id-card'
 import { getResearchId } from '@/lib/research-id'
-import { COMPLETION_GATE_MESSAGES, completionGate } from '@/lib/completion-gates'
+import { readPreviewReflections } from '@/lib/preview-completions'
+import { COMPLETION_GATE_MESSAGES, completionGate, isPendingSurvey } from '@/lib/completion-gates'
 import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
 
@@ -219,16 +220,26 @@ export default async function ContentItemPage({
   // make the in-app click unnecessary friction).
   const needsLinkClick =
     !isCompleted && hasUrl && !linkClicked && !isLiveSession
+  // In preview a reflection is validated but not saved; the preview
+  // cookie remembers that it was accepted.
+  const reflectionAccepted =
+    !!user.preview && (await readPreviewReflections(user)).has(item.id)
   const needsReflection =
     !isCompleted &&
     reflectionRequired &&
+    !reflectionAccepted &&
     !reflectionMeetsMinimum(reflectionResponse)
-  // A scheduled session can't be completed before it has ended (same
-  // rule as the action and the sidebar, lib/completion-gates.ts).
-  const sessionNotEnded =
-    !isCompleted &&
-    !user.preview &&
-    completionGate(item, { linkClicked, reflection: reflectionResponse }) === 'session_not_ended'
+  // Gates the fellow can only wait out: a scheduled session that
+  // hasn't ended, or a survey whose link isn't published yet. Same
+  // rule as the action and the sidebar (lib/completion-gates.ts),
+  // preview included.
+  const gate = isCompleted
+    ? null
+    : completionGate(item, { linkClicked, reflection: reflectionResponse, reflectionAccepted })
+  const waitMessage =
+    gate === 'session_not_ended' || gate === 'not_available'
+      ? COMPLETION_GATE_MESSAGES[gate]
+      : null
 
   return (
     <article className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-border bg-card shadow-xs">
@@ -312,7 +323,9 @@ export default async function ContentItemPage({
       {!hasBody && !hasUrl && !reflectionRequired && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <p className="text-sm text-muted-foreground">
-            This item has no content attached yet.
+            {isPendingSurvey(item)
+              ? 'The survey link will be shared here when it’s ready.'
+              : 'This item has no content attached yet.'}
           </p>
         </div>
       )}
@@ -354,7 +367,7 @@ export default async function ContentItemPage({
         needsReflection={needsReflection}
         nextHref={next?.href ?? null}
         nextBlockedBy={nextBlockedBy}
-        waitMessage={sessionNotEnded ? COMPLETION_GATE_MESSAGES.session_not_ended : null}
+        waitMessage={waitMessage}
         autoComplete={liveSessionScheduled && !reflectionRequired}
         incompleteHint={
           isLiveSession && !liveSessionScheduled && !needsReflection

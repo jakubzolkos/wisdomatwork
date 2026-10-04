@@ -18,7 +18,11 @@ import {
   recordSessionLinkClick,
 } from '@/lib/session-link-clicks'
 import { findCurriculumItem, loadFullCurriculum } from '@/lib/curriculum-tree'
-import { setPreviewCompletion } from '@/lib/preview-completions'
+import {
+  readPreviewReflections,
+  setPreviewCompletion,
+  setPreviewReflection,
+} from '@/lib/preview-completions'
 import { COMPLETION_GATE_MESSAGES, completionGate } from '@/lib/completion-gates'
 
 // ----------------------------------------------------------------------------
@@ -104,6 +108,44 @@ async function loadVisibleItem(
 }
 
 // ----------------------------------------------------------------------------
+// Completion gate inputs
+// ----------------------------------------------------------------------------
+
+/**
+ * What still blocks `user` from completing `item`, read from the same
+ * sources the tree uses: the session link-click cookie, the saved
+ * reflection, and (in preview) reflections accepted but not saved.
+ * `reflection` overrides the saved one, for checks right after a save.
+ */
+async function completionGateFor(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  user: Awaited<ReturnType<typeof requireUser>>,
+  item: ItemWithCascade,
+  contentId: string,
+  reflection?: string,
+) {
+  // Cohort preview runs as a synthetic, non-uuid user with no rows.
+  const hasRealId = user.id !== '__preview__'
+  const [linkClicked, reflectionRes, previewReflections] = await Promise.all([
+    hasSessionLinkClick(contentId),
+    item.reflection_enabled && reflection === undefined && hasRealId
+      ? supabase
+          .from('user_content_reflections')
+          .select('response')
+          .eq('profile_id', user.id)
+          .eq('content_id', contentId)
+          .maybeSingle<{ response: string }>()
+      : Promise.resolve({ data: null }),
+    readPreviewReflections(user),
+  ])
+  return completionGate(item, {
+    linkClicked,
+    reflection: reflection ?? reflectionRes.data?.response ?? null,
+    reflectionAccepted: previewReflections.has(contentId),
+  })
+}
+
+// ----------------------------------------------------------------------------
 // Mark complete / not-complete
 // ----------------------------------------------------------------------------
 
@@ -134,6 +176,15 @@ export async function toggleContentCompletion(
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
 
+    if (nextCompleted) {
+      // Same rule the tree and footer use to disable the control
+      // (lib/completion-gates.ts): session has ended, link opened in
+      // this login session, reflection long enough. Applies in
+      // preview too, so the admin meets exactly what a fellow meets.
+      const gate = await completionGateFor(supabase, user, item, contentId)
+      if (gate) return { ok: false, message: COMPLETION_GATE_MESSAGES[gate] }
+    }
+
     // Preview: nothing is written to the database. The toggle goes to
     // a preview-only cookie so the admin can walk the module sequence
     // and watch later modules unlock.
@@ -144,26 +195,6 @@ export async function toggleContentCompletion(
     }
 
     if (nextCompleted) {
-      // Same rule the tree and footer use to disable the control
-      // (lib/completion-gates.ts): session has ended, link opened in
-      // this login session, reflection long enough.
-      const [linkClicked, reflectionRes] = await Promise.all([
-        hasSessionLinkClick(contentId),
-        item.reflection_enabled
-          ? supabase
-              .from('user_content_reflections')
-              .select('response')
-              .eq('profile_id', user.id)
-              .eq('content_id', contentId)
-              .maybeSingle<{ response: string }>()
-          : Promise.resolve({ data: null }),
-      ])
-      const gate = completionGate(item, {
-        linkClicked,
-        reflection: reflectionRes.data?.response ?? null,
-      })
-      if (gate) return { ok: false, message: COMPLETION_GATE_MESSAGES[gate] }
-
       const { error: insertError } = await supabase
         .from('user_content_completions')
         .upsert(
@@ -286,9 +317,6 @@ export async function submitReflection(
     const user = await requireUser()
     const supabase = await createClient()
     if (!contentId) return { ok: false, message: 'Missing content id' }
-    if (isPreviewing(user)) {
-      return { ok: false, message: 'Reflections are not saved while previewing.' }
-    }
 
     const trimmed = response.trim()
     if (!trimmed) return { ok: false, message: 'Reflection cannot be empty' }
@@ -317,6 +345,20 @@ export async function submitReflection(
       }
     }
 
+    // Preview: validated exactly like a fellow's, but not saved. The
+    // item is remembered as "reflection accepted" in the preview
+    // cookie so the completion gate clears the same way.
+    if (isPreviewing(user)) {
+      await setPreviewReflection(user, contentId, true)
+      let completed = false
+      if (opts?.markComplete && !(await completionGateFor(supabase, user, item, contentId, trimmed))) {
+        await setPreviewCompletion(user, contentId, true)
+        completed = true
+      }
+      revalidatePath('/dashboard')
+      return { ok: true, completed }
+    }
+
     const { error } = await supabase
       .from('user_content_reflections')
       .upsert(
@@ -335,11 +377,7 @@ export async function submitReflection(
     // checked against the reflection just saved.
     let completed = false
     if (opts?.markComplete) {
-      const gate = completionGate(item, {
-        linkClicked: await hasSessionLinkClick(contentId),
-        reflection: trimmed,
-      })
-      if (!gate) {
+      if (!(await completionGateFor(supabase, user, item, contentId, trimmed))) {
         const { error: completeErr } = await supabase
           .from('user_content_completions')
           .upsert(
@@ -386,11 +424,18 @@ export async function deleteReflection(
     const supabase = await createClient()
     if (!contentId) return { ok: false, message: 'Missing content id' }
 
-    if (isPreviewing(user)) return { ok: true }
-
     const visible = await loadVisibleItem(supabase, contentId, user)
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
+
+    // Preview: forget the accepted reflection and the completion that
+    // depended on it, mirroring the real delete below.
+    if (isPreviewing(user)) {
+      await setPreviewReflection(user, contentId, false)
+      if (item.reflection_enabled) await setPreviewCompletion(user, contentId, false)
+      revalidatePath('/dashboard')
+      return { ok: true }
+    }
 
     const { error: refErr } = await supabase
       .from('user_content_reflections')

@@ -9,8 +9,8 @@ import {
   type ContentCategory,
 } from '@/lib/curriculum'
 import { computeModuleLocks, liveSessionHasEnded } from '@/lib/module-locks'
-import { readPreviewCompletions } from '@/lib/preview-completions'
-import { completionGate, type CompletionGate } from '@/lib/completion-gates'
+import { readPreviewCompletions, readPreviewReflections } from '@/lib/preview-completions'
+import { completionGate, isPendingSurvey, type CompletionGate } from '@/lib/completion-gates'
 import { readSessionLinkClicks } from '@/lib/session-link-clicks'
 
 /**
@@ -45,6 +45,8 @@ export interface CurriculumItem {
    * or is already complete. lib/completion-gates.ts.
    */
   completionGate: CompletionGate | null
+  /** Placeholder survey with no link yet: shown, but not counted or locking. */
+  isPending: boolean
 }
 
 export interface CurriculumModule {
@@ -194,8 +196,13 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
   const reflectionById = new Map((reflectionRows ?? []).map((r) => [r.content_id, r.response]))
 
   const completedSet = new Set((completionRows ?? []).map((c) => c.content_id))
-  // Preview toggles are kept in a cookie, never the database.
-  for (const [id, done] of await readPreviewCompletions(user)) {
+  // Preview toggles and accepted reflections are kept in a cookie,
+  // never the database.
+  const [previewCompletions, previewReflections] = await Promise.all([
+    readPreviewCompletions(user),
+    readPreviewReflections(user),
+  ])
+  for (const [id, done] of previewCompletions) {
     if (done) completedSet.add(id)
     else completedSet.delete(id)
   }
@@ -270,15 +277,19 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       // An ended live session counts as done even if the fellow never
       // reopened its page (where the completion row gets written).
       isCompleted,
-      // Preview toggles skip the gates (see toggleContentCompletion).
-      completionGate:
-        isCompleted || user.preview
-          ? null
-          : completionGate(
-              item,
-              { linkClicked: linkClicks.has(item.id), reflection: reflectionById.get(item.id) ?? null },
-              now,
-            ),
+      isPending: isPendingSurvey(item),
+      // Preview meets the same gates as a fellow.
+      completionGate: isCompleted
+        ? null
+        : completionGate(
+            item,
+            {
+              linkClicked: linkClicks.has(item.id),
+              reflection: reflectionById.get(item.id) ?? null,
+              reflectionAccepted: previewReflections.has(item.id),
+            },
+            now,
+          ),
     })
     itemsByModule.set(item.module_id, list)
   }
@@ -321,8 +332,11 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     let itemCount = 0
     let completedCount = 0
     for (const m of modules) {
-      itemCount += m.items.length
-      for (const i of m.items) if (i.isCompleted) completedCount += 1
+      for (const i of m.items) {
+        if (i.isPending) continue
+        itemCount += 1
+        if (i.isCompleted) completedCount += 1
+      }
     }
     return {
       id: p.id,
@@ -411,7 +425,10 @@ export function findAdjacentItems(
         id: m.id,
         title: m.title,
         isSequential: m.isSequential,
-        items: m.items.map((i) => ({ isCompleted: i.isCompleted || i.id === contentId })),
+        items: m.items.map((i) => ({
+          isCompleted: i.isCompleted || i.id === contentId,
+          isPending: i.isPending,
+        })),
       })),
     ).get(after.module.id)
     if (!lock?.isLocked) return { prev, next: after.item, nextBlockedBy: null }

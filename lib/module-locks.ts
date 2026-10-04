@@ -7,7 +7,8 @@
  * the sequence are always open and never block anything.
  *
  * A module is complete when every item the fellow can see in it is
- * complete. An empty module counts as complete so it never blocks.
+ * complete, ignoring placeholder surveys that have no link yet. An
+ * empty module counts as complete so it never blocks.
  *
  * Pure (no I/O) so the tree loader, item page, server actions and the
  * stored-file route all evaluate exactly the same thing.
@@ -17,7 +18,8 @@ export interface LockInputModule {
   id: string
   title: string
   isSequential: boolean
-  items: ReadonlyArray<{ isCompleted: boolean }>
+  /** `isPending`: placeholder survey without a link; never blocks. */
+  items: ReadonlyArray<{ isCompleted: boolean; isPending?: boolean }>
 }
 
 export interface ModuleLock {
@@ -44,7 +46,7 @@ export function computeModuleLocks(
       continue
     }
     locks.set(m.id, { isLocked: false, blockedBy: null })
-    if (!m.items.every((i) => i.isCompleted)) blocker = m
+    if (!m.items.every((i) => i.isCompleted || i.isPending)) blocker = m
   }
   return locks
 }

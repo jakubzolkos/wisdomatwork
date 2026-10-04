@@ -59,7 +59,7 @@ export const FELLOWS: Fellow[] = [
   B('St James', 'Brad Gross', 'Middle School Science', 'grossm@stjmuk.org', 'WAWBXKFT3I'),
   B('Willows Academy', 'Elizabeth Hughes', 'Director of High School', 'hughes@willowsacademy.org', 'WAWBAFKWV4'),
   B('Willows Academy', 'Beth Dolack', 'Executive Director', 'dolack@willowsacademy.org', 'WAWBCLSU5D'),
-  // ID is one character shorter than the others in the source doc.
+  // Shorter than the others, but confirmed correct (Barbara, Oct 3).
   B('Willows Academy', 'Mary Kurkowski', 'Director of Middle School', 'kurkowski@willowsacademy.org', 'WAWBVLDO2'),
   B('Willows Academy', 'Katie Stangel', 'Head of School', 'stangel@willowsacademy.org', 'WAWBBGM3PE'),
   B("St Mary's", 'Adrianna Giannelli', 'Head of School', 'agiannelli@sma.family', 'WAWBNBL15K'),
@@ -95,6 +95,7 @@ export const TEST_EMAILS = [
   'nnamanin@bc.edu',
   'mauracahill@ymail.com',
   'andrea.rolla@gmail.com',
+  'pwal@abigailadamsinstitute.org', // "ADMIN ADMIN" test admin
 ]
 
 /** Invitations that never became accounts. */
@@ -117,8 +118,24 @@ export const SURVEYS = {
   dlPreProgram:
     'https://docs.google.com/forms/d/e/1FAIpQLScXRzSiB9TyJznJVcl03QBFBZD5XjbiDvowiE8hAWAb80F08w/viewform?usp=header',
   wcPreProgram: 'https://forms.gle/K6B3m717KMJn2FLJA',
-  wcLab1RoL:
+  // null = not published yet. The WaW team releases each form after
+  // its session; the portal shows a placeholder until the link is
+  // added here (then re-run the loader).
+  wcRoL: [
+    // Unpublished until after Session 1 (Oct 7).
     'https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=header',
+    null,
+    null,
+    null,
+    null,
+  ] as (string | null)[],
+  wcRoP: [null, null, null, null, null] as (string | null)[],
+  dlRoP: [null, null, null, null, null] as (string | null)[],
+  dlPostProgram: null as string | null,
+  wcPostProgram: null as string | null,
+  dlCapstoneSignup: null as string | null,
+  wcCapstoneSignup: null as string | null,
+  feedbackSignup: null as string | null,
   dlRoL: [
     'https://docs.google.com/forms/d/e/1FAIpQLScH9fc90BJcpYZNH4uYotmwFViXhnIoVn-J3iqQZx5oZZc6VQ/viewform?usp=header',
     'https://docs.google.com/forms/d/e/1FAIpQLScTahuhaMZ-5KVPSonJLH0PomYBij9k7avxW7k7KLILboJu8Q/viewform?usp=header',
@@ -176,4 +193,18 @@ export const WISDOM_COACHING_SESSIONS = [
   { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00' },
   { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00' },
   { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00' },
+]
+
+/**
+ * Staff accounts (Barbara, Oct 3). There's no admin role split yet, so
+ * "admin" sees and edits everything. Karen asked for a view-only
+ * version for now: "facilitator" sees all curriculum but can't open
+ * /admin.
+ */
+export const STAFF: { email: string; fullName: string; title: string; role: 'admin' | 'facilitator' }[] = [
+  { email: 'barbara@abigailadamsinstitute.org', fullName: 'Barbara Chrobak', title: 'Director of Operations', role: 'admin' },
+  { email: 'ashleigh@abigailadamsinstitute.org', fullName: 'Ashleigh Reen', title: 'Research Assistant', role: 'admin' },
+  { email: 'caitlin@abigailadamsinstitute.org', fullName: 'Caitlin Sze', title: 'Special Projects Manager', role: 'admin' },
+  { email: 'mpacheco@coe.ufl.edu', fullName: 'Mark Pacheco', title: 'Co-Principal Investigator', role: 'admin' },
+  { email: 'kbohlin@abigailadamsinstitute.org', fullName: 'Karen Bohlin', title: 'Project Lead, Co-Principal Investigator', role: 'facilitator' },
 ]

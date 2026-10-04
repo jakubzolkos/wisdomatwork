@@ -5,8 +5,12 @@ import { findCurriculumItem, loadFullCurriculum } from '@/lib/curriculum-tree'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import {
+  PERSONAL_DOCUMENTS,
   SIGNED_URL_TTL_SECONDS,
   STORED_FILES_BUCKET,
+  isPersonalDocumentKey,
+  personalDocumentPath,
+  type PersonalDocumentKey,
   type StoredFileKind,
 } from '@/lib/stored-files'
 import type { CurrentUser } from '@/lib/user-context'
@@ -26,7 +30,34 @@ export async function resolveStoredFile(
   kind: StoredFileKind,
   id: string,
 ): Promise<StoredFile | null> {
+  if (kind === 'mine') return resolvePersonalFile(user, id)
   return kind === 'labs' ? resolveLabFile(user, id) : resolveLibraryFile(user, id)
+}
+
+/**
+ * The signed-in user's own document (`id` is a PERSONAL_DOCUMENTS key).
+ * The folder comes from the session, so nobody can reach someone
+ * else's file by editing the URL. In by-fellow preview the user is the
+ * previewed fellow, which only staff can enter.
+ */
+async function resolvePersonalFile(user: CurrentUser, id: string): Promise<StoredFile | null> {
+  if (!isPersonalDocumentKey(id)) return null
+  const docs = await listPersonalDocuments(user.id)
+  if (!docs.includes(id)) return null
+  return { title: PERSONAL_DOCUMENTS[id], filePath: personalDocumentPath(user.id, id) }
+}
+
+/** Which personal documents exist for `profileId` (bucket listing; service role). */
+export async function listPersonalDocuments(profileId: string): Promise<PersonalDocumentKey[]> {
+  // Cohort preview's synthetic user has no folder (and no uuid).
+  if (!/^[0-9a-f-]{36}$/i.test(profileId)) return []
+  const { data, error } = await createAdminClient()
+    .storage.from(STORED_FILES_BUCKET)
+    .list(`fellows/${profileId}`, { limit: 100 })
+  if (error || !data) return []
+  return data
+    .map((o) => o.name.replace(/\.pdf$/, ''))
+    .filter(isPersonalDocumentKey)
 }
 
 async function resolveLabFile(user: CurrentUser, id: string): Promise<StoredFile | null> {
