@@ -32,7 +32,18 @@ interface Props {
     cohorts: string[] | null
     /** Part of the phase's unlock sequence (lib/module-locks.ts). */
     isSequential: boolean
+    /** When the module opens for fellows (ISO); null = open now. */
+    opensAt: string | null
   }
+}
+
+/** ISO -> the `YYYY-MM-DDTHH:MM` local value a datetime-local input shows. */
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 /**
@@ -46,6 +57,8 @@ export function ModuleDetailsForm({ phaseId, phaseCohorts, module }: Props) {
   const router = useRouter()
   const titleId = useId()
   const descId = useId()
+  const opensId = useId()
+  const [opensLocal, setOpensLocal] = useState(() => isoToLocalInput(module.opensAt))
 
   const [inherit, setInherit] = useState<boolean>(module.cohorts === null)
   const [errorText, setErrorText] = useState<string | null>(null)
@@ -62,6 +75,9 @@ export function ModuleDetailsForm({ phaseId, phaseCohorts, module }: Props) {
     formData.set('id', module.id)
     formData.set('phase_id', phaseId)
     if (inherit) formData.set('cohorts_inherit', 'on')
+    // The picker shows the admin's local time; store an exact instant.
+    const opens = opensLocal.trim() ? new Date(opensLocal) : null
+    formData.set('opens_at', opens && !Number.isNaN(opens.getTime()) ? opens.toISOString() : '')
     startTransition(async () => {
       const res = await updateModule(formData)
       if (res.ok) {
@@ -156,6 +172,23 @@ export function ModuleDetailsForm({ phaseId, phaseCohorts, module }: Props) {
           )}
         </div>
 
+        <div className="space-y-2 rounded-md border border-border bg-muted/30 p-4">
+          <Label htmlFor={opensId}>Opens for fellows on</Label>
+          <Input
+            id={opensId}
+            type="datetime-local"
+            step={300}
+            value={opensLocal}
+            onChange={(e) => setOpensLocal(e.target.value)}
+            className="max-w-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            In your local time. Until then fellows see the module with a lock and
+            &ldquo;Opens [date]&rdquo;. Usually right after the previous session ends.
+            Leave blank to open it now.
+          </p>
+        </div>
+
         <label className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-4 text-sm">
           <input
             type="checkbox"
@@ -165,12 +198,12 @@ export function ModuleDetailsForm({ phaseId, phaseCohorts, module }: Props) {
           />
           <span>
             <span className="font-medium text-foreground">
-              Part of the unlock sequence
+              Also require finishing earlier modules (rarely needed)
             </span>
             <span className="mt-0.5 block text-xs text-muted-foreground">
-              Fellows can open this module only after finishing every earlier
-              module in the sequence, and must finish it to unlock later ones.
-              Untick for always-available modules like surveys or a syllabus.
+              On top of the date, fellows can open this module only after
+              finishing every earlier module that has this ticked. Off by
+              default: modules open by date, and completion only shows progress.
             </span>
           </span>
         </label>

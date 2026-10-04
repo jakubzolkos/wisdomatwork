@@ -70,3 +70,12 @@ export function isStoredFileUrl(url: string): boolean {
 export function linkTargetProps(url: string): { target?: string; rel?: string } {
   return isStoredFileUrl(url) ? {} : { target: '_blank', rel: 'noreferrer' }
 }
+
+/** Display name for a stored file: the key's last segment, minus the upload prefix. */
+export function storedFileName(filePath: string): string {
+  const base = filePath.split('/').pop() ?? filePath
+  return base.replace(/^\d{13}-/, '')
+}
+
+/** Uploads accepted by the admin editors: PDFs, which the in-app viewer renders. */
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024

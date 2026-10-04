@@ -8,7 +8,7 @@ import {
   isContentCategory,
   type ContentCategory,
 } from '@/lib/curriculum'
-import { computeModuleLocks, liveSessionHasEnded } from '@/lib/module-locks'
+import { computeModuleLocks, formatOpensAt, liveSessionHasEnded } from '@/lib/module-locks'
 import { readPreviewCompletions, readPreviewReflections } from '@/lib/preview-completions'
 import { completionGate, isPendingSurvey, type CompletionGate } from '@/lib/completion-gates'
 import { readSessionLinkClicks } from '@/lib/session-link-clicks'
@@ -63,8 +63,10 @@ export interface CurriculumModule {
   isLocked: boolean
   /** Title of the module to finish first, when locked. */
   blockedBy: string | null
-  /** Part of the phase's unlock sequence (061). */
+  /** Part of the phase's unlock sequence (061; off by default since 065). */
   isSequential: boolean
+  /** Release date while still ahead (locked until then); null once open. */
+  opensAt: string | null
 }
 
 export interface CurriculumPhase {
@@ -134,7 +136,8 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       >(),
     supabase
       .from('modules')
-      .select('id, phase_id, title, description, cohorts, order_index, is_sequential')
+      // '*' so this keeps working before 065 adds opens_at.
+      .select('*')
       .order('order_index', { ascending: true })
       .returns<
         Array<{
@@ -145,6 +148,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
           cohorts: string[] | null
           order_index: number
           is_sequential: boolean
+          opens_at?: string | null
         }>
       >(),
     supabase
@@ -316,8 +320,10 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
             id: m.id,
             title: m.title,
             isSequential: m.is_sequential,
+            opensAt: m.opens_at ?? null,
             items: itemsByModule.get(m.id) ?? [],
           })),
+          now,
         )
       : null
     const modules: CurriculumModule[] = phaseModules.map((m) => ({
@@ -328,6 +334,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       isLocked: locks?.get(m.id)?.isLocked ?? false,
       blockedBy: locks?.get(m.id)?.blockedBy ?? null,
       isSequential: m.is_sequential,
+      opensAt: locks?.get(m.id)?.opensAt ?? null,
     }))
     let itemCount = 0
     let completedCount = 0
@@ -386,10 +393,11 @@ function categoryRank(category: ContentCategory): number {
  *
  * Walks items in display order and never skips past a locked module:
  * when the next item sits in a module that stays locked even once the
- * current item is complete, there is no next item and `nextBlockedBy`
- * names the module to finish. Locks are re-evaluated with the current
- * item counted as done because "Go to next item" completes it first,
- * so finishing the last item of a lab still continues into the next.
+ * current item is complete, there is no next item and `nextLocked`
+ * says why ("The next module opens Jan 27."). Locks are re-evaluated
+ * with the current item counted as done because "Go to next item"
+ * completes it first, so finishing the last item of a sequential
+ * module still continues into the next.
  */
 export function findAdjacentItems(
   curriculum: FullCurriculum,
@@ -397,7 +405,7 @@ export function findAdjacentItems(
 ): {
   prev: CurriculumItem | null
   next: CurriculumItem | null
-  nextBlockedBy: string | null
+  nextLocked: string | null
 } {
   const flat: Array<{ item: CurriculumItem; module: CurriculumModule; phase: CurriculumPhase }> = []
   for (const phase of curriculum.phases) {
@@ -406,33 +414,39 @@ export function findAdjacentItems(
     }
   }
   const idx = flat.findIndex((e) => e.item.id === contentId)
-  if (idx === -1) return { prev: null, next: null, nextBlockedBy: null }
+  if (idx === -1) return { prev: null, next: null, nextLocked: null }
 
   const before = flat[idx - 1]
   const prev = before && !before.module.isLocked ? before.item : null
 
   const after = flat[idx + 1]
-  if (!after) return { prev, next: null, nextBlockedBy: null }
-  if (!after.module.isLocked) return { prev, next: after.item, nextBlockedBy: null }
+  if (!after) return { prev, next: null, nextLocked: null }
+  if (!after.module.isLocked) return { prev, next: after.item, nextLocked: null }
 
   // Locks are per phase, so the current item can only unlock modules
-  // in its own phase.
+  // in its own phase (and never a date lock).
   const current = flat[idx]
-  let blockedBy = after.module.blockedBy
+  let lock: { opensAt: string | null; blockedBy: string | null } = after.module
   if (after.phase.id === current.phase.id) {
-    const lock = computeModuleLocks(
+    const recomputed = computeModuleLocks(
       current.phase.modules.map((m) => ({
         id: m.id,
         title: m.title,
         isSequential: m.isSequential,
+        opensAt: m.opensAt,
         items: m.items.map((i) => ({
           isCompleted: i.isCompleted || i.id === contentId,
           isPending: i.isPending,
         })),
       })),
     ).get(after.module.id)
-    if (!lock?.isLocked) return { prev, next: after.item, nextBlockedBy: null }
-    blockedBy = lock.blockedBy
+    if (!recomputed?.isLocked) return { prev, next: after.item, nextLocked: null }
+    lock = recomputed
   }
-  return { prev, next: null, nextBlockedBy: blockedBy }
+  const nextLocked = lock.opensAt
+    ? `The next module opens ${formatOpensAt(lock.opensAt)}.`
+    : lock.blockedBy
+      ? `Finish every item in ${lock.blockedBy} to unlock the next module.`
+      : null
+  return { prev, next: null, nextLocked }
 }

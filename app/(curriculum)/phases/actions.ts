@@ -107,7 +107,7 @@ async function loadVisibleItem(
     // be completed, clicked through or reflected on.
     const placement = findCurriculumItem(await loadFullCurriculum(), contentId)
     if (!placement || placement.module.isLocked) {
-      return { ok: false, message: 'Finish the earlier modules to unlock this one.' }
+      return { ok: false, message: "This module isn't open yet." }
     }
   }
   return { ok: true, item }

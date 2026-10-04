@@ -64,17 +64,36 @@ export function CompletionRadio({ contentId, isCompleted, itemTitle, gate = null
     })
   }
 
-  // Completion is final for fellows: a done item shows a plain check,
-  // and a click falls through to the row's link like the gated state.
-  if (optimistic && !canUnmarkComplete(viewer?.role)) {
+  // Fellows (and preview) don't tick items from the sidebar: they
+  // complete them on the item page, where its link and reflection
+  // requirements are shown, and completion is final. So for them the
+  // circle is status only - not a button - and a click falls through
+  // to the row's link, opening the item. Staff keep the toggle.
+  if (!canUnmarkComplete(viewer?.role)) {
+    if (!optimistic && gate) {
+      const reason = COMPLETION_GATE_MESSAGES[gate]
+      return (
+        <span
+          role="img"
+          aria-label={`"${itemTitle}" can't be completed yet. ${reason}`}
+          title={reason}
+          className="block h-5 w-5 shrink-0 rounded-full border border-dashed border-muted-foreground/40"
+        />
+      )
+    }
     return (
       <span
         role="img"
-        aria-label={`"${itemTitle}" completed`}
-        title="Completed"
-        className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-primary bg-primary text-background"
+        aria-label={`"${itemTitle}" ${optimistic ? 'completed' : 'not completed yet'}`}
+        title={optimistic ? 'Completed' : 'Open the item to complete it'}
+        className={cn(
+          'grid h-5 w-5 shrink-0 place-items-center rounded-full border',
+          optimistic
+            ? 'border-primary bg-primary text-background'
+            : 'border-muted-foreground/40 bg-transparent',
+        )}
       >
-        <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
+        {optimistic && <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />}
       </span>
     )
   }

@@ -24,6 +24,7 @@ type ModuleDetailRow = {
   description: string | null
   cohorts: string[] | null
   is_sequential: boolean
+  opens_at: string | null
 }
 
 export type ContentRow = {
@@ -33,6 +34,8 @@ export type ContentRow = {
   description: string | null
   body: string | null
   url: string | null
+  /** Key of an uploaded PDF in the course-files bucket; null for links. */
+  file_path: string | null
   category: ContentCategory
   resource_type: ResourceType
   cohorts: string[] | null
@@ -69,14 +72,14 @@ export default async function AdminModuleDetailPage({
       .maybeSingle<PhaseRow>(),
     supabase
       .from('modules')
-      .select('id, phase_id, title, description, cohorts, is_sequential')
+      .select('id, phase_id, title, description, cohorts, is_sequential, opens_at')
       .eq('id', moduleId)
       .eq('phase_id', phaseId)
       .maybeSingle<ModuleDetailRow>(),
     supabase
       .from('labs')
       .select(
-        'id, module_id, title, description, body, url, category, resource_type, cohorts, duration_minutes, reflection_enabled, reflection_prompt, scheduled_at, order_index',
+        'id, module_id, title, description, body, url, file_path, category, resource_type, cohorts, duration_minutes, reflection_enabled, reflection_prompt, scheduled_at, order_index',
       )
       .eq('module_id', moduleId)
       .order('order_index', { ascending: true })
@@ -116,6 +119,7 @@ export default async function AdminModuleDetailPage({
           description: module.description ?? '',
           cohorts: module.cohorts,
           isSequential: module.is_sequential,
+          opensAt: module.opens_at,
         }}
       />
 

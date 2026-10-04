@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { formatOpensAt } from '@/lib/module-locks'
 
 /**
  * Shown in place of an item whose module hasn't unlocked yet for this
@@ -8,9 +9,11 @@ import { Button } from '@/components/ui/button'
  */
 export function LockedModuleNotice({
   moduleTitle,
+  opensAt,
   blockedBy,
 }: {
   moduleTitle: string
+  opensAt: string | null
   blockedBy: string | null
 }) {
   return (
@@ -20,9 +23,11 @@ export function LockedModuleNotice({
       </div>
       <h1 className="text-xl sm:text-2xl">{moduleTitle} isn&apos;t open yet</h1>
       <p className="mx-auto mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-        {blockedBy
-          ? `Complete everything in ${blockedBy} to unlock this module.`
-          : 'Complete the earlier modules to unlock this one.'}
+        {opensAt
+          ? `It opens on ${formatOpensAt(opensAt)}, right after the previous session.`
+          : blockedBy
+            ? `Complete everything in ${blockedBy} to unlock this module.`
+            : 'It will open soon.'}
       </p>
       <div className="mt-6 flex justify-center">
         <Button asChild>

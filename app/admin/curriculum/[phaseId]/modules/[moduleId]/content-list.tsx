@@ -41,6 +41,7 @@ import {
 import { CohortBadge } from '@/components/admin/cohort-access-field'
 import { getResourceType, CONTENT_CATEGORIES, type ContentCategory } from '@/lib/curriculum'
 import type { ContentRow } from './page'
+import { storedFileName, storedFileUrl } from '@/lib/stored-files'
 import { ContentItemForm } from './content-item-form'
 import { deleteContent, reorderContent } from '../../../actions'
 
@@ -295,12 +296,25 @@ function ContentRowItemContent({
         )}
         {(item.url || item.body) && (
           <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            {item.url && (
+            {item.file_path ? (
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <FileText className="h-3 w-3 shrink-0" aria-hidden="true" />
+                <span className="truncate">PDF · {storedFileName(item.file_path)}</span>
+                <a
+                  href={storedFileUrl('labs', item.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Preview
+                </a>
+              </span>
+            ) : item.url ? (
               <span className="inline-flex items-center gap-1">
                 <ExternalLink className="h-3 w-3" aria-hidden="true" />
                 Link attached
               </span>
-            )}
+            ) : null}
             {item.body && (
               <span className="inline-flex items-center gap-1">
                 <FileText className="h-3 w-3" aria-hidden="true" />
@@ -339,6 +353,7 @@ function ContentRowItemContent({
                 description: item.description ?? '',
                 body: item.body ?? '',
                 url: item.url ?? '',
+                file_path: item.file_path,
                 duration_minutes: item.duration_minutes,
                 reflection_enabled: item.reflection_enabled,
                 reflection_prompt: item.reflection_prompt,

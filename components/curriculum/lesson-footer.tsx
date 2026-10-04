@@ -24,10 +24,10 @@ interface Props {
   nextHref: string | null
   /**
    * When there's no next item because the next module is still
-   * locked: the module to finish first. Shown instead of letting
-   * "Go to next item" jump past the lock.
+   * locked: why, as a sentence ("The next module opens Jan 27.").
+   * Shown instead of letting "Go to next item" jump past the lock.
    */
-  nextBlockedBy?: string | null
+  nextLockedMessage?: string | null
   /**
    * Set while the item can't be completed yet for a reason the fellow
    * can only wait out (a scheduled session that hasn't ended).
@@ -75,7 +75,7 @@ export function LessonFooter({
   needsLinkClick,
   needsReflection,
   nextHref,
-  nextBlockedBy = null,
+  nextLockedMessage = null,
   waitMessage = null,
   autoComplete = false,
   incompleteHint,
@@ -203,9 +203,9 @@ export function LessonFooter({
         </p>
       )}
 
-      {!nextHref && nextBlockedBy && !blocked && (
+      {!nextHref && nextLockedMessage && !blocked && (
         <p className="text-sm text-muted-foreground" role="status">
-          Finish every item in {nextBlockedBy} to unlock the next module.
+          {nextLockedMessage}
         </p>
       )}
 

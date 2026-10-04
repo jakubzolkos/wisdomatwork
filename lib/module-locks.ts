@@ -1,14 +1,16 @@
 /**
- * Sequential module unlocking - the one place the rule lives.
+ * When a module opens for a fellow - the one place the rule lives.
  *
- * Within a phase, modules are walked in display order. A module that
- * is part of the sequence (`isSequential`) is locked while any earlier
- * sequential module in the same phase is incomplete. Modules outside
- * the sequence are always open and never block anything.
+ * Primarily by DATE: a module with `opensAt` in the future is locked
+ * until then (the program runs on its live-session calendar, so each
+ * module opens right after the previous session ends). Completion
+ * drives progress, not access, so missing one item never stalls a
+ * fellow.
  *
- * A module is complete when every item the fellow can see in it is
- * complete, ignoring placeholder surveys that have no link yet. An
- * empty module counts as complete so it never blocks.
+ * Optionally by SEQUENCE: a module flagged `isSequential` is also
+ * locked while an earlier sequential module in the phase is
+ * incomplete (placeholder surveys with no link don't count). Off for
+ * every module by default (065).
  *
  * Pure (no I/O) so the tree loader, item page, server actions and the
  * stored-file route all evaluate exactly the same thing.
@@ -18,37 +20,61 @@ export interface LockInputModule {
   id: string
   title: string
   isSequential: boolean
+  /** ISO time the module opens; null/undefined = open now. */
+  opensAt?: string | null
   /** `isPending`: placeholder survey without a link; never blocks. */
   items: ReadonlyArray<{ isCompleted: boolean; isPending?: boolean }>
 }
 
 export interface ModuleLock {
   isLocked: boolean
-  /** Title of the module that has to be finished first, when locked. */
+  /** Set while the module's release date is still ahead. */
+  opensAt: string | null
+  /** Title of the module to finish first (sequential modules only). */
   blockedBy: string | null
 }
 
 export function computeModuleLocks(
   modules: ReadonlyArray<LockInputModule>,
+  now: number = Date.now(),
 ): Map<string, ModuleLock> {
   const locks = new Map<string, ModuleLock>()
-  // The first unfinished sequential module; everything sequential
-  // after it is locked behind it.
+  // The first unfinished sequential module; sequential modules after
+  // it are locked behind it.
   let blocker: LockInputModule | null = null
 
   for (const m of modules) {
-    if (!m.isSequential) {
-      locks.set(m.id, { isLocked: false, blockedBy: null })
-      continue
+    const release = m.opensAt ? new Date(m.opensAt).getTime() : NaN
+    const opensAt = Number.isFinite(release) && release > now ? m.opensAt! : null
+    const blockedBy = m.isSequential && blocker ? blocker.title : null
+    locks.set(m.id, { isLocked: !!opensAt || !!blockedBy, opensAt, blockedBy })
+    if (m.isSequential && !blocker && !m.items.every((i) => i.isCompleted || i.isPending)) {
+      blocker = m
     }
-    if (blocker) {
-      locks.set(m.id, { isLocked: true, blockedBy: blocker.title })
-      continue
-    }
-    locks.set(m.id, { isLocked: false, blockedBy: null })
-    if (!m.items.every((i) => i.isCompleted || i.isPending)) blocker = m
   }
   return locks
+}
+
+/** "Jan 27" (Eastern time, the program's clock); adds the year when it isn't this year's. */
+export function formatOpensAt(iso: string, now: Date = new Date()): string {
+  const d = new Date(iso)
+  const tz = 'America/New_York'
+  const sameYear =
+    d.toLocaleDateString('en-US', { year: 'numeric', timeZone: tz }) ===
+    now.toLocaleDateString('en-US', { year: 'numeric', timeZone: tz })
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+    timeZone: tz,
+  })
+}
+
+/** One line saying why a locked module is locked, e.g. "Opens Jan 27". */
+export function lockReason(lock: Pick<ModuleLock, 'opensAt' | 'blockedBy'>): string {
+  if (lock.opensAt) return `Opens ${formatOpensAt(lock.opensAt)}`
+  if (lock.blockedBy) return `Complete ${lock.blockedBy} to unlock`
+  return 'Not open yet'
 }
 
 /**

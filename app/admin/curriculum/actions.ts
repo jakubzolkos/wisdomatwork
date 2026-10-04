@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
 import { COHORTS } from '@/lib/cohorts'
-import { isStoredFileUrl } from '@/lib/stored-files'
+import { STORED_FILES_BUCKET, isStoredFileUrl, storedFileUrl } from '@/lib/stored-files'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   isContentCategory,
   isResourceType,
@@ -222,6 +223,9 @@ export async function updateModule(formData: FormData): Promise<ActionResult> {
     const description = nullable(formData.get('description'))
     const cohorts = readInheritableCohorts(formData)
     const isSequential = formData.get('is_sequential') === 'on'
+    const opensRaw = nullable(formData.get('opens_at'))
+    const opensAt = opensRaw ? new Date(opensRaw) : null
+    if (opensAt && Number.isNaN(opensAt.getTime())) return fail('Opening date is not a valid date')
     if (!id) return fail('Missing module id')
     if (!phaseId) return fail('Missing phase id')
     if (!title) return fail('Module title is required')
@@ -229,7 +233,13 @@ export async function updateModule(formData: FormData): Promise<ActionResult> {
     const supabase = await createClient()
     const { error } = await supabase
       .from('modules')
-      .update({ title, description, cohorts, is_sequential: isSequential })
+      .update({
+        title,
+        description,
+        cohorts,
+        is_sequential: isSequential,
+        opens_at: opensAt ? opensAt.toISOString() : null,
+      })
       .eq('id', id)
     if (error) return fail(error.message)
 
@@ -326,6 +336,12 @@ interface ContentInputs {
   description: string | null
   body: string | null
   url: string | null
+  /**
+   * Key of an uploaded PDF in the course-files bucket (uploaded by the
+   * admin's browser). When set, `url` is ignored and the row's link is
+   * the in-app viewer for the row's own id.
+   */
+  filePath: string | null
   durationMinutes: number | null
   reflectionEnabled: boolean
   reflectionPrompt: string | null
@@ -348,6 +364,8 @@ function readContentInputs(formData: FormData): ContentInputs | string {
   const description = nullable(formData.get('description'))
   const body = nullable(formData.get('body'))
   const url = nullable(formData.get('url'))
+  const filePath =
+    trim(formData.get('resource_type')) === 'live_session' ? null : nullable(formData.get('file_path'))
   const durationRaw = nullable(formData.get('duration_minutes'))
   const cohorts = readInheritableCohorts(formData)
 
@@ -364,7 +382,11 @@ function readContentInputs(formData: FormData): ContentInputs | string {
   }
   // Stored-file links are in-app paths; leave them alone so saving an
   // item that serves a bucket file doesn't fail validation.
-  if (url && !/^https?:\/\//i.test(url) && !isStoredFileUrl(url)) {
+  // Uploads land under labs/ (see StoredFileField); anything else isn't ours.
+  if (filePath && (!/^labs\/[A-Za-z0-9._/-]+\.pdf$/.test(filePath) || filePath.includes('..'))) {
+    return 'Invalid file. Upload the PDF again.'
+  }
+  if (!filePath && url && !/^https?:\/\//i.test(url) && !isStoredFileUrl(url)) {
     return 'URL must start with http:// or https://'
   }
   // Live sessions need somewhere to join - require the URL up-front so
@@ -418,13 +440,23 @@ function readContentInputs(formData: FormData): ContentInputs | string {
     title,
     description,
     body,
-    url,
+    url: filePath ? null : url,
+    filePath,
     durationMinutes,
     reflectionEnabled,
     reflectionPrompt,
     scheduledAt,
     cohorts,
   }
+}
+
+/** Whether an uploaded object really exists before a row points at it. */
+async function storedFileExists(filePath: string): Promise<boolean> {
+  const slash = filePath.lastIndexOf('/')
+  const { data } = await createAdminClient()
+    .storage.from(STORED_FILES_BUCKET)
+    .list(filePath.slice(0, slash), { search: filePath.slice(slash + 1), limit: 5 })
+  return !!data?.some((o) => o.name === filePath.slice(slash + 1))
 }
 
 export async function createContent(formData: FormData): Promise<ActionResult> {
@@ -447,7 +479,14 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
       .maybeSingle<{ order_index: number }>()
     const nextIndex = (maxRow?.order_index ?? 0) + 1
 
+    if (parsed.filePath && !(await storedFileExists(parsed.filePath))) {
+      return fail('The uploaded file was not found. Upload it again.')
+    }
+    // A file item links to the viewer for its own id, so pick the id now.
+    const id = crypto.randomUUID()
+
     const { error } = await supabase.from('labs').insert({
+      id,
       // year_id is kept as a denormalized convenience FK so phase-level
       // queries don't have to join through modules every time.
       year_id: parsed.phaseId,
@@ -457,7 +496,8 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
       title: parsed.title,
       description: parsed.description,
       body: parsed.body,
-      url: parsed.url,
+      url: parsed.filePath ? storedFileUrl('labs', id) : parsed.url,
+      file_path: parsed.filePath,
       duration_minutes: parsed.durationMinutes,
       reflection_enabled: parsed.reflectionEnabled,
       reflection_prompt: parsed.reflectionPrompt,
@@ -499,6 +539,10 @@ export async function updateContent(formData: FormData): Promise<ActionResult> {
     if (fetchError) return fail(fetchError.message)
     if (!existing) return fail('Content not found')
 
+    if (parsed.filePath && !(await storedFileExists(parsed.filePath))) {
+      return fail('The uploaded file was not found. Upload it again.')
+    }
+
     let nextOrderIndex: number | undefined
     if (existing.category !== parsed.category) {
       const { data: maxRow } = await supabase
@@ -520,7 +564,8 @@ export async function updateContent(formData: FormData): Promise<ActionResult> {
         title: parsed.title,
         description: parsed.description,
         body: parsed.body,
-        url: parsed.url,
+        url: parsed.filePath ? storedFileUrl('labs', id) : parsed.url,
+        file_path: parsed.filePath,
         duration_minutes: parsed.durationMinutes,
         reflection_enabled: parsed.reflectionEnabled,
         reflection_prompt: parsed.reflectionPrompt,

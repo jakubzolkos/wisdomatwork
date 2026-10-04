@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CohortAccessField } from '@/components/admin/cohort-access-field'
+import { StoredFileField } from '@/components/admin/stored-file-field'
+import { isStoredFileUrl } from '@/lib/stored-files'
 import {
   CONTENT_CATEGORIES,
   RESOURCE_TYPES,
@@ -30,6 +32,8 @@ export interface ContentItemDraft {
   description: string
   body: string
   url: string
+  /** Uploaded PDF's key in the course-files bucket; null for a link. */
+  file_path: string | null
   /** Optional estimated duration in minutes; null when not set. */
   duration_minutes: number | null
   /**
@@ -135,6 +139,10 @@ export function ContentItemForm({
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const scheduledAtId = useId()
+  // Where the item's resource comes from: an uploaded PDF or a link.
+  // Live sessions always use a link (the join URL).
+  const [source, setSource] = useState<'link' | 'file'>(initial?.file_path ? 'file' : 'link')
+  const usesFile = source === 'file' && resourceType !== 'live_session'
 
   function onSubmit(formData: FormData) {
     setError(null)
@@ -145,6 +153,11 @@ export function ContentItemForm({
     if (reflectionEnabled) formData.set('reflection_enabled', 'on')
     if (inherit) formData.set('cohorts_inherit', 'on')
     if (isEdit) formData.set('id', initial!.id!)
+    // A file item's link is generated server-side from its id; a link
+    // item carries no file. The hidden file_path input only exists
+    // while the file picker is shown.
+    if (usesFile) formData.set('url', '')
+    else formData.delete('file_path')
 
     // Live sessions: convert the naive local datetime the admin
     // typed into a UTC ISO string the server can persist. We do
@@ -257,32 +270,75 @@ export function ContentItemForm({
 
       <div className="grid gap-4 md:grid-cols-[1fr_140px]">
         <div className="space-y-2">
-          <Label htmlFor={urlId}>
-            {resourceType === 'live_session'
-              ? 'Join link (required)'
-              : 'Link / URL (optional)'}
-          </Label>
-          <Input
-            id={urlId}
-            name="url"
-            type="url"
-            inputMode="url"
-            // The server still does the authoritative check, but
-            // surfacing required-ness in the UI gives admins instant
-            // feedback for live sessions.
-            required={resourceType === 'live_session'}
-            defaultValue={initial?.url ?? ''}
-            placeholder={
-              resourceType === 'live_session'
-                ? 'https://zoom.us/j/... or https://meet.google.com/...'
-                : 'https://...'
-            }
-          />
-          <p className="text-xs text-muted-foreground">
-            {resourceType === 'live_session'
-              ? 'Paste the Zoom, Google Meet, or other meeting URL fellows will use to join.'
-              : 'Use for videos, slide decks, PDFs, surveys, or any link-based resource.'}
-          </p>
+          {resourceType !== 'live_session' && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label htmlFor={usesFile ? undefined : urlId}>
+                {usesFile ? 'File' : 'Link / URL (optional)'}
+              </Label>
+              <div
+                role="group"
+                aria-label="Resource source"
+                className="inline-flex rounded-md border border-border p-0.5 text-xs"
+              >
+                {(['link', 'file'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={source === s}
+                    onClick={() => setSource(s)}
+                    className={
+                      source === s
+                        ? 'rounded-sm bg-muted px-2.5 py-1 font-medium text-foreground'
+                        : 'rounded-sm px-2.5 py-1 text-muted-foreground hover:text-foreground'
+                    }
+                  >
+                    {s === 'link' ? 'Link' : 'Upload PDF'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {resourceType === 'live_session' && (
+            <Label htmlFor={urlId}>Join link (required)</Label>
+          )}
+          {usesFile ? (
+            <>
+              <StoredFileField
+                name="file_path"
+                initialPath={initial?.file_path ?? null}
+                folder={`labs/${moduleId}`}
+              />
+              <p className="text-xs text-muted-foreground">
+                Fellows open it in the portal's viewer; only fellows who can see this item can open the file.
+              </p>
+            </>
+          ) : (
+            <>
+              <Input
+                id={urlId}
+                name="url"
+                type="url"
+                inputMode="url"
+                // The server still does the authoritative check, but
+                // surfacing required-ness in the UI gives admins instant
+                // feedback for live sessions.
+                required={resourceType === 'live_session'}
+                // An in-app file path isn't a URL the browser accepts;
+                // switching a file item to a link starts blank.
+                defaultValue={initial?.url && !isStoredFileUrl(initial.url) ? initial.url : ''}
+                placeholder={
+                  resourceType === 'live_session'
+                    ? 'https://zoom.us/j/... or https://meet.google.com/...'
+                    : 'https://...'
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                {resourceType === 'live_session'
+                  ? 'Paste the Zoom, Google Meet, or other meeting URL fellows will use to join.'
+                  : 'Use for videos, slide decks, surveys, or any link-based resource.'}
+              </p>
+            </>
+          )}
         </div>
 
         <div className="space-y-2">

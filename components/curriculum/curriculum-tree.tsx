@@ -7,6 +7,7 @@ import { Check, ChevronDown, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CompletionRadio } from './completion-radio'
 import { useCompletionLookup } from './completion-state'
+import { formatOpensAt } from '@/lib/module-locks'
 import type { CurriculumItem, CurriculumPhase } from '@/lib/curriculum-tree'
 import { getCategory, type ContentCategory } from '@/lib/curriculum'
 
@@ -319,9 +320,11 @@ export function CurriculumTree({ phases }: Props) {
                                 theme={theme}
                                 muted
                                 note={
-                                  module.blockedBy
-                                    ? `Complete ${splitModuleTitle(module.blockedBy).name} to unlock`
-                                    : null
+                                  module.opensAt
+                                    ? `Opens ${formatOpensAt(module.opensAt)}`
+                                    : module.blockedBy
+                                      ? `Complete ${splitModuleTitle(module.blockedBy).name} to unlock`
+                                      : null
                                 }
                               />
                             </div>

@@ -150,10 +150,15 @@ export const SURVEYS = {
   ] as (string | null)[],
 }
 
-/** Phase 1 (Deep Learning) labs, in order: Cohort B syllabus + schedule. */
-export const DEEP_LEARNING_LABS = [
+/**
+ * Phase 1 (Deep Learning) labs, in order: Cohort B syllabus + schedule.
+ * `opensAt`: each module opens when the previous session ends (065);
+ * null = open now.
+ */
+export const DEEP_LEARNING_LABS: { moduleId: string; opensAt: string | null; title: string; tagline: string; question: string; startsAt: string }[] = [
   {
     moduleId: '4ab85b80-e289-48a6-8b31-bcf28cfb29a0',
+    opensAt: null,
     title: 'Wisdom Lab One: Formative Leadership',
     tagline: 'Leadership is not a solo act.',
     question: 'What does it mean to be a formative leader?',
@@ -161,6 +166,7 @@ export const DEEP_LEARNING_LABS = [
   },
   {
     moduleId: '4f0a9c4f-92dd-44ad-985b-11d8b9c6fd5c',
+    opensAt: '2026-11-18T13:30:00-05:00',
     title: 'Wisdom Lab Two: Institutional North Star',
     tagline: 'Grounding our compass.',
     question: 'What are you aiming at?',
@@ -168,6 +174,7 @@ export const DEEP_LEARNING_LABS = [
   },
   {
     moduleId: 'ec33ed34-a488-42ac-88ef-15712f2da5d8',
+    opensAt: '2027-01-27T13:30:00-05:00',
     title: 'Wisdom Lab Three: Teaching and Learning',
     tagline: 'Educating for freedom.',
     question: 'How do we inspire students to take ownership of their learning and growth?',
@@ -175,6 +182,7 @@ export const DEEP_LEARNING_LABS = [
   },
   {
     moduleId: '411e4679-516c-47ea-bb30-0710a629afb3',
+    opensAt: '2027-02-24T13:30:00-05:00',
     title: 'Wisdom Lab Four: Formative Discipline',
     tagline: 'Navigating challenges to promote character.',
     question: 'How do we leverage problems as opportunities for growth?',
@@ -182,6 +190,7 @@ export const DEEP_LEARNING_LABS = [
   },
   {
     moduleId: '1c9da894-8cd1-4f59-bc7f-517bfe5857dd',
+    opensAt: '2027-03-24T13:30:00-04:00',
     title: 'Wisdom Lab Five: Courageous Dialogue (Capstone)',
     tagline: 'Taking people seriously as persons.',
     question:
@@ -192,11 +201,11 @@ export const DEEP_LEARNING_LABS = [
 
 /** Phase 2 (Wisdom Coaching) sessions, Cohort A. Module ids are fixed so re-runs update in place. */
 export const WISDOM_COACHING_SESSIONS = [
-  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', title: 'Wisdom Coaching One', startsAt: '2026-10-07T14:00:00-04:00' },
-  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', title: 'Wisdom Coaching Two', startsAt: '2026-11-04T14:00:00-05:00' },
-  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00' },
-  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00' },
-  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00' },
+  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', opensAt: null as string | null, title: 'Wisdom Coaching One', startsAt: '2026-10-07T14:00:00-04:00' },
+  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', opensAt: '2026-10-07T15:00:00-04:00' as string | null, title: 'Wisdom Coaching Two', startsAt: '2026-11-04T14:00:00-05:00' },
+  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', opensAt: '2026-11-04T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00' },
+  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', opensAt: '2026-12-02T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00' },
+  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', opensAt: '2027-02-03T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00' },
 ]
 
 /**
@@ -212,3 +221,10 @@ export const STAFF: { email: string; fullName: string; title: string; role: 'adm
   { email: 'mpacheco@coe.ufl.edu', fullName: 'Mark Pacheco', title: 'Co-Principal Investigator', role: 'admin' },
   { email: 'kbohlin@abigailadamsinstitute.org', fullName: 'Karen Bohlin', title: 'Project Lead, Co-Principal Investigator', role: 'facilitator' },
 ]
+
+/** Module release dates outside the lab/session lists (each = the previous session's end). */
+export const RELEASES = {
+  northStar: '2027-01-27T13:30:00-05:00', // after Wisdom Lab Two
+  deepLearningClosing: '2027-04-28T13:30:00-04:00', // after Wisdom Lab Five
+  wisdomCoachingClosing: '2027-03-03T15:00:00-05:00', // after Wisdom Coaching Five
+}

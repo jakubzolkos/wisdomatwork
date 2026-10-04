@@ -124,6 +124,7 @@ export default async function ContentItemPage({
     return (
       <LockedModuleNotice
         moduleTitle={placement.module.title}
+        opensAt={placement.module.opensAt}
         blockedBy={placement.module.blockedBy}
       />
     )
@@ -210,7 +211,7 @@ export default async function ContentItemPage({
     }
   }
 
-  const { next, nextBlockedBy } = findAdjacentItems(curriculum, item.id)
+  const { next, nextLocked } = findAdjacentItems(curriculum, item.id)
 
   // Gate states. Only block the FIRST completion - once an item is
   // already complete the fellow can freely uncheck/redo. Reflection
@@ -366,7 +367,7 @@ export default async function ContentItemPage({
         needsLinkClick={needsLinkClick}
         needsReflection={needsReflection}
         nextHref={next?.href ?? null}
-        nextBlockedBy={nextBlockedBy}
+        nextLockedMessage={nextLocked}
         waitMessage={waitMessage}
         autoComplete={liveSessionScheduled && !reflectionRequired}
         incompleteHint={

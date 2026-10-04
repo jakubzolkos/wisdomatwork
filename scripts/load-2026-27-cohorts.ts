@@ -27,6 +27,7 @@ import {
   WISDOM_COACHING_SESSIONS,
   WISDOM_COACHING_ZOOM,
   LISTENING_LAUNCH_ZOOM,
+  RELEASES,
   type CohortLetter,
 } from './data/cohorts-2026-27'
 
@@ -312,10 +313,23 @@ async function upsertItem(
 async function upsertModule(
   id: string,
   phaseId: string,
-  fields: { title: string; description: string | null; order_index: number; cohorts?: string[] | null },
+  fields: {
+    title: string
+    description: string | null
+    order_index: number
+    cohorts?: string[] | null
+    /** Release date (065); null = open now. */
+    opens_at: string | null
+  },
 ) {
-  log(`module ${fields.order_index}. ${fields.title}${fields.cohorts ? ` [${fields.cohorts}]` : ''}`)
-  if (APPLY) check(await sb.from('modules').upsert({ id, phase_id: phaseId, ...fields }, { onConflict: 'id' }), `module ${fields.title}`)
+  log(`module ${fields.order_index}. ${fields.title}${fields.cohorts ? ` [${fields.cohorts}]` : ''}${fields.opens_at ? ` opens ${fields.opens_at}` : ''}`)
+  // Modules open by date; the completion sequence is off (065).
+  if (APPLY) {
+    check(
+      await sb.from('modules').upsert({ id, phase_id: phaseId, ...fields, is_sequential: false }, { onConflict: 'id' }),
+      `module ${fields.title}`,
+    )
+  }
 }
 
 async function deepLearning() {
@@ -326,7 +340,7 @@ async function deepLearning() {
   const onlyB = ['B']
 
   await upsertModule(MOD_PRE_SURVEY, PHASE_DEEP_LEARNING, {
-    title: 'Pre-Program Survey', description: 'Complete before the Listening Launch.', order_index: 1, cohorts: onlyB,
+    title: 'Pre-Program Survey', description: 'Complete before the Listening Launch.', order_index: 1, cohorts: onlyB, opens_at: null,
   })
   await upsertItem(PHASE_DEEP_LEARNING, MOD_PRE_SURVEY, {
     title: 'Pre-Program Survey', resource_type: 'survey', category: 'before_lab', order_index: 1, url: SURVEYS.dlPreProgram,
@@ -337,6 +351,7 @@ async function deepLearning() {
     description:
       'Walk through your roadmap of five Modules over seven months—each one with three parts (Wisdom Lab Prep, Wisdom Lab, and Wisdom Lab Field Work) described below.',
     order_index: 2,
+    opens_at: null,
   })
 
   await upsertModule(MOD_LISTENING, PHASE_DEEP_LEARNING, {
@@ -344,6 +359,7 @@ async function deepLearning() {
     description: 'School team listening session on Wednesday, October 14 or October 21, 2026. Your team signs up for one date.',
     order_index: 3,
     cohorts: onlyB,
+    opens_at: null,
   })
   await upsertItem(PHASE_DEEP_LEARNING, MOD_LISTENING, {
     title: 'School Team Listening Session', resource_type: 'live_session', category: 'during_lab', order_index: 1,
@@ -359,6 +375,7 @@ async function deepLearning() {
       title: lab.title,
       description: `${lab.tagline} Essential question: ${lab.question}`,
       order_index: order[i],
+      opens_at: lab.opensAt,
     })
     // Lab Two's session is titled "Wisdom Lab Two"; Lab Three's is an
     // external_link without a URL.
@@ -417,6 +434,7 @@ async function deepLearning() {
     description: 'School team discussion on February 10 or February 17, 2027. Your team signs up for one date.',
     order_index: 6,
     cohorts: onlyB,
+    opens_at: RELEASES.northStar,
   })
   await upsertItem(PHASE_DEEP_LEARNING, MOD_NORTH_STAR, {
     title: 'North Star School Team Discussion', resource_type: 'live_session', category: 'during_lab', order_index: 1,
@@ -428,6 +446,7 @@ async function deepLearning() {
     capstoneModuleId: MOD_DL_CAPSTONE,
     order: 10,
     cohorts: onlyB,
+    opensAt: RELEASES.deepLearningClosing,
     postSurveyDue: 'May 5, 2027',
     postSurveyUrl: SURVEYS.dlPostProgram,
     capstoneDates: 'May 12 or May 19, 2027',
@@ -443,6 +462,8 @@ async function closingModules(
     capstoneModuleId: string
     order: number
     cohorts?: string[]
+    /** Both closing modules open once the last session has ended. */
+    opensAt: string
     postSurveyDue: string
     postSurveyUrl: string | null
     capstoneDates: string
@@ -451,6 +472,7 @@ async function closingModules(
 ) {
   await upsertModule(o.postSurveyModuleId, phaseId, {
     title: 'Post-Program Survey', description: `Due ${o.postSurveyDue}.`, order_index: o.order, cohorts: o.cohorts,
+    opens_at: o.opensAt,
   })
   await upsertItem(phaseId, o.postSurveyModuleId, {
     title: 'Post-Program Survey', resource_type: 'survey', category: 'general_resources', order_index: 1,
@@ -463,6 +485,7 @@ async function closingModules(
     description: `Capstone Interview with Dr. Mark Pacheco (${o.capstoneDates}) and a Feedback Session on the Toolkit, Portal, or Leadership Assessment Inventory (before May 19, 2027).`,
     order_index: o.order + 1,
     cohorts: o.cohorts,
+    opens_at: o.opensAt,
   })
   await upsertItem(phaseId, o.capstoneModuleId, {
     title: 'Sign up for your Capstone Interview', resource_type: 'survey', category: 'general_resources', order_index: 1,
@@ -481,6 +504,7 @@ async function wisdomCoaching() {
   console.log('\n== Phase 2: Wisdom Coaching (Cohort A)')
   await upsertModule(MOD_WC_PRE_SURVEY, PHASE_WISDOM_COACHING, {
     title: 'Pre-Program Survey', description: 'Complete before your first Wisdom Coaching session.', order_index: 1,
+    opens_at: null,
   })
   await upsertItem(PHASE_WISDOM_COACHING, MOD_WC_PRE_SURVEY, {
     title: 'Pre-Program Survey', resource_type: 'survey', category: 'before_lab', order_index: 1, url: SURVEYS.wcPreProgram,
@@ -492,6 +516,7 @@ async function wisdomCoaching() {
       description:
         'Prep: frame a current problem of practice. Live: share wins and challenges and test strategies with WaW tools. Field Work: implement, iterate and capture what you notice.',
       order_index: i + 2,
+      opens_at: s.opensAt,
     })
     await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
       title: 'Wisdom Coaching Prep', resource_type: 'assignment', category: 'before_lab', order_index: 1,
@@ -517,27 +542,12 @@ async function wisdomCoaching() {
     postSurveyModuleId: MOD_WC_POST_SURVEY,
     capstoneModuleId: MOD_WC_CAPSTONE,
     order: WISDOM_COACHING_SESSIONS.length + 2,
+    opensAt: RELEASES.wisdomCoachingClosing,
     postSurveyDue: 'March 10, 2027',
     postSurveyUrl: SURVEYS.wcPostProgram,
     capstoneDates: 'April 7 or May 5, 2027',
     capstoneUrl: SURVEYS.wcCapstoneSignup,
   })
-}
-
-/** Sequential-unlock flag from 061; skipped quietly until 061 has run. */
-async function markNonSequential() {
-  const ids = [
-    MOD_NORTH_STAR,
-    MOD_WC_PRE_SURVEY,
-    MOD_DL_POST_SURVEY,
-    MOD_DL_CAPSTONE,
-    MOD_WC_POST_SURVEY,
-    MOD_WC_CAPSTONE,
-  ]
-  log('mark North Star, pre/post surveys and capstone modules as non-sequential')
-  if (!APPLY) return
-  const { error } = await sb.from('modules').update({ is_sequential: false }).in('id', ids)
-  if (error && !/is_sequential/.test(error.message)) check({ data: null, error }, 'is_sequential')
 }
 
 // ------------------------------------------------------------ 5. staff
@@ -602,7 +612,6 @@ async function main() {
   await staff(users)
   await deepLearning()
   await wisdomCoaching()
-  await markNonSequential()
   await library()
   console.log(failures ? `\nDone with ${failures} error(s).` : '\nDone.')
   process.exit(failures ? 1 : 0)
