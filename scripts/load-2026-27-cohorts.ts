@@ -26,6 +26,7 @@ import {
   TEST_EMAILS,
   WISDOM_COACHING_SESSIONS,
   WISDOM_COACHING_ZOOM,
+  LISTENING_LAUNCH_ZOOM,
   type CohortLetter,
 } from './data/cohorts-2026-27'
 
@@ -343,6 +344,13 @@ async function deepLearning() {
     description: 'School team listening session on Wednesday, October 14 or October 21, 2026. Your team signs up for one date.',
     order_index: 3,
     cohorts: onlyB,
+  })
+  await upsertItem(PHASE_DEEP_LEARNING, MOD_LISTENING, {
+    title: 'School Team Listening Session', resource_type: 'live_session', category: 'during_lab', order_index: 1,
+    url: LISTENING_LAUNCH_ZOOM,
+    description: LISTENING_LAUNCH_ZOOM
+      ? null
+      : 'October 14 or October 21, 2026. The Zoom link will be shared here before the session.',
   })
 
   const order = [4, 5, 7, 8, 9]

@@ -113,6 +113,8 @@ export const DEMO_TEAM_COHORT_ID = 'c997a909-8189-4d8e-a984-ebdc6bcabe31'
 
 export const DEEP_LEARNING_ZOOM = 'https://us02web.zoom.us/j/86470693301'
 export const WISDOM_COACHING_ZOOM = 'https://us02web.zoom.us/j/83386350113'
+/** Barbara is making a new one (Oct 5); the old link on the item was last year's. */
+export const LISTENING_LAUNCH_ZOOM: string | null = null
 
 export const SURVEYS = {
   dlPreProgram:
@@ -122,8 +124,10 @@ export const SURVEYS = {
   // its session; the portal shows a placeholder until the link is
   // added here (then re-run the loader).
   wcRoL: [
-    // Unpublished until after Session 1 (Oct 7).
-    'https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=header',
+    // Session 1: the form stays unpublished until after Oct 7 (Barbara:
+    // links go out once the lab is over). Put this back once it's live:
+    // https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=header
+    null,
     null,
     null,
     null,

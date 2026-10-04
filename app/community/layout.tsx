@@ -1,7 +1,9 @@
 import { TopBar } from '@/components/top-bar'
 import { CommunitySidebar } from '@/components/community/community-sidebar'
 import { requireUser } from '@/lib/auth-server'
+import { redirect } from 'next/navigation'
 import { getMenuCustomPages } from '@/lib/custom-pages/menu'
+import { canSeeCommunity } from '@/lib/features'
 
 export const metadata = {
   title: 'Community | Leadership Fellowship',
@@ -27,7 +29,9 @@ export default async function CommunityLayout({
   children: React.ReactNode
 }) {
   // Independent, so run them in parallel rather than back to back.
-  const [, customPages] = await Promise.all([requireUser(), getMenuCustomPages()])
+  const [user, customPages] = await Promise.all([requireUser(), getMenuCustomPages()])
+  // Hidden from fellows at launch (lib/features.ts); staff can still review it.
+  if (!canSeeCommunity(user.role)) redirect('/dashboard')
 
   return (
     <div className="min-h-screen bg-canvas">

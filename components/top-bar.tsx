@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { useMaybeUser } from '@/lib/user-context'
 import { createClient } from '@/lib/supabase/client'
 import { roleLabels } from '@/lib/roles'
+import { canSeeCommunity } from '@/lib/features'
 import { cn } from '@/lib/utils'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
 import { PreviewCohortMenu } from '@/components/admin/preview-cohort-menu'
@@ -86,6 +87,8 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
   )
   const [mobileOpen, setMobileOpen] = useState(false)
   const isAdmin = user?.role === 'admin'
+  // Community is hidden from fellows at launch (lib/features.ts).
+  const navItems = PRIMARY_NAV.filter((item) => item.key !== 'community' || canSeeCommunity(user?.role))
 
   // Labels are fetched once per page load and shared across remounts.
   useEffect(() => {
@@ -191,7 +194,7 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
 
         {/* Desktop nav */}
         <nav aria-label="Primary" className="hidden items-center justify-center gap-1 lg:flex">
-          {PRIMARY_NAV.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(pathname, item.match)
             return (
               <Link
@@ -317,7 +320,7 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
                 <SheetTitle className="font-display text-base">Wisdom at Work</SheetTitle>
               </SheetHeader>
               <nav aria-label="Mobile" className="flex flex-col gap-0.5 p-3">
-                {PRIMARY_NAV.map((item) => (
+                {navItems.map((item) => (
                   <Link key={item.key} href={item.href} className={mobileLinkClass(isActive(pathname, item.match))}>
                     {labels[item.key]}
                   </Link>

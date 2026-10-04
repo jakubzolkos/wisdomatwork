@@ -76,6 +76,9 @@ export async function loadTeamProgress(): Promise<TeamProgressData> {
     let count = 0
     for (const module of phase.modules) {
       for (const item of module.items) {
+        // Placeholder surveys (no link yet) don't count, matching the
+        // curriculum tree's totals.
+        if (item.isPending) continue
         phaseByItem.set(item.id, phase.id)
         count += 1
       }

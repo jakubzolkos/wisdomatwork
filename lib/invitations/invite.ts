@@ -266,11 +266,15 @@ async function applyProfileEnrichment(
   let schoolTeamId: string | null = null
 
   if (payload.schoolTeamId) {
-    // Query school_teams to get the cohort_id for cohort_members insert
+    // Callers pass either a school_teams.id or a cohorts.id (resend and
+    // bulk invite pass the fellow's cohort_members.cohort_id), so match
+    // on both. A cohorts row belongs to one school, so it maps to at
+    // most one school_teams row.
     const { data: schoolTeam, error: stErr } = await admin
       .from('school_teams')
       .select('id, cohort_id')
-      .eq('id', payload.schoolTeamId)
+      .or(`id.eq.${payload.schoolTeamId},cohort_id.eq.${payload.schoolTeamId}`)
+      .limit(1)
       .maybeSingle<{ id: string; cohort_id: string }>()
 
     if (stErr) throw stErr
@@ -294,7 +298,9 @@ async function applyProfileEnrichment(
       title: payload.title ?? null,
       role: payload.role,
       cohort: payload.role === 'fellow' ? payload.cohortLetter ?? null : null,
-      school_team_id: schoolTeamId,
+      // Only when a team was resolved: re-inviting an existing fellow
+      // must never wipe the team they already have.
+      ...(schoolTeamId ? { school_team_id: schoolTeamId } : {}),
     })
     .eq('id', userId)
   if (profErr) throw profErr
