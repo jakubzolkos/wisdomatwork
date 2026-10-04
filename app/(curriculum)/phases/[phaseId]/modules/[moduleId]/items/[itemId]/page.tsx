@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { Clock } from 'lucide-react'
+import { Clock, History } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { LessonFooter } from '@/components/curriculum/lesson-footer'
 import { LinkOpenButton } from '@/components/curriculum/link-open-button'
@@ -111,15 +111,20 @@ export default async function ContentItemPage({
   ])
 
   if (!phase || !module || !item) notFound()
-  // Shared with the stored-file route so the page and its files are
-  // always gated by the same rule.
-  if (!canUserSeeItem(user, phase, module, item)) notFound()
+  // The tree decides what this user sees (React.cache makes this the
+  // same load as the layout's).
+  const placement = findCurriculumItem(await loadFullCurriculum(), item.id)
+  if (!placement) notFound()
+  // A finished phase (Cohort A's Deep Learning year) shows as done and
+  // still lists its sessions, which this year belong to the other
+  // cohort; everything else must pass the cohort rule shared with the
+  // stored-file route.
+  const isPast = placement.item.isPast
+  if (!isPast && !canUserSeeItem(user, phase, module, item)) notFound()
 
   // Sequence lock: a deep link (notification, bookmark, dashboard
   // card) into a module that isn't open yet shows why instead of the
-  // content. React.cache makes this the same load as the layout's.
-  const placement = findCurriculumItem(await loadFullCurriculum(), item.id)
-  if (!placement) notFound()
+  // content.
   if (placement.module.isLocked) {
     return (
       <LockedModuleNotice
@@ -163,7 +168,7 @@ export default async function ContentItemPage({
 
   // Preview completions live in a cookie (lib/preview-completions.ts),
   // which the tree already overlays onto the real ones.
-  let isCompleted = user.preview ? placement.item.isCompleted : !!completion
+  let isCompleted = isPast || (user.preview ? placement.item.isCompleted : !!completion)
   const reflectionResponse = reflection?.response ?? null
   const resource = item.resource_type ? getResourceType(item.resource_type) : null
   // "External link" says nothing the link button doesn't already show.
@@ -172,6 +177,9 @@ export default async function ContentItemPage({
   const hasBody = !!item.body && item.body.trim().length > 0
   const hasUrl = !!item.url
   const isLiveSession = item.resource_type === 'live_session'
+  // Last year's session: this year's date and Zoom are the other
+  // cohort's, so neither is shown.
+  const isHeldSession = isPast && isLiveSession
   // Survey forms ask for the fellow's research ID, so show it right
   // above the link.
   const researchId =
@@ -266,7 +274,7 @@ export default async function ContentItemPage({
 
       <div className="space-y-8 px-5 py-6 sm:px-8 sm:py-8">
       {/* Body */}
-      {hasBody && (
+      {hasBody && !isHeldSession && (
         <div className="rich-text">
           {item.body!.split(/\n{2,}/).map((para, i) => (
             <p key={i} className="whitespace-pre-wrap">
@@ -292,7 +300,20 @@ export default async function ContentItemPage({
         />
       )}
 
+      {isHeldSession && (
+        <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-5">
+          <History className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">This session has already taken place</p>
+            <p className="text-sm text-muted-foreground">
+              Your cohort held this Wisdom Lab during your Deep Learning year.
+            </p>
+          </div>
+        </div>
+      )}
+
       {hasUrl &&
+        !isHeldSession &&
         (liveSessionScheduled ? (
           <LiveSessionStatus
             contentId={item.id}
@@ -321,7 +342,7 @@ export default async function ContentItemPage({
           </div>
         ))}
 
-      {!hasBody && !hasUrl && !reflectionRequired && (
+      {!isHeldSession && !hasBody && !hasUrl && !reflectionRequired && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <p className="text-sm text-muted-foreground">
             {isPendingSurvey(item)
@@ -333,7 +354,7 @@ export default async function ContentItemPage({
 
       {/* Reflection prompt + response. Required to complete the
           item when enabled. */}
-      {reflectionRequired && (
+      {reflectionRequired && !isHeldSession && (
         <>
           <ReflectionForm
             contentId={item.id}

@@ -303,17 +303,24 @@ export function CurriculumTree({ phases }: Props) {
                       const counted = module.items.filter((it) => !it.isPending)
                       const done = counted.filter((it) => isDone(it.id, it.isCompleted)).length
                       const total = counted.length
-                      // Sequence-locked: a flat, non-interactive row
-                      // saying what to finish first. Its items aren't
-                      // linked so fellows can't open them early.
+                      // Locked (release date or sequence): still
+                      // expandable so fellows can see what's coming,
+                      // but its items aren't linked, so they can't be
+                      // opened early.
                       if (module.isLocked) {
                         return (
                           <li
                             key={module.id}
                             className="border-t border-border first:border-t-0"
-                            aria-label={`${module.title} (locked)`}
                           >
-                            <div className="flex w-full items-start gap-3 px-3 py-3">
+                            <button
+                              type="button"
+                              onClick={() => toggle(module.id)}
+                              aria-expanded={moduleOpen}
+                              aria-controls={`module-${module.id}`}
+                              aria-label={`${module.title} (locked)`}
+                              className="flex w-full items-start gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/60"
+                            >
                               <ModuleMarker state="locked" />
                               <ModuleTitle
                                 name={name}
@@ -327,7 +334,22 @@ export function CurriculumTree({ phases }: Props) {
                                       : null
                                 }
                               />
-                            </div>
+                              <ChevronDown
+                                className={cn(
+                                  'mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform',
+                                  moduleOpen ? 'rotate-0' : '-rotate-90',
+                                )}
+                                aria-hidden="true"
+                              />
+                            </button>
+                            {moduleOpen && (
+                              <ModuleBody
+                                moduleId={module.id}
+                                items={module.items}
+                                activeItemId={null}
+                                locked
+                              />
+                            )}
                           </li>
                         )
                       }
@@ -457,10 +479,13 @@ function ModuleBody({
   moduleId,
   items,
   activeItemId,
+  locked = false,
 }: {
   moduleId: string
   items: readonly CurriculumItem[]
   activeItemId: string | null
+  /** Module not open yet: list the items as plain, muted text. */
+  locked?: boolean
 }) {
   if (items.length === 0) {
     return (
@@ -491,6 +516,7 @@ function ModuleBody({
                 key={item.id}
                 item={item}
                 isActive={activeItemId === item.id}
+                locked={locked}
               />
             ))}
           </ul>
@@ -507,6 +533,7 @@ function ModuleBody({
               key={item.id}
               item={item}
               isActive={activeItemId === item.id}
+              locked={locked}
             />
           ))}
         </ul>
@@ -518,11 +545,29 @@ function ModuleBody({
 function ItemRow({
   item,
   isActive,
+  locked = false,
 }: {
   item: CurriculumItem
   isActive: boolean
+  locked?: boolean
 }) {
   const duration = formatDuration(item.durationMinutes)
+  if (locked) {
+    return (
+      <li className="flex items-start gap-3 px-3 py-2.5" aria-disabled="true">
+        <span
+          aria-hidden="true"
+          className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-border"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm leading-snug text-muted-foreground">{item.title}</span>
+          {duration && (
+            <span className="mt-0.5 block text-xs text-muted-foreground">{duration}</span>
+          )}
+        </span>
+      </li>
+    )
+  }
   return (
     <li>
       <Link

@@ -1,4 +1,6 @@
 import { cache } from 'react'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Cohort } from '@/lib/cohorts'
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import {
@@ -47,6 +49,13 @@ export interface CurriculumItem {
   completionGate: CompletionGate | null
   /** Placeholder survey with no link yet: shown, but not counted or locking. */
   isPending: boolean
+  /**
+   * In a phase the fellow has already finished (Cohort A's Deep
+   * Learning year): shown as completed, including that year's live
+   * sessions, which this year run for the other cohort and are view
+   * only.
+   */
+  isPast: boolean
 }
 
 export interface CurriculumModule {
@@ -105,52 +114,72 @@ export interface FullCurriculum {
  */
 export const loadFullCurriculum = cache(_loadFullCurriculum)
 
-async function _loadFullCurriculum(): Promise<FullCurriculum> {
-  const user = await requireUser()
-  const supabase = await createClient()
-  const isFellow = user.role === 'fellow'
-  const userCohort = user.cohort ?? null
-  // Cohort preview runs as a synthetic, non-uuid user with no rows.
-  const hasRealId = user.id !== '__preview__'
+type PhaseRow = {
+  id: string
+  title: string
+  description: string | null
+  cohorts: string[] | null
+  order_index: number
+}
+type ModuleRow = {
+  id: string
+  phase_id: string
+  title: string
+  description: string | null
+  cohorts: string[] | null
+  order_index: number
+  is_sequential: boolean
+  opens_at?: string | null
+}
+type ItemRow = {
+  id: string
+  year_id: string
+  module_id: string | null
+  title: string
+  category: string | null
+  cohorts: string[] | null
+  duration_minutes: number | null
+  order_index: number
+  resource_type: string | null
+  scheduled_at: string | null
+  reflection_enabled: boolean
+  url: string | null
+}
 
-  const [
-    { data: phaseRows },
-    { data: moduleRows },
-    { data: itemRows },
-    { data: completionRows },
-    { data: reflectionRows },
-    linkClicks,
-  ] = await Promise.all([
+/** The curriculum itself, in display order: the same for every viewer. */
+export interface CurriculumRows {
+  phases: PhaseRow[]
+  modules: ModuleRow[]
+  items: ItemRow[]
+}
+
+/** One viewer's progress: what the tree's ticks and gates are built from. */
+export interface ViewerProgress {
+  completed: ReadonlySet<string>
+  /** Saved reflection text by item id. */
+  reflectionById: ReadonlyMap<string, string>
+  /** Links opened this login session (the link gate). */
+  linkClicks: ReadonlySet<string>
+  /** Preview only: reflections accepted without being saved. */
+  acceptedReflections: ReadonlySet<string>
+}
+
+/** Phase, module and item rows, with the caller's client (RLS applies). */
+export async function fetchCurriculumRows(
+  supabase: SupabaseClient<any, any, any>,
+): Promise<CurriculumRows> {
+  const [{ data: phases }, { data: modules }, { data: items }] = await Promise.all([
     supabase
       .from('years')
       .select('id, title, description, cohorts, order_index')
       .order('order_index', { ascending: true })
-      .returns<
-        Array<{
-          id: string
-          title: string
-          description: string | null
-          cohorts: string[] | null
-          order_index: number
-        }>
-      >(),
+      .returns<PhaseRow[]>(),
     supabase
       .from('modules')
       // '*' so this keeps working before 065 adds opens_at.
       .select('*')
       .order('order_index', { ascending: true })
-      .returns<
-        Array<{
-          id: string
-          phase_id: string
-          title: string
-          description: string | null
-          cohorts: string[] | null
-          order_index: number
-          is_sequential: boolean
-          opens_at?: string | null
-        }>
-      >(),
+      .returns<ModuleRow[]>(),
     supabase
       .from('labs')
       .select(
@@ -159,58 +188,86 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       .order('order_index', { ascending: true })
       // Tie-break so equal order_index rows keep one stable order.
       .order('created_at', { ascending: true })
-      .returns<
-        Array<{
-          id: string
-          year_id: string
-          module_id: string | null
-          title: string
-          category: string | null
-          cohorts: string[] | null
-          duration_minutes: number | null
-          order_index: number
-          resource_type: string | null
-          scheduled_at: string | null
-          reflection_enabled: boolean
-          url: string | null
-        }>
-      >(),
-    // Filter by profile explicitly: RLS (027) also lets fellows read
-    // their cohort-mates' rows for team progress, which must not
-    // count as this user's progress. In by-fellow preview this is the
-    // previewed fellow (admins can read every row).
-    hasRealId
-      ? supabase
-          .from('user_content_completions')
-          .select('content_id')
-          .eq('profile_id', user.id)
-          .returns<Array<{ content_id: string }>>()
-      : Promise.resolve({ data: [] as Array<{ content_id: string }> }),
-    // Inputs to the completion gates, so the tree can disable a tick
-    // the server would refuse.
-    hasRealId
-      ? supabase
-          .from('user_content_reflections')
-          .select('content_id, response')
-          .eq('profile_id', user.id)
-          .returns<Array<{ content_id: string; response: string }>>()
-      : Promise.resolve({ data: [] as Array<{ content_id: string; response: string }> }),
-    readSessionLinkClicks(),
+      .returns<ItemRow[]>(),
   ])
-  const reflectionById = new Map((reflectionRows ?? []).map((r) => [r.content_id, r.response]))
+  return { phases: phases ?? [], modules: modules ?? [], items: items ?? [] }
+}
 
-  const completedSet = new Set((completionRows ?? []).map((c) => c.content_id))
+async function _loadFullCurriculum(): Promise<FullCurriculum> {
+  const user = await requireUser()
+  const supabase = await createClient()
+  // Cohort preview runs as a synthetic, non-uuid user with no rows.
+  const hasRealId = user.id !== '__preview__'
+
+  const [rows, { data: completionRows }, { data: reflectionRows }, linkClicks] =
+    await Promise.all([
+      fetchCurriculumRows(supabase),
+      // Filter by profile explicitly: RLS (027) also lets fellows read
+      // their cohort-mates' rows for team progress, which must not
+      // count as this user's progress. In by-fellow preview this is the
+      // previewed fellow (admins can read every row).
+      hasRealId
+        ? supabase
+            .from('user_content_completions')
+            .select('content_id')
+            .eq('profile_id', user.id)
+            .returns<Array<{ content_id: string }>>()
+        : Promise.resolve({ data: [] as Array<{ content_id: string }> }),
+      // Inputs to the completion gates, so the tree can disable a tick
+      // the server would refuse.
+      hasRealId
+        ? supabase
+            .from('user_content_reflections')
+            .select('content_id, response')
+            .eq('profile_id', user.id)
+            .returns<Array<{ content_id: string; response: string }>>()
+        : Promise.resolve({ data: [] as Array<{ content_id: string; response: string }> }),
+      readSessionLinkClicks(),
+    ])
+
+  const completed = new Set((completionRows ?? []).map((c) => c.content_id))
   // Preview toggles and accepted reflections are kept in a cookie,
   // never the database.
-  const [previewCompletions, previewReflections] = await Promise.all([
+  const [previewCompletions, acceptedReflections] = await Promise.all([
     readPreviewCompletions(user),
     readPreviewReflections(user),
   ])
   for (const [id, done] of previewCompletions) {
-    if (done) completedSet.add(id)
-    else completedSet.delete(id)
+    if (done) completed.add(id)
+    else completed.delete(id)
   }
-  const now = Date.now()
+
+  return buildCurriculum(
+    rows,
+    user,
+    {
+      completed,
+      reflectionById: new Map((reflectionRows ?? []).map((r) => [r.content_id, r.response])),
+      linkClicks,
+      acceptedReflections,
+    },
+    Date.now(),
+  )
+}
+
+/**
+ * The curriculum as `viewer` sees it: visibility, release locks, ticks
+ * and completion gates. Pure, so admin screens can build any fellow's
+ * view (lib/fellow-progress.ts) with exactly the rules the fellow gets.
+ */
+export function buildCurriculum(
+  rows: CurriculumRows,
+  viewer: { role: string; cohort?: Cohort | null },
+  progress: ViewerProgress,
+  now: number,
+): FullCurriculum {
+  const isFellow = viewer.role === 'fellow'
+  const userCohort = viewer.cohort ?? null
+  const { phases: phaseRows, modules: moduleRows, items: itemRows } = rows
+  const completedSet = progress.completed
+  const reflectionById = progress.reflectionById
+  const linkClicks = progress.linkClicks
+  const previewReflections = progress.acceptedReflections
 
   // Phase visibility. Fellows still see every phase in the tree,
   // but unassigned ones are flagged `isLocked` so the UI can render
@@ -250,6 +307,14 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     modulesByPhase.set(m.phase_id, list)
   }
 
+  // Release dates and the unlock sequence pace the fellow's current
+  // phase: the latest one their cohort has. Earlier phases are a
+  // finished year kept as reference (Cohort A's Deep Learning
+  // readings), so nothing in them is locked.
+  const currentPhaseId = allPhases.findLast(
+    (p) => !lockedPhaseIds.has(p.id) && modulesByPhase.has(p.id),
+  )?.id
+
   // Item visibility filter, grouped under their module.
   const itemsByModule = new Map<string, CurriculumItem[]>()
   for (const item of itemRows ?? []) {
@@ -258,6 +323,9 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     const moduleCohorts = moduleCohortById.get(item.module_id)
     if (moduleCohorts === undefined) continue // module not visible
     const phaseCohorts = phaseCohortById.get(item.year_id) ?? null
+    // A phase before the fellow's current one is a year they have
+    // finished: everything in it shows as done.
+    const isPast = isFellow && item.year_id !== currentPhaseId
     if (isFellow) {
       if (
         !canFellowSeeContent(
@@ -267,10 +335,28 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
           moduleCohorts,
         )
       ) {
-        continue
+        // A finished phase still lists its live sessions (the fellow
+        // attended last year's). This year's surveys stay with the
+        // cohort they belong to.
+        if (!isPast || item.resource_type !== 'live_session') continue
       }
     }
     const list = itemsByModule.get(item.module_id) ?? []
+    if (isPast) {
+      list.push({
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        durationMinutes: item.duration_minutes,
+        href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
+        isCompleted: true,
+        isPending: false,
+        isPast: true,
+        completionGate: null,
+      })
+      itemsByModule.set(item.module_id, list)
+      continue
+    }
     const isCompleted = completedSet.has(item.id) || liveSessionHasEnded(item, now)
     list.push({
       id: item.id,
@@ -282,6 +368,7 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
       // reopened its page (where the completion row gets written).
       isCompleted,
       isPending: isPendingSurvey(item),
+      isPast: false,
       // Preview meets the same gates as a fellow.
       completionGate: isCompleted
         ? null
@@ -313,8 +400,8 @@ async function _loadFullCurriculum(): Promise<FullCurriculum> {
     const isLocked = lockedPhaseIds.has(p.id)
     const phaseModules = isLocked ? [] : (modulesByPhase.get(p.id) ?? [])
     // Staff are never locked out; fellows (and previews) follow the
-    // sequence.
-    const locks = isFellow
+    // sequence in their current phase.
+    const locks = isFellow && p.id === currentPhaseId
       ? computeModuleLocks(
           phaseModules.map((m) => ({
             id: m.id,

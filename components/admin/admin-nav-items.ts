@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import {
+  BarChart3,
   BookOpen,
   Building2,
   CalendarDays,
@@ -42,6 +43,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         label: 'Users & cohorts',
         icon: Users,
         description: 'Invite fellows, set roles, assign cohort labels, deactivate accounts.',
+      },
+      {
+        href: '/admin/progress',
+        label: 'Progress',
+        icon: BarChart3,
+        description: "Each fellow's progress through the curriculum, with their reflections.",
       },
       {
         href: '/admin/schools',
