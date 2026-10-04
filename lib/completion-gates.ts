@@ -60,6 +60,17 @@ export function completionGate(
   return null
 }
 
+/**
+ * Completion is final for fellows: once an item is done it stays done
+ * (it feeds progress and the research record). Staff can still unmark,
+ * e.g. to clear their own test ticks. Preview runs as a fellow.
+ */
+export function canUnmarkComplete(role: string | null | undefined): boolean {
+  return role === 'admin' || role === 'facilitator'
+}
+
+export const UNMARK_NOT_ALLOWED_MESSAGE = 'Completed items stay completed.'
+
 export const COMPLETION_GATE_MESSAGES: Record<CompletionGate, string> = {
   session_not_ended: 'You can mark this complete once the session has ended.',
   not_available: "The survey link isn't available yet. It will be shared here when it's ready.",

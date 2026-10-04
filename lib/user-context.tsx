@@ -55,6 +55,18 @@ export function UserProvider({
 }) {
   const [user, setUser] = useState<CurrentUser | null>(initialUser)
 
+  // useState only reads initialUser on the first render. Starting or
+  // leaving admin preview re-renders the root layout with a different
+  // user, so adopt it - otherwise client UI (top bar links, role
+  // checks) keeps showing the real admin until a full reload.
+  const userKey = (u: CurrentUser | null) =>
+    u ? `${u.id}|${u.role}|${u.cohort ?? ''}|${u.preview?.mode ?? ''}|${u.preview?.label ?? ''}` : ''
+  const [syncedKey, setSyncedKey] = useState(() => userKey(initialUser))
+  if (userKey(initialUser) !== syncedKey) {
+    setSyncedKey(userKey(initialUser))
+    setUser(initialUser)
+  }
+
   useEffect(() => {
     const supabase = createClient()
 

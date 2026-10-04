@@ -19,11 +19,17 @@ import {
 } from '@/lib/session-link-clicks'
 import { findCurriculumItem, loadFullCurriculum } from '@/lib/curriculum-tree'
 import {
+  readPreviewCompletions,
   readPreviewReflections,
   setPreviewCompletion,
   setPreviewReflection,
 } from '@/lib/preview-completions'
-import { COMPLETION_GATE_MESSAGES, completionGate } from '@/lib/completion-gates'
+import {
+  COMPLETION_GATE_MESSAGES,
+  UNMARK_NOT_ALLOWED_MESSAGE,
+  canUnmarkComplete,
+  completionGate,
+} from '@/lib/completion-gates'
 
 // ----------------------------------------------------------------------------
 // Preview guard
@@ -175,6 +181,11 @@ export async function toggleContentCompletion(
     const visible = await loadVisibleItem(supabase, contentId, user)
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
+
+    // Completion is final for fellows (and preview, which runs as one).
+    if (!nextCompleted && !canUnmarkComplete(user.role)) {
+      return { ok: false, message: UNMARK_NOT_ALLOWED_MESSAGE }
+    }
 
     if (nextCompleted) {
       // Same rule the tree and footer use to disable the control
@@ -427,6 +438,28 @@ export async function deleteReflection(
     const visible = await loadVisibleItem(supabase, contentId, user)
     if (!visible.ok) return { ok: false, message: visible.message }
     const { item } = visible
+
+    // Deleting a reflection un-completes its item, and completion is
+    // final for fellows: once the item is done they can edit the
+    // reflection, not remove it.
+    if (item.reflection_enabled && !canUnmarkComplete(user.role)) {
+      const completed = isPreviewing(user)
+        ? (await readPreviewCompletions(user)).get(contentId) === true
+        : !!(
+            await supabase
+              .from('user_content_completions')
+              .select('content_id')
+              .eq('profile_id', user.id)
+              .eq('content_id', contentId)
+              .maybeSingle()
+          ).data
+      if (completed) {
+        return {
+          ok: false,
+          message: 'This item is completed, so its reflection stays. You can still edit it.',
+        }
+      }
+    }
 
     // Preview: forget the accepted reflection and the completion that
     // depended on it, mirroring the real delete below.

@@ -6,7 +6,12 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toggleContentCompletion } from '@/app/(curriculum)/phases/actions'
 import { useCompletion } from './completion-state'
-import { COMPLETION_GATE_MESSAGES, type CompletionGate } from '@/lib/completion-gates'
+import {
+  COMPLETION_GATE_MESSAGES,
+  canUnmarkComplete,
+  type CompletionGate,
+} from '@/lib/completion-gates'
+import { useMaybeUser } from '@/lib/user-context'
 
 interface Props {
   contentId: string
@@ -32,6 +37,7 @@ export function CompletionRadio({ contentId, isCompleted, itemTitle, gate = null
   // Shared with the item footer and progress counts; see
   // completion-state.tsx for why it outlives the request.
   const { completed: optimistic, set, reset } = useCompletion(contentId, isCompleted)
+  const { user: viewer } = useMaybeUser()
   const [pending, startTransition] = useTransition()
 
   // When the server rejects (e.g. the fellow hasn't opened the link
@@ -56,6 +62,21 @@ export function CompletionRadio({ contentId, isCompleted, itemTitle, gate = null
       }
       router.refresh()
     })
+  }
+
+  // Completion is final for fellows: a done item shows a plain check,
+  // and a click falls through to the row's link like the gated state.
+  if (optimistic && !canUnmarkComplete(viewer?.role)) {
+    return (
+      <span
+        role="img"
+        aria-label={`"${itemTitle}" completed`}
+        title="Completed"
+        className="grid h-5 w-5 shrink-0 place-items-center rounded-full border border-primary bg-primary text-background"
+      >
+        <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
+      </span>
+    )
   }
 
   // Can't be ticked yet: show why instead of a toggle that would tick

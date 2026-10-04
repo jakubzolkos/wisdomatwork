@@ -6,6 +6,8 @@ import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toggleContentCompletion } from '@/app/(curriculum)/phases/actions'
 import { useCompletion } from './completion-state'
+import { canUnmarkComplete } from '@/lib/completion-gates'
+import { useMaybeUser } from '@/lib/user-context'
 
 interface Props {
   contentId: string
@@ -82,6 +84,7 @@ export function LessonFooter({
   // Shared with the sidebar radio; see completion-state.tsx for why
   // it outlives the request.
   const { completed: optimistic, set, reset } = useCompletion(contentId, isCompleted)
+  const { user: viewer } = useMaybeUser()
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -152,7 +155,15 @@ export function LessonFooter({
   // "Completed" indicator. Doubles as the re-open affordance: hover
   // surfaces a "Mark as not completed" hint and clicking it flips
   // the lesson back to incomplete. Neutral tones only - no green.
-  const completedBadge = (
+  const completedBadge = !canUnmarkComplete(viewer?.role) ? (
+    // Completion is final for fellows: a plain indicator, no re-open.
+    <span className="inline-flex h-9 items-center gap-1.5 px-2.5 text-sm font-medium text-muted-foreground">
+      <span className="grid size-5 place-items-center rounded-full bg-muted">
+        <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+      </span>
+      Completed
+    </span>
+  ) : (
     <button
       type="button"
       onClick={handleReopen}
