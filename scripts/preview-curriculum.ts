@@ -89,8 +89,10 @@ async function main() {
       console.log(`\n[LOCKED PHASE] ${p.title}`)
       continue
     }
+    const paced0 = p.id === currentPhaseId
+    // As lib/curriculum-tree.ts: a finished year is listed whole.
     const phaseModules = (modules ?? []).filter(
-      (m) => m.phase_id === p.id && canFellowSeeModule(m.cohorts, p.cohorts, fellow.cohort),
+      (m) => m.phase_id === p.id && (!paced0 || canFellowSeeModule(m.cohorts, p.cohorts, fellow.cohort)),
     )
     const paced = p.id === currentPhaseId
     const itemsByModule = new Map<string, any[]>()
@@ -100,9 +102,7 @@ async function main() {
           (i) =>
             i.module_id === m.id &&
             isContentCategory(i.category) &&
-            (canFellowSeeContent(i.cohorts, p.cohorts, fellow.cohort, m.cohorts) ||
-              // As lib/curriculum-tree.ts: a finished phase keeps its sessions, as already held.
-              (!paced && i.resource_type === 'live_session')),
+            (!paced || canFellowSeeContent(i.cohorts, p.cohorts, fellow.cohort, m.cohorts)),
         )
         .map((i) => {
           // As lib/curriculum-tree.ts: a finished phase shows as done.

@@ -31,6 +31,8 @@ import { readPreviewReflections } from '@/lib/preview-completions'
 import { COMPLETION_GATE_MESSAGES, completionGate, isPendingSurvey } from '@/lib/completion-gates'
 import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
+import { listPersonalDocuments } from '@/lib/stored-files-server'
+import { isPersonalDocumentKey } from '@/lib/stored-files'
 
 export const dynamic = 'force-dynamic'
 
@@ -175,11 +177,17 @@ export default async function ContentItemPage({
   const showResourceBadge = !!resource && item.resource_type !== 'external_link'
   const duration = formatDuration(item.duration_minutes)
   const hasBody = !!item.body && item.body.trim().length > 0
-  const hasUrl = !!item.url
+  // A link to the viewer's own document (the Syllabus item opens each
+  // fellow's Orientation Guide) only works once theirs is uploaded.
+  // Last year's item that this year is the other cohort's (sessions,
+  // surveys, syllabus): their live links and dates aren't shown.
+  const isReference = placement.item.isReference
+  const personalDoc = isReference ? null : (item.url?.match(/^\/files\/mine\/([^/?]+)$/)?.[1] ?? null)
+  const personalDocMissing =
+    !!personalDoc &&
+    (!isPersonalDocumentKey(personalDoc) || !(await listPersonalDocuments(user.id)).includes(personalDoc))
+  const hasUrl = !!item.url && !personalDocMissing && !isReference
   const isLiveSession = item.resource_type === 'live_session'
-  // Last year's session: this year's date and Zoom are the other
-  // cohort's, so neither is shown.
-  const isHeldSession = isPast && isLiveSession
   // Survey forms ask for the fellow's research ID, so show it right
   // above the link.
   const researchId =
@@ -274,7 +282,7 @@ export default async function ContentItemPage({
 
       <div className="space-y-8 px-5 py-6 sm:px-8 sm:py-8">
       {/* Body */}
-      {hasBody && !isHeldSession && (
+      {hasBody && !isReference && (
         <div className="rich-text">
           {item.body!.split(/\n{2,}/).map((para, i) => (
             <p key={i} className="whitespace-pre-wrap">
@@ -300,20 +308,24 @@ export default async function ContentItemPage({
         />
       )}
 
-      {isHeldSession && (
+      {isReference && (
         <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-5">
           <History className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">This session has already taken place</p>
+            <p className="text-sm font-medium text-foreground">
+              {isLiveSession ? 'This session has already taken place' : 'Completed in your first year'}
+            </p>
             <p className="text-sm text-muted-foreground">
-              Your cohort held this Wisdom Lab during your Deep Learning year.
+              {isLiveSession
+                ? 'Your cohort held this Wisdom Lab during your Deep Learning year.'
+                : 'Your cohort did this during your Deep Learning year.'}
             </p>
           </div>
         </div>
       )}
 
       {hasUrl &&
-        !isHeldSession &&
+        !isReference &&
         (liveSessionScheduled ? (
           <LiveSessionStatus
             contentId={item.id}
@@ -342,7 +354,18 @@ export default async function ContentItemPage({
           </div>
         ))}
 
-      {!isHeldSession && !hasBody && !hasUrl && !reflectionRequired && (
+      {personalDocMissing && (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+          <p className="text-sm text-muted-foreground">
+            {/* Staff and cohort previews aren't a fellow with a file. */}
+            {user.role !== 'fellow' || user.preview?.mode === 'by_cohort'
+              ? 'Each fellow sees their own document here. Preview as a specific fellow to open one.'
+              : 'Your document hasn’t been added yet. The WaW team will post it here.'}
+          </p>
+        </div>
+      )}
+
+      {!personalDocMissing && !isReference && !hasBody && !hasUrl && !reflectionRequired && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <p className="text-sm text-muted-foreground">
             {isPendingSurvey(item)
@@ -354,7 +377,7 @@ export default async function ContentItemPage({
 
       {/* Reflection prompt + response. Required to complete the
           item when enabled. */}
-      {reflectionRequired && !isHeldSession && (
+      {reflectionRequired && !isReference && (
         <>
           <ReflectionForm
             contentId={item.id}

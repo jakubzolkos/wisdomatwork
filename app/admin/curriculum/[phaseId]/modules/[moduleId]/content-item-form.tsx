@@ -317,15 +317,20 @@ export function ContentItemForm({
               <Input
                 id={urlId}
                 name="url"
-                type="url"
+                // Text, not url: in-app links like /files/mine/orientation-guide
+                // are relative. The server checks every link.
+                type="text"
                 inputMode="url"
                 // The server still does the authoritative check, but
                 // surfacing required-ness in the UI gives admins instant
                 // feedback for live sessions.
                 required={resourceType === 'live_session'}
-                // An in-app file path isn't a URL the browser accepts;
-                // switching a file item to a link starts blank.
-                defaultValue={initial?.url && !isStoredFileUrl(initial.url) ? initial.url : ''}
+                // The item's own upload has a viewer path, not a link, so
+                // switching a file item to a link starts blank. Other
+                // in-app links (a fellow's own guide) are kept.
+                defaultValue={
+                  initial?.url && !(initial.file_path && isStoredFileUrl(initial.url)) ? initial.url : ''
+                }
                 placeholder={
                   resourceType === 'live_session'
                     ? 'https://zoom.us/j/... or https://meet.google.com/...'

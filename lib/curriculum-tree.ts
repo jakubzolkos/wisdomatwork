@@ -51,11 +51,15 @@ export interface CurriculumItem {
   isPending: boolean
   /**
    * In a phase the fellow has already finished (Cohort A's Deep
-   * Learning year): shown as completed, including that year's live
-   * sessions, which this year run for the other cohort and are view
-   * only.
+   * Learning year): the whole year is listed and shown as completed.
    */
   isPast: boolean
+  /**
+   * A finished-year item that this year belongs to the other cohort
+   * (its sessions, surveys, syllabus): view only, with none of its
+   * links, which are the other cohort's live ones.
+   */
+  isReference: boolean
 }
 
 export interface CurriculumModule {
@@ -291,6 +295,8 @@ export function buildCurriculum(
   // be wasted work and could leak titles into the client bundle.
   const modulesByPhase = new Map<string, typeof moduleRows>()
   const moduleCohortById = new Map<string, string[] | null>()
+  // Modules of the fellow's phases that belong to the other cohort.
+  const otherCohortModules: typeof moduleRows = []
   for (const m of moduleRows ?? []) {
     const phaseCohorts = phaseCohortById.get(m.phase_id)
     if (phaseCohorts === undefined) continue // phase not in curriculum
@@ -299,6 +305,7 @@ export function buildCurriculum(
       isFellow &&
       !canFellowSeeModule(m.cohorts, phaseCohorts, userCohort)
     ) {
+      otherCohortModules.push(m)
       continue
     }
     moduleCohortById.set(m.id, m.cohorts)
@@ -308,12 +315,23 @@ export function buildCurriculum(
   }
 
   // Release dates and the unlock sequence pace the fellow's current
-  // phase: the latest one their cohort has. Earlier phases are a
-  // finished year kept as reference (Cohort A's Deep Learning
-  // readings), so nothing in them is locked.
+  // phase: the latest one their cohort has. Earlier phases are a year
+  // the fellow has finished (Cohort A's Deep Learning year): shown
+  // whole and done, never locked.
   const currentPhaseId = allPhases.findLast(
     (p) => !lockedPhaseIds.has(p.id) && modulesByPhase.has(p.id),
   )?.id
+
+  // A finished year is listed whole, including the modules that this
+  // year run for the other cohort (surveys, syllabus, team sessions).
+  const referenceModuleIds = new Set<string>()
+  for (const m of otherCohortModules) {
+    if (m.phase_id === currentPhaseId || !modulesByPhase.has(m.phase_id)) continue
+    referenceModuleIds.add(m.id)
+    moduleCohortById.set(m.id, m.cohorts)
+    modulesByPhase.get(m.phase_id)!.push(m)
+  }
+  for (const list of modulesByPhase.values()) list.sort((a, b) => a.order_index - b.order_index)
 
   // Item visibility filter, grouped under their module.
   const itemsByModule = new Map<string, CurriculumItem[]>()
@@ -326,21 +344,13 @@ export function buildCurriculum(
     // A phase before the fellow's current one is a year they have
     // finished: everything in it shows as done.
     const isPast = isFellow && item.year_id !== currentPhaseId
-    if (isFellow) {
-      if (
-        !canFellowSeeContent(
-          item.cohorts,
-          phaseCohorts,
-          userCohort,
-          moduleCohorts,
-        )
-      ) {
-        // A finished phase still lists its live sessions (the fellow
-        // attended last year's). This year's surveys stay with the
-        // cohort they belong to.
-        if (!isPast || item.resource_type !== 'live_session') continue
-      }
-    }
+    // In a finished year the other cohort's items are still listed,
+    // view only (see CurriculumItem.isReference).
+    const isReference =
+      isFellow &&
+      (referenceModuleIds.has(item.module_id) ||
+        !canFellowSeeContent(item.cohorts, phaseCohorts, userCohort, moduleCohorts))
+    if (isReference && !isPast) continue
     const list = itemsByModule.get(item.module_id) ?? []
     if (isPast) {
       list.push({
@@ -352,6 +362,7 @@ export function buildCurriculum(
         isCompleted: true,
         isPending: false,
         isPast: true,
+        isReference,
         completionGate: null,
       })
       itemsByModule.set(item.module_id, list)
@@ -369,6 +380,7 @@ export function buildCurriculum(
       isCompleted,
       isPending: isPendingSurvey(item),
       isPast: false,
+      isReference: false,
       // Preview meets the same gates as a fellow.
       completionGate: isCompleted
         ? null

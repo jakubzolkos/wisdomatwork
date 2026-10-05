@@ -5,6 +5,7 @@
  *
  *   bun --env-file=.env.local scripts/load-2026-27-cohorts.ts           # dry run
  *   bun --env-file=.env.local scripts/load-2026-27-cohorts.ts --apply   # write
+ *   ... --apply --keep-dates   # write, but leave modules.opens_at as it is
  *
  * Requires scripts/062_profile_research_ids.sql first. Idempotent:
  * everything is matched by email, fixed id, or (module, title).
@@ -32,6 +33,8 @@ import {
 } from './data/cohorts-2026-27'
 
 const APPLY = process.argv.includes('--apply')
+/** Leave release dates alone (load them later with set-release-dates.ts). */
+const KEEP_DATES = process.argv.includes('--keep-dates')
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
   auth: { persistSession: false },
 })
@@ -43,6 +46,7 @@ const MOD_SYLLABUS = '25dd43f1-68a8-4529-a739-5f72449d9748'
 const MOD_LISTENING = '954c9a0a-355f-420c-9be4-046d77f14907'
 const MOD_NORTH_STAR = '44555aa9-149c-4150-aad2-48fb9c345e85'
 const MOD_WC_PRE_SURVEY = '57296daa-74fc-447f-932f-e0c91283cf03'
+const MOD_WC_SYLLABUS = 'fac3a2c5-3f42-45f8-802c-4648e7ff7ad0'
 const MOD_DL_POST_SURVEY = '4b19b629-4f7d-463d-b80b-94062f4be85f'
 const MOD_DL_CAPSTONE = 'a4c3cabb-0fb1-414d-b5df-f700b2709c4e'
 const MOD_WC_POST_SURVEY = 'b27cc044-51ef-416b-9f6d-140d6311acf9'
@@ -56,6 +60,12 @@ const ROP_AFTER_FIELD_WORK =
   'Complete after your field work. The survey link will be shared here after the Wisdom Lab.'
 const ROP_AFTER_SESSION =
   'Complete after you try your strategy in practice. The survey link will be shared here after the session.'
+
+// The syllabus is each fellow's personal Orientation Guide (uploaded by
+// scripts/upload-orientation-guides.ts): one item, a file per fellow.
+const ORIENTATION_GUIDE_URL = '/files/mine/orientation-guide'
+const ORIENTATION_GUIDE_DESCRIPTION =
+  'Your personal guide: session dates, how each part of the program works, and your Unique ID.'
 
 let failures = 0
 function log(msg: string) {
@@ -322,11 +332,17 @@ async function upsertModule(
     opens_at: string | null
   },
 ) {
-  log(`module ${fields.order_index}. ${fields.title}${fields.cohorts ? ` [${fields.cohorts}]` : ''}${fields.opens_at ? ` opens ${fields.opens_at}` : ''}`)
+  log(`module ${fields.order_index}. ${fields.title}${fields.cohorts ? ` [${fields.cohorts}]` : ''}${fields.opens_at && !KEEP_DATES ? ` opens ${fields.opens_at}` : ''}`)
   // Modules open by date; the completion sequence is off (065).
   if (APPLY) {
+    const { opens_at, ...rest } = fields
     check(
-      await sb.from('modules').upsert({ id, phase_id: phaseId, ...fields, is_sequential: false }, { onConflict: 'id' }),
+      await sb
+        .from('modules')
+        .upsert(
+          { id, phase_id: phaseId, ...rest, ...(KEEP_DATES ? {} : { opens_at }), is_sequential: false },
+          { onConflict: 'id' },
+        ),
       `module ${fields.title}`,
     )
   }
@@ -351,8 +367,19 @@ async function deepLearning() {
     description:
       'Walk through your roadmap of five Modules over seven months—each one with three parts (Wisdom Lab Prep, Wisdom Lab, and Wisdom Lab Field Work) described below.',
     order_index: 2,
+    // Cohort A's guide is for Wisdom Coaching; theirs is in Year Two.
+    cohorts: onlyB,
     opens_at: null,
   })
+  await upsertItem(
+    PHASE_DEEP_LEARNING,
+    MOD_SYLLABUS,
+    {
+      title: 'Deep Learning Orientation Guide', resource_type: 'pdf', category: 'before_lab', order_index: 1,
+      url: ORIENTATION_GUIDE_URL, description: ORIENTATION_GUIDE_DESCRIPTION,
+    },
+    ['Deep Learning Orientation Guide', 'Syllabus for Modules 1 through 5'],
+  )
 
   await upsertModule(MOD_LISTENING, PHASE_DEEP_LEARNING, {
     title: 'Listening Launch',
@@ -510,12 +537,24 @@ async function wisdomCoaching() {
     title: 'Pre-Program Survey', resource_type: 'survey', category: 'before_lab', order_index: 1, url: SURVEYS.wcPreProgram,
   })
 
+  await upsertModule(MOD_WC_SYLLABUS, PHASE_WISDOM_COACHING, {
+    title: 'Syllabus',
+    description:
+      'Your roadmap of five Wisdom Coaching sessions, each with three parts (Wisdom Coaching Prep, Live Wisdom Coaching, and Wisdom Coaching Field Work), and your capstone interview.',
+    order_index: 2,
+    opens_at: null,
+  })
+  await upsertItem(PHASE_WISDOM_COACHING, MOD_WC_SYLLABUS, {
+    title: 'Wisdom Coaching Orientation Guide', resource_type: 'pdf', category: 'before_lab', order_index: 1,
+    url: ORIENTATION_GUIDE_URL, description: ORIENTATION_GUIDE_DESCRIPTION,
+  })
+
   for (const [i, s] of WISDOM_COACHING_SESSIONS.entries()) {
     await upsertModule(s.moduleId, PHASE_WISDOM_COACHING, {
       title: s.title,
       description:
         'Prep: frame a current problem of practice. Live: share wins and challenges and test strategies with WaW tools. Field Work: implement, iterate and capture what you notice.',
-      order_index: i + 2,
+      order_index: i + 3,
       opens_at: s.opensAt,
     })
     await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
@@ -541,7 +580,7 @@ async function wisdomCoaching() {
   await closingModules(PHASE_WISDOM_COACHING, {
     postSurveyModuleId: MOD_WC_POST_SURVEY,
     capstoneModuleId: MOD_WC_CAPSTONE,
-    order: WISDOM_COACHING_SESSIONS.length + 2,
+    order: WISDOM_COACHING_SESSIONS.length + 3,
     opensAt: RELEASES.wisdomCoachingClosing,
     postSurveyDue: 'March 10, 2027',
     postSurveyUrl: SURVEYS.wcPostProgram,
