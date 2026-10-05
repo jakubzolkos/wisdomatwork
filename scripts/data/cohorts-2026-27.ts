@@ -117,16 +117,20 @@ export const WISDOM_COACHING_ZOOM = 'https://us02web.zoom.us/j/83386350113'
 export const LISTENING_LAUNCH_ZOOM: string | null = null
 
 export const SURVEYS = {
+  // UNIQUE_ID is replaced with the fellow's own ID when they open the
+  // form (lib/survey-links.ts); entry.N is the form's Unique ID question.
   dlPreProgram:
-    'https://docs.google.com/forms/d/e/1FAIpQLScXRzSiB9TyJznJVcl03QBFBZD5XjbiDvowiE8hAWAb80F08w/viewform?usp=header',
-  wcPreProgram: 'https://forms.gle/K6B3m717KMJn2FLJA',
+    'https://docs.google.com/forms/d/e/1FAIpQLScXRzSiB9TyJznJVcl03QBFBZD5XjbiDvowiE8hAWAb80F08w/viewform?usp=pp_url&entry.2117511694=UNIQUE_ID',
+  // forms.gle/K6B3m717KMJn2FLJA, expanded so it can take the prefill.
+  wcPreProgram:
+    'https://docs.google.com/forms/d/e/1FAIpQLSf_EraT7UYvW_wEMmyhInD5GShWERqFk9Ecw_l_uHkHIQNCMA/viewform?usp=pp_url&entry.2117511694=UNIQUE_ID',
   // null = not published yet. The WaW team releases each form after
   // its session; the portal shows a placeholder until the link is
   // added here (then re-run the loader).
   wcRoL: [
     // Session 1: the form stays unpublished until after Oct 7 (Barbara:
     // links go out once the lab is over). Put this back once it's live:
-    // https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=header
+    // https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=pp_url&entry.796784164=UNIQUE_ID
     null,
     null,
     null,

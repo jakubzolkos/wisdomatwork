@@ -11,9 +11,21 @@ import type { CurriculumItem, CurriculumModule } from '@/lib/curriculum-tree'
 import {
   currentPhaseId,
   formatProgressDate,
+  itemStatus,
   loadFellowProgress,
   type FellowDetail,
+  type ItemStatus,
 } from '@/lib/fellow-progress'
+
+const STATUS_ICONS: Record<ItemStatus['kind'], typeof Check> = {
+  'finished-year': History,
+  completed: Check,
+  'session-ended': Check,
+  'survey-pending': Clock,
+  'not-open': Lock,
+  'session-ahead': Clock,
+  'not-done': Circle,
+}
 
 export default async function AdminFellowProgressPage({
   params,
@@ -155,22 +167,8 @@ function ItemProgress({
 }) {
   const reflection = detail.reflections.get(item.id)
   const completedAt = detail.completedAt.get(item.id)
-  const status = item.isPast
-    ? { icon: History, text: 'Finished year', done: true }
-    : item.isCompleted
-      ? {
-          icon: Check,
-          text: completedAt ? `Completed ${formatProgressDate(completedAt)}` : 'Session ended',
-          done: true,
-        }
-      : item.isPending
-        ? { icon: Clock, text: 'Survey not published', done: false }
-        : locked
-          ? { icon: Lock, text: 'Not open yet', done: false }
-          : item.completionGate === 'session_not_ended'
-            ? { icon: Clock, text: 'Session not held yet', done: false }
-            : { icon: Circle, text: 'Not done', done: false }
-  const Icon = status.icon
+  const status = itemStatus(item, locked, completedAt)
+  const Icon = STATUS_ICONS[status.kind]
 
   return (
     <li className="rounded-md py-1.5">
@@ -186,7 +184,7 @@ function ItemProgress({
         </span>
         <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3">
           <span className="text-sm text-foreground">{item.title}</span>
-          <span className="text-xs text-muted-foreground">{status.text}</span>
+          <span className="text-xs text-muted-foreground">{status.label}</span>
         </div>
       </div>
       {reflection && (

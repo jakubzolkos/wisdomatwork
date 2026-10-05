@@ -37,6 +37,10 @@ export interface CurriculumItem {
   category: ContentCategory
   /** Optional duration in minutes; rendered as "55min" in the tree. */
   durationMinutes: number | null
+  /** reading, survey, live_session, ... (lib/curriculum.ts RESOURCE_TYPES). */
+  resourceType: string | null
+  /** Start of a scheduled live session, ISO. */
+  scheduledAt: string | null
   /** href for the content viewer page. */
   href: string
   /** Whether the current user has marked this item complete. */
@@ -358,6 +362,8 @@ export function buildCurriculum(
         title: item.title,
         category: item.category,
         durationMinutes: item.duration_minutes,
+        resourceType: item.resource_type,
+        scheduledAt: item.scheduled_at,
         href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
         isCompleted: true,
         isPending: false,
@@ -374,6 +380,8 @@ export function buildCurriculum(
       title: item.title,
       category: item.category,
       durationMinutes: item.duration_minutes,
+      resourceType: item.resource_type,
+      scheduledAt: item.scheduled_at,
       href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
       // An ended live session counts as done even if the fellow never
       // reopened its page (where the completion row gets written).

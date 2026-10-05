@@ -33,6 +33,7 @@ import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
 import { listPersonalDocuments } from '@/lib/stored-files-server'
 import { isPersonalDocumentKey } from '@/lib/stored-files'
+import { fillUniqueId } from '@/lib/survey-links'
 
 export const dynamic = 'force-dynamic'
 
@@ -346,7 +347,8 @@ export default async function ContentItemPage({
           <div className="flex">
             <LinkOpenButton
               contentId={item.id}
-              url={item.url!}
+              // Survey links may prefill the fellow's Unique ID.
+              url={fillUniqueId(item.url!, researchId)}
               isLiveSession={isLiveSession}
               label={isLiveSession ? 'Join live session' : item.title}
               alreadyClicked={linkClicked}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
@@ -46,6 +47,23 @@ export default async function AdminProgressPage({
         eyebrow="Admin console"
         title="Progress"
         description="Where each fellow is in the curriculum and what they've written. Open a fellow to see every item and their reflections."
+        actions={
+          <>
+            {/* Plain links: the route answers with a CSV download. */}
+            <Button asChild variant="outline" className="gap-2">
+              <a href={`/admin/progress/export${cohort ? `?cohort=${cohort}` : ''}`}>
+                <Download className="size-4" aria-hidden="true" />
+                Summary (CSV)
+              </a>
+            </Button>
+            <Button asChild variant="outline" className="gap-2">
+              <a href={`/admin/progress/export?format=items${cohort ? `&cohort=${cohort}` : ''}`}>
+                <Download className="size-4" aria-hidden="true" />
+                Every item (CSV)
+              </a>
+            </Button>
+          </>
+        }
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

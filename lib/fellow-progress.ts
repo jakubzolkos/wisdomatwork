@@ -4,6 +4,7 @@ import { isCohort, type Cohort } from '@/lib/cohorts'
 import {
   buildCurriculum,
   fetchCurriculumRows,
+  type CurriculumItem,
   type CurriculumPhase,
   type CurriculumRows,
   type FullCurriculum,
@@ -180,12 +181,32 @@ function latest(...dates: Array<string | null | undefined>): string | null {
   return best
 }
 
-/** Every fellow with their progress per phase, sorted by name. */
-export async function loadFellowProgressList(): Promise<FellowSummary[]> {
+function toDetail(
+  rows: CurriculumRows,
+  fellow: FellowProfile,
+  completions: CompletionRow[],
+  reflections: ReflectionRow[],
+  researchId: string | null,
+  lastSignIn: string | null,
+): FellowDetail {
+  return {
+    fellow,
+    researchId,
+    lastSignIn,
+    curriculum: curriculumFor(rows, fellow, completions, reflections),
+    completedAt: new Map(completions.map((c) => [c.content_id, c.completed_at])),
+    reflections: new Map(
+      reflections.map((r) => [r.content_id, { response: r.response, submittedAt: r.submitted_at }]),
+    ),
+  }
+}
+
+/** Every fellow's full detail, sorted by name (list page and export). */
+export async function loadAllFellowProgress(): Promise<FellowDetail[]> {
   await requireAdmin()
   const admin = createAdminClient()
 
-  const [{ data: profileRows, error }, rows, signIns] = await Promise.all([
+  const [{ data: profileRows, error }, rows, signIns, researchIds] = await Promise.all([
     admin
       .from('profiles')
       .select(PROFILE_COLUMNS)
@@ -194,6 +215,9 @@ export async function loadFellowProgressList(): Promise<FellowSummary[]> {
       .returns<ProfileRow[]>(),
     fetchCurriculumRows(admin),
     lastSignInById(admin),
+    fetchAll<{ profile_id: string; research_id: string }>((from, to) =>
+      admin.from('profile_research_ids').select('profile_id, research_id').order('profile_id').range(from, to),
+    ),
   ])
   if (error) throw new Error(error.message)
   const fellows = (profileRows ?? []).map(toFellow)
@@ -204,21 +228,64 @@ export async function loadFellowProgressList(): Promise<FellowSummary[]> {
 
   const completionsBy = Map.groupBy(completions, (c) => c.profile_id)
   const reflectionsBy = Map.groupBy(reflections, (r) => r.profile_id)
+  const researchIdBy = new Map(researchIds.map((r) => [r.profile_id, r.research_id]))
 
-  return fellows.map((fellow) => {
-    const mine = completionsBy.get(fellow.id) ?? []
-    const myReflections = reflectionsBy.get(fellow.id) ?? []
-    return {
-      ...fellow,
-      phases: phaseProgress(curriculumFor(rows, fellow, mine, myReflections)),
-      reflectionCount: myReflections.length,
-      lastActivity: latest(
-        ...mine.map((c) => c.completed_at),
-        ...myReflections.map((r) => r.submitted_at),
-      ),
-      lastSignIn: signIns.get(fellow.id) ?? null,
-    }
-  })
+  return fellows.map((fellow) =>
+    toDetail(
+      rows,
+      fellow,
+      completionsBy.get(fellow.id) ?? [],
+      reflectionsBy.get(fellow.id) ?? [],
+      researchIdBy.get(fellow.id) ?? null,
+      signIns.get(fellow.id) ?? null,
+    ),
+  )
+}
+
+/** One row per fellow for the list page. */
+export function summarize(detail: FellowDetail): FellowSummary {
+  return {
+    ...detail.fellow,
+    phases: phaseProgress(detail.curriculum),
+    reflectionCount: detail.reflections.size,
+    lastActivity: latest(
+      ...detail.completedAt.values(),
+      ...[...detail.reflections.values()].map((r) => r.submittedAt),
+    ),
+    lastSignIn: detail.lastSignIn,
+  }
+}
+
+/** Every fellow with their progress per phase, sorted by name. */
+export async function loadFellowProgressList(): Promise<FellowSummary[]> {
+  return (await loadAllFellowProgress()).map(summarize)
+}
+
+export interface ItemStatus {
+  kind: 'finished-year' | 'completed' | 'session-ended' | 'survey-pending' | 'not-open' | 'session-ahead' | 'not-done'
+  /** "Completed Oct 7, 2026", "Not done", ... */
+  label: string
+  done: boolean
+}
+
+/** How an item stands for a fellow, worded for staff screens and exports. */
+export function itemStatus(
+  item: CurriculumItem,
+  moduleLocked: boolean,
+  completedAt: string | undefined,
+): ItemStatus {
+  if (item.isPast) return { kind: 'finished-year', label: 'Finished year', done: true }
+  if (item.isCompleted) {
+    return completedAt
+      ? { kind: 'completed', label: `Completed ${formatProgressDate(completedAt)}`, done: true }
+      : { kind: 'session-ended', label: 'Session ended', done: true }
+  }
+  if (item.isPending) return { kind: 'survey-pending', label: 'Survey not published', done: false }
+  if (moduleLocked) return { kind: 'not-open', label: 'Not open yet', done: false }
+  if (item.completionGate === 'session_not_ended') {
+    return { kind: 'session-ahead', label: 'Session not held yet', done: false }
+  }
+  return { kind: 'not-done', label: 'Not done', done: false }
 }
 
 /** One fellow's curriculum, tick dates and reflections; null if not a fellow. */
@@ -247,18 +314,15 @@ export async function loadFellowProgress(profileId: string): Promise<FellowDetai
     admin.auth.admin.getUserById(fellow.id),
   ])
 
-  return {
+  return toDetail(
+    rows,
     fellow,
-    researchId: research?.research_id ?? null,
-    lastSignIn: auth?.user?.last_sign_in_at ?? null,
-    curriculum: curriculumFor(rows, fellow, completions, reflections),
-    completedAt: new Map(completions.map((c) => [c.content_id, c.completed_at])),
-    reflections: new Map(
-      reflections.map((r) => [r.content_id, { response: r.response, submittedAt: r.submitted_at }]),
-    ),
-  }
+    completions,
+    reflections,
+    research?.research_id ?? null,
+    auth?.user?.last_sign_in_at ?? null,
+  )
 }
-
 
 const DATE = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/New_York',

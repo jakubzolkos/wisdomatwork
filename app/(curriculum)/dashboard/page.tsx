@@ -4,6 +4,9 @@ import { LiveSessionCard } from '@/components/dashboard/live-session-card'
 import { NotificationsFeed } from '@/components/notifications/notifications-feed'
 import { PhaseProgressSection } from '@/components/dashboard/phase-progress-section'
 import { PageHeader } from '@/components/page-header'
+import { WhereAmICard } from '@/components/dashboard/where-am-i-card'
+import { loadFullCurriculum } from '@/lib/curriculum-tree'
+import { whereAmI } from '@/lib/where-am-i'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,9 +15,11 @@ export const dynamic = 'force-dynamic'
  * primary navigation; this page surfaces:
  *
  *   1. A short welcome
- *   2. Pinned/recent announcements
- *   3. The next live session (when one is within 7 days)
- *   4. Per-phase progress meters - the user's own meter on top of
+ *   2. "Where you are": next session, what to do, surveys, what opens
+ *      next (fellows and previews only; staff see everything)
+ *   3. Pinned/recent announcements
+ *   4. The next session from the legacy sessions table (within 7 days)
+ *   5. Per-phase progress meters - the user's own meter on top of
  *      their cohort teammates' meters, so fellows can see how their
  *      pace compares
  *
@@ -24,10 +29,13 @@ export const dynamic = 'force-dynamic'
  * already fetches.
  */
 export default async function DashboardPage() {
-  const [data, teamProgress] = await Promise.all([
+  const [data, teamProgress, curriculum] = await Promise.all([
     getDashboardData(),
     loadTeamProgress(),
+    // Cached: the layout's sidebar already loaded it.
+    loadFullCurriculum(),
   ])
+  const where = curriculum.isPrivileged ? null : whereAmI(curriculum)
 
   return (
     <>
@@ -37,6 +45,8 @@ export default async function DashboardPage() {
           title={<>Welcome back, {data.user.fullName}</>}
           description="Pick up where you left off - choose a content item from the curriculum on the left."
         />
+
+        {where && <WhereAmICard data={where} />}
 
         {/* Unified notifications (announcements, reminders, alerts)
             pinned at the top of the page. Full inbox lives at
