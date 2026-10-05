@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { CompletionRadio } from './completion-radio'
 import { useCompletionLookup } from './completion-state'
 import { formatOpensAt } from '@/lib/module-locks'
+import { formatWhen } from '@/lib/item-dates'
 import type { CurriculumItem, CurriculumPhase } from '@/lib/curriculum-tree'
 import { getCategory, type ContentCategory } from '@/lib/curriculum'
 
@@ -551,7 +552,10 @@ function ItemRow({
   isActive: boolean
   locked?: boolean
 }) {
-  const duration = formatDuration(item.durationMinutes)
+  // Date (session time, due date) and length on one quiet line.
+  const meta = [item.when && formatWhen(item.when), formatDuration(item.durationMinutes)]
+    .filter(Boolean)
+    .join(' · ')
   if (locked) {
     return (
       <li className="flex items-start gap-3 px-3 py-2.5" aria-disabled="true">
@@ -561,8 +565,8 @@ function ItemRow({
         />
         <span className="min-w-0 flex-1">
           <span className="block text-sm leading-snug text-muted-foreground">{item.title}</span>
-          {duration && (
-            <span className="mt-0.5 block text-xs text-muted-foreground">{duration}</span>
+          {meta && (
+            <span className="mt-0.5 block text-xs text-muted-foreground">{meta}</span>
           )}
         </span>
       </li>
@@ -594,9 +598,9 @@ function ItemRow({
           >
             {item.title}
           </span>
-          {duration && (
+          {meta && (
             <span className="mt-0.5 block text-xs text-muted-foreground">
-              {duration}
+              {meta}
             </span>
           )}
         </span>

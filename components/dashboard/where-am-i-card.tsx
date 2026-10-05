@@ -3,6 +3,7 @@ import { ArrowRight, CalendarClock, ClipboardList, Lock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { getResourceType, isResourceType } from '@/lib/curriculum'
 import { formatOpensAt } from '@/lib/module-locks'
+import { formatWhen } from '@/lib/item-dates'
 import type { CurriculumItem } from '@/lib/curriculum-tree'
 import type { WhereAmI } from '@/lib/where-am-i'
 
@@ -110,7 +111,8 @@ function ItemList({ items }: { items: Array<{ item: CurriculumItem; context?: st
               <ClipboardList className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <span className="min-w-0 flex-1 text-sm text-foreground">{item.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">
-                {[context, type].filter(Boolean).join(' · ')}
+                {/* A date ("Due Mar 10") says more than the resource type. */}
+                {[context, item.when ? formatWhen(item.when) : type].filter(Boolean).join(' · ')}
               </span>
             </Link>
           </li>

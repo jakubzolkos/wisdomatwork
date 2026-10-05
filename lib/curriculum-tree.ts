@@ -14,6 +14,7 @@ import { computeModuleLocks, formatOpensAt, liveSessionHasEnded } from '@/lib/mo
 import { readPreviewCompletions, readPreviewReflections } from '@/lib/preview-completions'
 import { completionGate, isPendingSurvey, type CompletionGate } from '@/lib/completion-gates'
 import { readSessionLinkClicks } from '@/lib/session-link-clicks'
+import { itemWhen, type ItemWhen } from '@/lib/item-dates'
 
 /**
  * Server-side data layer for the fellow curriculum view.
@@ -41,6 +42,8 @@ export interface CurriculumItem {
   resourceType: string | null
   /** Start of a scheduled live session, ISO. */
   scheduledAt: string | null
+  /** When it happens or is due, shown beside it (lib/item-dates.ts). */
+  when: ItemWhen | null
   /** href for the content viewer page. */
   href: string
   /** Whether the current user has marked this item complete. */
@@ -152,6 +155,7 @@ type ItemRow = {
   scheduled_at: string | null
   reflection_enabled: boolean
   url: string | null
+  description: string | null
 }
 
 /** The curriculum itself, in display order: the same for every viewer. */
@@ -191,7 +195,7 @@ export async function fetchCurriculumRows(
     supabase
       .from('labs')
       .select(
-        'id, year_id, module_id, title, category, cohorts, duration_minutes, order_index, resource_type, scheduled_at, reflection_enabled, url',
+        'id, year_id, module_id, title, category, cohorts, duration_minutes, order_index, resource_type, scheduled_at, reflection_enabled, url, description',
       )
       .order('order_index', { ascending: true })
       // Tie-break so equal order_index rows keep one stable order.
@@ -364,6 +368,8 @@ export function buildCurriculum(
         durationMinutes: item.duration_minutes,
         resourceType: item.resource_type,
         scheduledAt: item.scheduled_at,
+        // This year's dates belong to whoever runs it now.
+        when: null,
         href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
         isCompleted: true,
         isPending: false,
@@ -382,6 +388,7 @@ export function buildCurriculum(
       durationMinutes: item.duration_minutes,
       resourceType: item.resource_type,
       scheduledAt: item.scheduled_at,
+      when: itemWhen(item),
       href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
       // An ended live session counts as done even if the fellow never
       // reopened its page (where the completion row gets written).
