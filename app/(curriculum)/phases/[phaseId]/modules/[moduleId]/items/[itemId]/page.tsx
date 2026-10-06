@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Clock, History } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -33,7 +34,7 @@ import { reflectionMeetsMinimum } from '@/lib/reflections'
 import { hasSessionLinkClick } from '@/lib/session-link-clicks'
 import { listPersonalDocuments } from '@/lib/stored-files-server'
 import { isPersonalDocumentKey } from '@/lib/stored-files'
-import { fillUniqueId } from '@/lib/survey-links'
+import { UNIQUE_ID_TOKEN, fillUniqueId } from '@/lib/survey-links'
 
 export const dynamic = 'force-dynamic'
 
@@ -135,6 +136,21 @@ export default async function ContentItemPage({
         opensAt={placement.module.opensAt}
         blockedBy={placement.module.blockedBy}
       />
+    )
+  }
+  // Waits for an earlier survey in the module to be marked done.
+  const waitingOn = placement.item.waitingOn
+  if (waitingOn) {
+    return (
+      <article className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-8 text-center shadow-xs">
+        <h1 className="text-pretty text-2xl">{item.title}</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Mark “{waitingOn.title}” as completed first, then this step opens.
+        </p>
+        <Link href={waitingOn.href} className="mt-5 inline-flex text-sm font-medium text-primary underline-offset-4 hover:underline">
+          Go to {waitingOn.title}
+        </Link>
+      </article>
     )
   }
 
@@ -305,7 +321,11 @@ export default async function ContentItemPage({
       {researchId && (
         <ResearchIdCard
           researchId={researchId}
-          hint="The survey will ask for this. Copy it before you open the form."
+          hint={
+            item.url?.includes(UNIQUE_ID_TOKEN)
+              ? 'Already filled in on the form. Check it matches before you submit.'
+              : 'Opening the survey copies it for you: paste it where the form asks for your Unique ID.'
+          }
         />
       )}
 
@@ -347,10 +367,12 @@ export default async function ContentItemPage({
           <div className="flex">
             <LinkOpenButton
               contentId={item.id}
-              // Survey links may prefill the fellow's Unique ID.
+              // Survey links may prefill the fellow's Unique ID; opening
+              // one also copies the ID, ready to paste.
               url={fillUniqueId(item.url!, researchId)}
+              copyText={researchId}
               isLiveSession={isLiveSession}
-              label={isLiveSession ? 'Join live session' : item.title}
+              label={isLiveSession ? 'Join live session' : item.resource_type === 'survey' ? 'Open survey' : item.title}
               alreadyClicked={linkClicked}
             />
           </div>
@@ -408,6 +430,8 @@ export default async function ContentItemPage({
             button; we don't want to synthesise a reflection for
             them. */}
       <LessonFooter
+        // Surveys are ticked deliberately, which also opens what waits on them.
+        completeLabel={item.resource_type === 'survey' ? 'I completed the survey' : null}
         contentId={item.id}
         isCompleted={isCompleted}
         needsLinkClick={needsLinkClick}

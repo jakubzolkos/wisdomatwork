@@ -6,6 +6,7 @@ import { formatOpensAt } from '@/lib/module-locks'
 import { formatWhen } from '@/lib/item-dates'
 import type { CurriculumItem } from '@/lib/curriculum-tree'
 import type { WhereAmI } from '@/lib/where-am-i'
+import { ResearchIdCard } from '@/components/profile/research-id-card'
 
 const SESSION_TIME = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/New_York',
@@ -26,7 +27,7 @@ function shortTitle(title: string): string {
  * "Where am I" panel at the top of the dashboard: next session, what to
  * do now, open surveys and what opens next (lib/where-am-i.ts).
  */
-export function WhereAmICard({ data }: { data: WhereAmI }) {
+export function WhereAmICard({ data, researchId = null }: { data: WhereAmI; researchId?: string | null }) {
   const { nextSession, current, upcoming } = data
   const todoIds = new Set(current?.todo.map((i) => i.id))
   const surveys = data.surveys.filter((s) => !todoIds.has(s.item.id))
@@ -91,6 +92,8 @@ export function WhereAmICard({ data }: { data: WhereAmI }) {
             {shortTitle(upcoming.title)} opens {formatOpensAt(upcoming.opensAt)}
           </p>
         )}
+
+        {researchId && <ResearchIdCard researchId={researchId} hint="Every survey asks for it." />}
       </CardContent>
     </Card>
   )

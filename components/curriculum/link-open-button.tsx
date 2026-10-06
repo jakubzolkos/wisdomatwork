@@ -21,6 +21,11 @@ interface Props {
   label?: string
   /** Whether the current user has already opened this link. */
   alreadyClicked: boolean
+  /**
+   * Copied to the clipboard as the link opens: the fellow's Unique ID
+   * on surveys, so it's ready to paste into the form.
+   */
+  copyText?: string | null
 }
 
 /**
@@ -38,6 +43,7 @@ export function LinkOpenButton({
   isLiveSession,
   label,
   alreadyClicked,
+  copyText = null,
 }: Props) {
   const router = useRouter()
   const [optimistic, setOptimistic] = useState(alreadyClicked)
@@ -49,6 +55,9 @@ export function LinkOpenButton({
   }
 
   function handleClick() {
+    // Best effort, inside the click so the browser allows it; the ID
+    // is also shown on the page.
+    if (copyText) navigator.clipboard?.writeText(copyText).catch(() => {})
     // Stored files open in the in-app viewer, so stay in this tab.
     // Record the open before navigating away, or the gate could miss it.
     if (isStoredFileUrl(url)) {

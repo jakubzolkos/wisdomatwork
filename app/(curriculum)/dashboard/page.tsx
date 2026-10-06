@@ -7,6 +7,8 @@ import { PageHeader } from '@/components/page-header'
 import { WhereAmICard } from '@/components/dashboard/where-am-i-card'
 import { loadFullCurriculum } from '@/lib/curriculum-tree'
 import { whereAmI } from '@/lib/where-am-i'
+import { requireUser } from '@/lib/auth-server'
+import { getResearchId } from '@/lib/research-id'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +38,8 @@ export default async function DashboardPage() {
     loadFullCurriculum(),
   ])
   const where = curriculum.isPrivileged ? null : whereAmI(curriculum)
+  // Fellows paste their Unique ID into every survey: keep it on hand.
+  const researchId = where ? await getResearchId((await requireUser()).id) : null
 
   return (
     <>
@@ -46,7 +50,7 @@ export default async function DashboardPage() {
           description="Pick up where you left off - choose a content item from the curriculum on the left."
         />
 
-        {where && <WhereAmICard data={where} />}
+        {where && <WhereAmICard data={where} researchId={researchId} />}
 
         {/* Unified notifications (announcements, reminders, alerts)
             pinned at the top of the page. Full inbox lives at

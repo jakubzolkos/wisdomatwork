@@ -23,30 +23,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="h-px w-16 bg-primary-foreground/30" />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Image
-            src="/aai-mark.png"
-            alt=""
-            width={240}
-            height={144}
-            priority
-            className="h-10 w-auto brightness-0 invert"
-          />
-          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-primary-foreground/80">
-            Abigail Adams Institute
-          </span>
-        </div>
+        {/* Official PWP logo, in white on the blue panel. */}
+        <Image
+          src="/pwp-logo.png"
+          alt="Practical Wisdom Project, Abigail Adams Institute"
+          width={837}
+          height={508}
+          priority
+          className="h-28 w-auto self-start brightness-0 invert"
+        />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-10 sm:px-6 md:p-10 xl:px-16">
         <div className="mb-8 flex flex-col items-center gap-3 text-center lg:hidden">
           <Image
-            src="/aai-mark.png"
-            alt="Abigail Adams Institute"
-            width={240}
-            height={144}
+            src="/pwp-logo.png"
+            alt="Practical Wisdom Project, Abigail Adams Institute"
+            width={837}
+            height={508}
             priority
-            className="h-12 w-auto"
+            className="h-24 w-auto"
           />
           <span className="eyebrow">Wisdom at Work Fellowship</span>
         </div>

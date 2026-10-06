@@ -28,25 +28,25 @@ export function whereAmI(curriculum: FullCurriculum, now = Date.now()): WhereAmI
   const phase = curriculum.phases.findLast((p) => !p.isLocked && p.modules.length > 0)
   if (!phase) return null
   const open = phase.modules.filter((m) => !m.isLocked)
-  // After-the-lab items (its Reflection on Learning, field work) wait
-  // until the module's session has ended.
-  const sessionAhead = new Set(
-    open
-      .filter((m) =>
-        m.items.some(
-          (i) =>
-            i.resourceType === 'live_session' &&
-            i.scheduledAt &&
-            new Date(i.scheduledAt).getTime() + (i.durationMinutes ?? 60) * 60_000 > now,
-        ),
-      )
-      .map((m) => m.id),
-  )
+  // Items around a scheduled session wait for it: the surveys done on
+  // the call show from 15 minutes before it starts, after-the-lab work
+  // once it has ended.
+  const sessionWindow = new Map<string, { start: number; end: number }>()
+  for (const m of open) {
+    const session = m.items.find((i) => i.resourceType === 'live_session' && i.scheduledAt)
+    if (!session?.scheduledAt) continue
+    const start = new Date(session.scheduledAt).getTime()
+    sessionWindow.set(m.id, { start, end: start + (session.durationMinutes ?? 60) * 60_000 })
+  }
+  const notYet = (i: CurriculumItem, m: CurriculumModule) => {
+    const w = sessionWindow.get(m.id)
+    if (!w || i.resourceType === 'live_session') return false
+    if (i.category === 'during_lab') return now < w.start - 15 * 60_000
+    if (i.category === 'after_lab') return now < w.end
+    return false
+  }
   const left = (i: CurriculumItem, m: CurriculumModule) =>
-    !i.isCompleted &&
-    !i.isPending &&
-    !i.isReference &&
-    !(i.category === 'after_lab' && sessionAhead.has(m.id))
+    !i.isCompleted && !i.isPending && !i.isReference && !i.waitingOn && !notYet(i, m)
 
   let nextSession: WhereAmI['nextSession'] = null
   for (const m of open) {

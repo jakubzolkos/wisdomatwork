@@ -49,6 +49,12 @@ interface Props {
    * in-app link.
    */
   incompleteHint?: string | null
+  /**
+   * Label for the completion button when ticking it should be a
+   * deliberate act ("I completed the survey"); it then replaces the
+   * "Go to next item" shortcut, which ticks silently.
+   */
+  completeLabel?: string | null
 }
 
 /**
@@ -79,7 +85,9 @@ export function LessonFooter({
   waitMessage = null,
   autoComplete = false,
   incompleteHint,
+  completeLabel = null,
 }: Props) {
+  const completeText = completeLabel ?? 'Mark complete'
   const router = useRouter()
   // Shared with the sidebar radio; see completion-state.tsx for why
   // it outlives the request.
@@ -254,7 +262,7 @@ export function LessonFooter({
             onClick={handleMarkComplete}
             disabled={pending || blocked}
           >
-            {pending ? 'Marking...' : 'Mark complete'}
+            {pending ? 'Marking...' : completeText}
           </Button>
         ) : needsReflection ? (
           // Reflection gate is active. Show disabled Mark complete
@@ -264,20 +272,20 @@ export function LessonFooter({
             onClick={handleMarkComplete}
             disabled={pending || blocked}
           >
-            {pending ? 'Marking...' : 'Mark complete'}
+            {pending ? 'Marking...' : completeText}
           </Button>
         ) : waitMessage && !autoComplete ? (
           // Session hasn't ended yet and needs a manual tick after it
           // (e.g. it has a reflection): visible but disabled.
           <Button type="button" disabled>
-            Mark complete
+            {completeText}
           </Button>
         ) : autoComplete ? (
           // Completion is owned by an external mechanism (e.g. the
           // scheduled live-session block above auto-marks the item
           // complete once the session ends). No manual CTA needed.
           null
-        ) : nextHref ? (
+        ) : nextHref && !completeLabel ? (
           // All gates cleared, no auto-complete: show "Go to next item"
           // which will mark complete and navigate.
           <Button
@@ -296,7 +304,7 @@ export function LessonFooter({
             onClick={handleMarkComplete}
             disabled={pending}
           >
-            {pending ? 'Marking...' : 'Mark complete'}
+            {pending ? 'Marking...' : completeText}
           </Button>
         )}
       </div>

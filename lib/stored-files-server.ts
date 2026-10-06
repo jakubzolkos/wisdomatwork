@@ -93,7 +93,7 @@ async function resolveLabFile(user: CurrentUser, id: string): Promise<StoredFile
   // haven't opened yet.
   if (user.role === 'fellow') {
     const placement = findCurriculumItem(await loadFullCurriculum(), id)
-    if (!placement || placement.module.isLocked) return null
+    if (!placement || placement.module.isLocked || placement.item.waitingOn) return null
   }
   return { title: item.title, filePath: item.file_path }
 }

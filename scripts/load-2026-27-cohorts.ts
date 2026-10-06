@@ -55,17 +55,27 @@ const MOD_WC_CAPSTONE = '0a5645ca-bbfb-4859-883e-76932a670487'
 // Placeholder copy for surveys the WaW team publishes later. A survey
 // item without a URL can't be ticked and doesn't hold back the module
 // sequence (lib/completion-gates.ts); adding the link activates it.
-const ROL_AFTER_LAB = 'Complete at the close of the Wisdom Lab.'
-const ROP_AFTER_FIELD_WORK =
-  'Complete after your field work. The survey link will be shared here after the Wisdom Lab.'
-const ROP_AFTER_SESSION =
-  'Complete after you try your strategy in practice. The survey link will be shared here after the session.'
+//
+// Both programs run a survey on the Zoom before the lesson and one
+// after it (Barbara, Oct 5), so they sit around the session in "During
+// the Lab": Deep Learning Reflection on Practice -> Wisdom Lab ->
+// Reflection on Learning; Wisdom Coaching Check-in -> session ->
+// Retrospective.
+const ROP_START_OF_LAB = 'Complete on the Zoom at the start of the Wisdom Lab, before the lesson.'
+const ROL_END_OF_LAB = 'Complete on the Zoom at the end of the Wisdom Lab, after the lesson.'
+const CHECK_IN_START = 'Complete on the Zoom at the start of the session, before the lesson.'
+const RETRO_END = 'Complete on the Zoom at the end of the session, after the lesson.'
 
 // The syllabus is each fellow's personal Orientation Guide (uploaded by
 // scripts/upload-orientation-guides.ts): one item, a file per fellow.
 const ORIENTATION_GUIDE_URL = '/files/mine/orientation-guide'
 const ORIENTATION_GUIDE_DESCRIPTION =
   'Your personal guide: session dates, how each part of the program works, and your Unique ID.'
+
+// Cohort A's reading is the Wisdom at Work Companion Toolkit (replaces
+// their Syllabus; Wisdom Coaching only). The PDF is uploaded on the item
+// (scripts/upload-toolkit.ts or Admin -> Curriculum); re-runs keep it.
+const TOOLKIT = 'Wisdom at Work Companion Toolkit'
 
 let failures = 0
 function log(msg: string) {
@@ -305,7 +315,7 @@ async function upsertItem(
 ) {
   const { data: existing } = await sb
     .from('labs')
-    .select('id, title')
+    .select('id, title, file_path')
     .eq('module_id', moduleId)
     .in('title', matchTitles)
     .order('created_at')
@@ -314,8 +324,11 @@ async function upsertItem(
   log(`  ${existing ? 'update' : 'insert'} item "${item.title}"${item.scheduled_at ? ` @ ${item.scheduled_at}` : ''}${item.url ? ' (link)' : ''}`)
   if (!APPLY) return
   if (existing) {
-    const { order_index: _keep, ...changes } = item
-    check(await sb.from('labs').update(reorder ? item : changes).eq('id', existing.id), `item ${item.title}`)
+    // A PDF uploaded in the admin panel wins over the data file's link.
+    const { url: _url, ...withoutUrl } = item
+    const fields = existing.file_path ? withoutUrl : item
+    const { order_index: _keep, ...changes } = fields
+    check(await sb.from('labs').update(reorder ? fields : changes).eq('id', existing.id), `item ${item.title}`)
   }
   else check(await sb.from('labs').insert({ ...item, year_id: phaseId, module_id: moduleId }), `item ${item.title}`)
 }
@@ -404,8 +417,20 @@ async function deepLearning() {
       order_index: order[i],
       opens_at: lab.opensAt,
     })
-    // Lab Two's session is titled "Wisdom Lab Two"; Lab Three's is an
-    // external_link without a URL.
+    // During the Lab: Reflection on Practice (start of the Zoom),
+    // the Wisdom Lab, Reflection on Learning (end of the Zoom). RoP forms
+    // aren't published yet: placeholders. Lab Two's session was titled
+    // "Wisdom Lab Two".
+    await upsertItem(
+      PHASE_DEEP_LEARNING,
+      lab.moduleId,
+      {
+        title: 'Reflection on Practice', resource_type: 'survey', category: 'during_lab', order_index: 1,
+        description: ROP_START_OF_LAB, url: SURVEYS.dlRoP[i], cohorts: onlyB,
+      },
+      undefined,
+      { reorder: true },
+    )
     await upsertItem(
       PHASE_DEEP_LEARNING,
       lab.moduleId,
@@ -421,39 +446,27 @@ async function deepLearning() {
         cohorts: onlyB,
       },
       ['Wisdom Lab', 'Wisdom Lab Two'],
+      { reorder: true },
     )
-    // After the Lab, in order: Reflection on Learning (at the close
-    // of the lab), Field Work, Reflection on Practice (after field
-    // work). RoP forms aren't published yet: placeholders. The old
-    // Lab Two RoP link was last year's form, so it's cleared.
     await upsertItem(
       PHASE_DEEP_LEARNING,
       lab.moduleId,
       {
-        title: 'Reflection on Learning', resource_type: 'survey', category: 'after_lab', order_index: 1,
-        description: ROL_AFTER_LAB, url: SURVEYS.dlRoL[i], cohorts: onlyB,
+        title: 'Reflection on Learning', resource_type: 'survey', category: 'during_lab', order_index: 3,
+        description: ROL_END_OF_LAB, url: SURVEYS.dlRoL[i], cohorts: onlyB,
       },
       undefined,
       { reorder: true },
     )
-    log('  field work -> after the lab, position 2')
+    // After the Lab: Field Work only.
+    log('  field work -> after the lab, position 1')
     if (APPLY) {
       check(
-        await sb.from('labs').update({ category: 'after_lab', order_index: 2 })
+        await sb.from('labs').update({ category: 'after_lab', order_index: 1 })
           .eq('module_id', lab.moduleId).like('title', 'Wisdom Lab Field Work%'),
         'field work order',
       )
     }
-    await upsertItem(
-      PHASE_DEEP_LEARNING,
-      lab.moduleId,
-      {
-        title: 'Reflection on Practice', resource_type: 'survey', category: 'after_lab', order_index: 3,
-        description: ROP_AFTER_FIELD_WORK, url: SURVEYS.dlRoP[i], cohorts: onlyB,
-      },
-      undefined,
-      { reorder: true },
-    )
   }
 
   await upsertModule(MOD_NORTH_STAR, PHASE_DEEP_LEARNING, {
@@ -537,17 +550,24 @@ async function wisdomCoaching() {
     title: 'Pre-Program Survey', resource_type: 'survey', category: 'before_lab', order_index: 1, url: SURVEYS.wcPreProgram,
   })
 
+  // The Toolkit replaces Cohort A's Syllabus; their Orientation Guide
+  // stays on their profile.
   await upsertModule(MOD_WC_SYLLABUS, PHASE_WISDOM_COACHING, {
-    title: 'Syllabus',
-    description:
-      'Your roadmap of five Wisdom Coaching sessions, each with three parts (Wisdom Coaching Prep, Live Wisdom Coaching, and Wisdom Coaching Field Work), and your capstone interview.',
+    title: TOOLKIT,
+    description: 'Your reading for the year. Each session’s prep lists the pages to read.',
     order_index: 2,
     opens_at: null,
   })
-  await upsertItem(PHASE_WISDOM_COACHING, MOD_WC_SYLLABUS, {
-    title: 'Wisdom Coaching Orientation Guide', resource_type: 'pdf', category: 'before_lab', order_index: 1,
-    url: ORIENTATION_GUIDE_URL, description: ORIENTATION_GUIDE_DESCRIPTION,
-  })
+  await upsertItem(
+    PHASE_WISDOM_COACHING,
+    MOD_WC_SYLLABUS,
+    {
+      title: TOOLKIT, resource_type: 'pdf', category: 'before_lab', order_index: 1,
+      url: null,
+      description: 'Your core reference for Wisdom Coaching, available all year. Each session’s prep lists the pages to read.',
+    },
+    [TOOLKIT, 'Wisdom at Work Toolkit', 'Wisdom Coaching Orientation Guide'],
+  )
 
   for (const [i, s] of WISDOM_COACHING_SESSIONS.entries()) {
     await upsertModule(s.moduleId, PHASE_WISDOM_COACHING, {
@@ -559,22 +579,46 @@ async function wisdomCoaching() {
     })
     await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
       title: 'Wisdom Coaching Prep', resource_type: 'assignment', category: 'before_lab', order_index: 1,
-      body: 'Identify and frame a current problem of practice from your school to bring to the group for reflection.',
+      body: [
+        s.toolkitPages ? `Read pages ${s.toolkitPages} of the ${TOOLKIT}.` : null,
+        'Identify and frame a current problem of practice from your school to bring to the group for reflection.',
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
     })
-    await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
-      title: 'Live Wisdom Coaching', resource_type: 'live_session', category: 'during_lab', order_index: 2,
-      url: WISDOM_COACHING_ZOOM, scheduled_at: s.startsAt, duration_minutes: 60,
-    })
-    // Forms are published one at a time after each session; until
-    // then these are placeholders.
-    await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
-      title: 'Reflection on Learning', resource_type: 'survey', category: 'after_lab', order_index: 3,
-      description: 'Complete at the close of the session.', url: SURVEYS.wcRoL[i],
-    })
-    await upsertItem(PHASE_WISDOM_COACHING, s.moduleId, {
-      title: 'Reflection on Practice', resource_type: 'survey', category: 'after_lab', order_index: 4,
-      description: ROP_AFTER_SESSION, url: SURVEYS.wcRoP[i],
-    })
+    // During the session: Check-in (start of the Zoom), the session,
+    // Retrospective (end of the Zoom). Earlier loads named these
+    // "Reflection on Learning" / "Reflection on Practice".
+    await upsertItem(
+      PHASE_WISDOM_COACHING,
+      s.moduleId,
+      {
+        title: 'Wisdom Coaching Check-in', resource_type: 'survey', category: 'during_lab', order_index: 1,
+        description: CHECK_IN_START, url: SURVEYS.wcCheckIn[i],
+      },
+      ['Wisdom Coaching Check-in', 'Reflection on Learning'],
+      { reorder: true },
+    )
+    await upsertItem(
+      PHASE_WISDOM_COACHING,
+      s.moduleId,
+      {
+        title: 'Live Wisdom Coaching', resource_type: 'live_session', category: 'during_lab', order_index: 2,
+        url: WISDOM_COACHING_ZOOM, scheduled_at: s.startsAt, duration_minutes: 60,
+      },
+      undefined,
+      { reorder: true },
+    )
+    await upsertItem(
+      PHASE_WISDOM_COACHING,
+      s.moduleId,
+      {
+        title: 'Wisdom Coaching Retrospective', resource_type: 'survey', category: 'during_lab', order_index: 3,
+        description: RETRO_END, url: SURVEYS.wcRetrospective[i],
+      },
+      ['Wisdom Coaching Retrospective', 'Reflection on Practice'],
+      { reorder: true },
+    )
   }
 
   await closingModules(PHASE_WISDOM_COACHING, {

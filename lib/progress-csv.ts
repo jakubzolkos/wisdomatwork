@@ -1,4 +1,3 @@
-import { getCategory } from '@/lib/curriculum'
 import { itemStatus, summarize, type FellowDetail } from '@/lib/fellow-progress'
 
 /**
@@ -9,83 +8,92 @@ export function progressCsv(fellows: FellowDetail[], format: 'summary' | 'items'
   return toCsv(format === 'items' ? itemRows(fellows) : summaryRows(fellows))
 }
 
-const FELLOW_COLUMNS = ['Name', 'Email', 'Unique ID', 'School', 'Cohort']
-
-function fellowCells(d: FellowDetail): string[] {
-  const f = d.fellow
-  return [f.fullName, f.email ?? '', d.researchId ?? '', f.schoolName ?? '', f.cohort ?? '']
+/** Cohort, then school, then name: how staff scan the sheet. */
+function byCohortSchoolName(a: FellowDetail, b: FellowDetail): number {
+  const key = (d: FellowDetail) => [d.fellow.cohort ?? '~', d.fellow.schoolName ?? '~', d.fellow.fullName]
+  const [x, y] = [key(a), key(b)]
+  for (let i = 0; i < x.length; i++) {
+    const c = x[i].localeCompare(y[i])
+    if (c) return c
+  }
+  return 0
 }
 
+/** The year the fellow is in now; a finished year is always 100% and left out. */
+function currentPhase(d: FellowDetail) {
+  return d.curriculum.phases.findLast((p) => !p.isLocked && p.modules.length > 0) ?? null
+}
+
+/** One row per fellow: who, where they are this year, when they were last active. */
 function summaryRows(fellows: FellowDetail[]): string[][] {
-  // Every phase anyone in the export has, in curriculum order.
-  const phaseTitles: string[] = []
-  for (const d of fellows) {
-    for (const p of d.curriculum.phases) {
-      if (!p.isLocked && !phaseTitles.includes(p.title)) phaseTitles.push(p.title)
-    }
-  }
   const header = [
-    ...FELLOW_COLUMNS,
-    'Current year',
-    ...phaseTitles.flatMap((t) => [`${t}: done`, `${t}: items`, `${t}: %`]),
+    'Name',
+    'Cohort',
+    'School',
+    'Year',
+    'Done',
+    '% done',
     'Reflections',
     'Last activity',
     'Last sign-in',
+    'Unique ID',
+    'Email',
   ]
-  const rows = fellows.map((d) => {
+  const rows = [...fellows].sort(byCohortSchoolName).map((d) => {
     const s = summarize(d)
-    const current = s.phases.find((p) => p.isCurrent)
+    const year = s.phases.find((p) => p.isCurrent)
     return [
-      ...fellowCells(d),
-      current?.title ?? '',
-      ...phaseTitles.flatMap((t) => {
-        const p = s.phases.find((x) => x.title === t)
-        if (!p) return ['', '', '']
-        return [String(p.done), String(p.total), p.total ? String(Math.round((p.done / p.total) * 100)) : '']
-      }),
+      d.fellow.fullName,
+      d.fellow.cohort ?? '',
+      d.fellow.schoolName ?? '',
+      year?.title ?? '',
+      year ? `${year.done} of ${year.total}` : '',
+      year?.total ? String(Math.round((year.done / year.total) * 100)) : '',
       String(s.reflectionCount),
       isoDay(s.lastActivity),
-      isoDay(s.lastSignIn),
+      s.lastSignIn ? isoDay(s.lastSignIn) : 'Never',
+      d.researchId ?? '',
+      d.fellow.email ?? '',
     ]
   })
   return [header, ...rows]
 }
 
+/** One row per fellow and item of this year, with when it was done and any reflection. */
 function itemRows(fellows: FellowDetail[]): string[][] {
   const header = [
-    ...FELLOW_COLUMNS,
-    'Year',
+    'Name',
+    'Cohort',
+    'School',
     'Module',
     'Item',
-    'Section',
     'Status',
-    'Done',
     'Completed on',
     'Reflection',
-    'Reflection submitted',
+    'Reflection date',
+    'Unique ID',
+    'Email',
   ]
   const rows: string[][] = []
-  for (const d of fellows) {
-    for (const phase of d.curriculum.phases) {
-      if (phase.isLocked) continue
-      for (const module of phase.modules) {
-        for (const item of module.items) {
-          const completedAt = d.completedAt.get(item.id)
-          const status = itemStatus(item, module.isLocked, completedAt)
-          const reflection = d.reflections.get(item.id)
-          rows.push([
-            ...fellowCells(d),
-            phase.title,
-            module.title,
-            item.title,
-            getCategory(item.category).label,
-            status.label.replace(/^Completed .*/, 'Completed'),
-            status.done ? 'Yes' : 'No',
-            isoDay(completedAt),
-            reflection?.response ?? '',
-            isoDay(reflection?.submittedAt),
-          ])
-        }
+  for (const d of [...fellows].sort(byCohortSchoolName)) {
+    for (const module of currentPhase(d)?.modules ?? []) {
+      for (const item of module.items) {
+        const completedAt = d.completedAt.get(item.id)
+        const reflection = d.reflections.get(item.id)
+        rows.push([
+          d.fellow.fullName,
+          d.fellow.cohort ?? '',
+          d.fellow.schoolName ?? '',
+          module.title,
+          item.title,
+          // The date has its own column.
+          itemStatus(item, module.isLocked, completedAt).label.replace(/^Completed .*/, 'Completed'),
+          isoDay(completedAt),
+          reflection?.response ?? '',
+          isoDay(reflection?.submittedAt),
+          d.researchId ?? '',
+          d.fellow.email ?? '',
+        ])
       }
     }
   }

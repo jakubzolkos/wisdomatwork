@@ -109,6 +109,9 @@ async function loadVisibleItem(
     if (!placement || placement.module.isLocked) {
       return { ok: false, message: "This module isn't open yet." }
     }
+    if (placement.item.waitingOn) {
+      return { ok: false, message: `Mark \u201c${placement.item.waitingOn.title}\u201d as completed first.` }
+    }
   }
   return { ok: true, item }
 }

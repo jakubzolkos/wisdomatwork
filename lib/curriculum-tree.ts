@@ -44,6 +44,12 @@ export interface CurriculumItem {
   scheduledAt: string | null
   /** When it happens or is due, shown beside it (lib/item-dates.ts). */
   when: ItemWhen | null
+  /**
+   * An earlier survey in this module the fellow must mark done first
+   * (keeps them ticking surveys off); null when free to open. Live
+   * sessions never wait.
+   */
+  waitingOn: { id: string; title: string; href: string } | null
   /** href for the content viewer page. */
   href: string
   /** Whether the current user has marked this item complete. */
@@ -370,6 +376,7 @@ export function buildCurriculum(
         scheduledAt: item.scheduled_at,
         // This year's dates belong to whoever runs it now.
         when: null,
+        waitingOn: null,
         href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
         isCompleted: true,
         isPending: false,
@@ -389,6 +396,7 @@ export function buildCurriculum(
       resourceType: item.resource_type,
       scheduledAt: item.scheduled_at,
       when: itemWhen(item),
+      waitingOn: null,
       href: `/phases/${item.year_id}/modules/${item.module_id}/items/${item.id}`,
       // An ended live session counts as done even if the fellow never
       // reopened its page (where the completion row gets written).
@@ -418,6 +426,7 @@ export function buildCurriculum(
   // same list, so the two always agree.
   for (const list of itemsByModule.values()) {
     list.sort((a, b) => categoryRank(a.category) - categoryRank(b.category))
+    if (isFellow) holdBehindSurveys(list)
   }
 
   // Stitch everything together in display order. Locked phases
@@ -494,6 +503,25 @@ export function findCurriculumItem(
   return null
 }
 
+/**
+ * Within a module, everything after a survey the fellow hasn't marked
+ * done waits for it, so surveys get ticked off as they go. Live
+ * sessions never wait (nobody is kept out of the Zoom), and a survey
+ * without a link yet doesn't hold anything back.
+ */
+function holdBehindSurveys(items: CurriculumItem[]) {
+  let blocker: CurriculumItem | null = null
+  for (const item of items) {
+    if (blocker && item.resourceType !== 'live_session') {
+      item.waitingOn = { id: blocker.id, title: blocker.title, href: blocker.href }
+      continue
+    }
+    if (item.resourceType === 'survey' && !item.isCompleted && !item.isPending && !item.isReference) {
+      blocker = item
+    }
+  }
+}
+
 /** Lab stages first, in session order; other categories after. */
 const CATEGORY_ORDER: readonly ContentCategory[] = ['before_lab', 'during_lab', 'after_lab']
 
@@ -535,6 +563,11 @@ export function findAdjacentItems(
 
   const after = flat[idx + 1]
   if (!after) return { prev, next: null, nextLocked: null }
+  // Held behind a survey: "Go to next item" ticks this item first, so
+  // only another survey keeps it waiting.
+  if (after.item.waitingOn && after.item.waitingOn.id !== contentId) {
+    return { prev, next: null, nextLocked: `Mark \u201c${after.item.waitingOn.title}\u201d as completed to go on.` }
+  }
   if (!after.module.isLocked) return { prev, next: after.item, nextLocked: null }
 
   // Locks are per phase, so the current item can only unlock modules

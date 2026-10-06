@@ -556,7 +556,10 @@ function ItemRow({
   const meta = [item.when && formatWhen(item.when), formatDuration(item.durationMinutes)]
     .filter(Boolean)
     .join(' · ')
-  if (locked) {
+  // Not openable yet: its module isn't open, or it waits for an
+  // earlier survey to be marked done.
+  if (locked || item.waitingOn) {
+    const note = !locked && item.waitingOn ? `After: ${item.waitingOn.title}` : meta
     return (
       <li className="flex items-start gap-3 px-3 py-2.5" aria-disabled="true">
         <span
@@ -565,8 +568,8 @@ function ItemRow({
         />
         <span className="min-w-0 flex-1">
           <span className="block text-sm leading-snug text-muted-foreground">{item.title}</span>
-          {meta && (
-            <span className="mt-0.5 block text-xs text-muted-foreground">{meta}</span>
+          {note && (
+            <span className="mt-0.5 block text-xs text-muted-foreground">{note}</span>
           )}
         </span>
       </li>

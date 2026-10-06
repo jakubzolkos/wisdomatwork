@@ -174,12 +174,13 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
       <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr]">
         {/* Brand */}
         <Link href="/dashboard" className="flex shrink-0 items-center gap-3 justify-self-start">
+          {/* Official Practical Wisdom Project logo (Barbara, Oct 5). */}
           <Image
-            src="/aai-mark.png"
-            alt="Abigail Adams Institute"
-            width={240}
-            height={144}
-            className="h-8 w-auto"
+            src="/pwp-logo.png"
+            alt="Practical Wisdom Project, Abigail Adams Institute"
+            width={837}
+            height={508}
+            className="h-12 w-auto"
             priority
           />
           <span className="hidden border-l border-border pl-3 leading-tight sm:block">

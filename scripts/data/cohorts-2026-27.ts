@@ -124,20 +124,23 @@ export const SURVEYS = {
   // forms.gle/K6B3m717KMJn2FLJA, expanded so it can take the prefill.
   wcPreProgram:
     'https://docs.google.com/forms/d/e/1FAIpQLSf_EraT7UYvW_wEMmyhInD5GShWERqFk9Ecw_l_uHkHIQNCMA/viewform?usp=pp_url&entry.2117511694=UNIQUE_ID',
-  // null = not published yet. The WaW team releases each form after
-  // its session; the portal shows a placeholder until the link is
-  // added here (then re-run the loader).
-  wcRoL: [
-    // Session 1: the form stays unpublished until after Oct 7 (Barbara:
-    // links go out once the lab is over). Put this back once it's live:
-    // https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=pp_url&entry.796784164=UNIQUE_ID
-    null,
+  // null = not published yet; the portal shows a placeholder until the
+  // link is added here (then re-run the loader).
+  //
+  // Wisdom Coaching (Barbara, Oct 5): the Check-in is done on the Zoom
+  // before the lesson, the Retrospective on the Zoom after it. The
+  // Materials doc listed the Session 1 Check-in as "Reflection on
+  // Learning"; its form is titled "Wisdom Coaching Check-in Lab 1".
+  wcCheckIn: [
+    'https://docs.google.com/forms/d/e/1FAIpQLScxOFXoAqryAnbNIGidNuvG-qgsDIQnASgnYjzLXzu6wv7njg/viewform?usp=pp_url&entry.796784164=UNIQUE_ID',
     null,
     null,
     null,
     null,
   ] as (string | null)[],
-  wcRoP: [null, null, null, null, null] as (string | null)[],
+  wcRetrospective: [null, null, null, null, null] as (string | null)[],
+  // Deep Learning: Reflection on Practice on the Zoom before the lesson,
+  // Reflection on Learning on the Zoom after it.
   dlRoP: [null, null, null, null, null] as (string | null)[],
   dlPostProgram: null as string | null,
   wcPostProgram: null as string | null,
@@ -203,13 +206,23 @@ export const DEEP_LEARNING_LABS: { moduleId: string; opensAt: string | null; tit
   },
 ]
 
-/** Phase 2 (Wisdom Coaching) sessions, Cohort A. Module ids are fixed so re-runs update in place. */
-export const WISDOM_COACHING_SESSIONS = [
-  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', opensAt: null as string | null, title: 'Wisdom Coaching One', startsAt: '2026-10-07T14:00:00-04:00' },
-  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', opensAt: '2026-10-07T15:00:00-04:00' as string | null, title: 'Wisdom Coaching Two', startsAt: '2026-11-04T14:00:00-05:00' },
-  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', opensAt: '2026-11-04T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00' },
-  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', opensAt: '2026-12-02T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00' },
-  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', opensAt: '2027-02-03T15:00:00-05:00' as string | null, title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00' },
+/**
+ * Phase 2 (Wisdom Coaching) sessions, Cohort A. Module ids are fixed so
+ * re-runs update in place. `toolkitPages`: the Wisdom at Work Toolkit
+ * pages to read before the session (null = not given yet).
+ */
+export const WISDOM_COACHING_SESSIONS: {
+  moduleId: string
+  opensAt: string | null
+  title: string
+  startsAt: string
+  toolkitPages: string | null
+}[] = [
+  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', opensAt: null, title: 'Wisdom Coaching One', startsAt: '2026-10-07T14:00:00-04:00', toolkitPages: '1–21' },
+  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', opensAt: '2026-10-07T15:00:00-04:00', title: 'Wisdom Coaching Two', startsAt: '2026-11-04T14:00:00-05:00', toolkitPages: null },
+  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', opensAt: '2026-11-04T15:00:00-05:00', title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00', toolkitPages: null },
+  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', opensAt: '2026-12-02T15:00:00-05:00', title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00', toolkitPages: null },
+  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', opensAt: '2027-02-03T15:00:00-05:00', title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00', toolkitPages: null },
 ]
 
 /**
