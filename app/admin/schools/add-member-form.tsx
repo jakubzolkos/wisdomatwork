@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { Plus, Users } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { addMemberAction } from './actions'
 
 export interface AvailableFellow {
@@ -29,20 +29,16 @@ export function AddMemberForm({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
+  // Nobody to add: one quiet line saying how to move someone here.
   if (fellows.length === 0) {
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <p className="text-sm">All fellows are already assigned to teams.</p>
-        </div>
-        <p className="text-xs text-muted-foreground ml-6">
-          <a href="/admin/users" className="text-primary hover:underline">
-            Add more fellows
-          </a>
-          {' '}to your organization to expand your teams.
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Every fellow is already on a team. To move someone here, change their team in{' '}
+        <a href="/admin/users" className="text-primary hover:underline">
+          Users
+        </a>
+        .
+      </p>
     )
   }
 

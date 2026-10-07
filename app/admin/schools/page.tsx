@@ -264,8 +264,8 @@ export default async function AdminSchoolsPage() {
 
                             {/* Team Members */}
                             {teamMembers.length === 0 ? (
-                              <div className="text-center py-6 text-sm text-muted-foreground">
-                                <p className="mb-3">No members yet</p>
+                              <div className="space-y-2 text-sm text-muted-foreground">
+                                <p>No members yet.</p>
                                 <AddMemberForm
                                   cohortId={team.cohort_id}
                                   fellows={unassignedFellows}
