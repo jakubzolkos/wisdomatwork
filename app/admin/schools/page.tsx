@@ -24,10 +24,16 @@ type CohortRow = {
   name: string
   current_year: number
 }
+type MemberProfile = { id: string; full_name: string | null; title: string | null; deactivated_at: string | null }
 type MemberRow = {
   cohort_id: string
   profile_id: string
-  profiles: { id: string; full_name: string | null; title: string | null }[] | null
+  // A many-to-one embed comes back as one object; tolerate a list too.
+  profiles: MemberProfile | MemberProfile[] | null
+}
+
+function memberProfile(m: MemberRow): MemberProfile | null {
+  return Array.isArray(m.profiles) ? (m.profiles[0] ?? null) : m.profiles
 }
 type FellowRow = {
   id: string
@@ -60,7 +66,7 @@ export default async function AdminSchoolsPage() {
       supabase.from('school_teams').select('id, school_id, cohort_id, name').order('name'),
       supabase
         .from('cohort_members')
-        .select('cohort_id, profile_id, profiles:profiles(id, full_name, title)'),
+        .select('cohort_id, profile_id, profiles:profiles(id, full_name, title, deactivated_at)'),
       supabase
         .from('profiles')
         .select('id, full_name, title, school_team_id')
@@ -71,7 +77,8 @@ export default async function AdminSchoolsPage() {
 
   const schoolList = (schools ?? []) as SchoolRow[]
   const schoolTeamList = (schoolTeams ?? []) as SchoolTeamRow[]
-  const memberList = (members ?? []) as MemberRow[]
+  // Deactivated fellows (departed) aren't shown or counted.
+  const memberList = ((members ?? []) as MemberRow[]).filter((m) => !memberProfile(m)?.deactivated_at)
   const fellowList = (fellows ?? []) as FellowRow[]
 
   // Index structures - now based on school_teams instead of cohorts
@@ -267,8 +274,9 @@ export default async function AdminSchoolsPage() {
                             ) : (
                               <div className="space-y-2 mb-4">
                                 {teamMembers.map((m) => {
-                                  const fullName = m.profiles?.[0]?.full_name ?? '(Unnamed fellow)'
-                                  const isUnnamed = !m.profiles?.[0]?.full_name
+                                  const profile = memberProfile(m)
+                                  const fullName = profile?.full_name ?? '(Unnamed fellow)'
+                                  const isUnnamed = !profile?.full_name
                                   return (
                                     <div
                                       key={m.profile_id}
@@ -284,9 +292,9 @@ export default async function AdminSchoolsPage() {
                                           <p className={`text-sm font-medium truncate ${isUnnamed ? 'text-muted-foreground italic' : 'text-foreground'}`}>
                                             {fullName}
                                           </p>
-                                          {m.profiles?.[0]?.title && (
+                                          {profile?.title && (
                                             <p className="text-xs text-muted-foreground truncate">
-                                              {m.profiles[0].title}
+                                              {profile.title}
                                             </p>
                                           )}
                                         </div>
