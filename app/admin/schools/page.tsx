@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth-server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { PageHeader } from '@/components/page-header'
@@ -47,7 +48,11 @@ function cohortLabel(year: number): string {
 }
 
 export default async function AdminSchoolsPage() {
-  const supabase = await createClient()
+  // Read with the service role: school_teams has row-level security
+  // with no policy that lets staff read it, so the signed-in client got
+  // no teams at all. Every read here is admin-only, checked first.
+  await requireAdmin()
+  const supabase = createAdminClient()
 
   const [{ data: schools }, { data: schoolTeams }, { data: members }, { data: fellows }] =
     await Promise.all([
