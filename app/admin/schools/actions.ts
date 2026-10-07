@@ -211,27 +211,28 @@ export async function deleteCohortAction(formData: FormData): Promise<ActionResu
 export async function addMemberAction(formData: FormData): Promise<ActionResult> {
   try {
     await requireAdmin()
+    // The add-member form sends the team's cohort id; accept either id.
     const schoolTeamId = String(formData.get('schoolTeamId') ?? '')
+    const cohortId = String(formData.get('cohortId') ?? '')
     const profileId = String(formData.get('profileId') ?? '')
-    if (!schoolTeamId || !profileId) return fail('Missing school team or profile')
+    if ((!schoolTeamId && !cohortId) || !profileId) return fail('Missing school team or profile')
 
     const admin = createAdminClient()
 
-    // Phase 2: Resolve school_team to get cohort_id and school_id
     const { data: schoolTeam, error: stErr } = await admin
       .from('school_teams')
       .select('id, cohort_id, school_id')
-      .eq('id', schoolTeamId)
-      .single()
+      .eq(schoolTeamId ? 'id' : 'cohort_id', schoolTeamId || cohortId)
+      .maybeSingle()
     if (stErr || !schoolTeam) return fail(stErr?.message ?? 'Team not found')
 
-    // Add to cohort_members for curriculum queries to work
+    // One team per fellow (as on the Users page): leave any other team.
+    const { error: leaveErr } = await admin.from('cohort_members').delete().eq('profile_id', profileId)
+    if (leaveErr) return fail(leaveErr.message)
     const { error: memErr } = await admin
       .from('cohort_members')
       .insert({ cohort_id: schoolTeam.cohort_id, profile_id: profileId })
-    if (memErr && !memErr.message.toLowerCase().includes('duplicate')) {
-      return fail(memErr.message)
-    }
+    if (memErr) return fail(memErr.message)
 
     // Set school_team_id on profile (and school_id for backward compatibility)
     const { error: profErr } = await admin
@@ -261,6 +262,22 @@ export async function removeMemberAction(formData: FormData): Promise<ActionResu
       .eq('cohort_id', cohortId)
       .eq('profile_id', profileId)
     if (error) return fail(error.message)
+
+    // Clear the profile's team link too, or the fellow still counts as
+    // on this team (profile, team progress) and can't be re-added.
+    const { data: schoolTeam } = await admin
+      .from('school_teams')
+      .select('id')
+      .eq('cohort_id', cohortId)
+      .maybeSingle()
+    if (schoolTeam) {
+      const { error: profErr } = await admin
+        .from('profiles')
+        .update({ school_team_id: null })
+        .eq('id', profileId)
+        .eq('school_team_id', schoolTeam.id)
+      if (profErr) return fail(profErr.message)
+    }
 
     revalidatePath('/admin/schools')
     return ok('Removed from team')

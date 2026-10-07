@@ -59,11 +59,15 @@ export default async function AdminUsersPage({
   const supabase = await createClient()
   const admin = createAdminClient()
 
-  // Cohorts for the assignment dropdown.
-  const { data: cohorts } = await supabase
-    .from('cohorts')
-    .select('id, name')
+  // School teams for the assignment dropdown, column and filter: the
+  // same list and names as Schools & teams. Memberships still key on the
+  // team's cohort id, so that's the option value. Read with the service
+  // role (school_teams has no staff read policy).
+  const { data: schoolTeams } = await admin
+    .from('school_teams')
+    .select('cohort_id, name')
     .order('name', { ascending: true })
+  const teamNameByCohort = new Map((schoolTeams ?? []).map((t) => [t.cohort_id as string, t.name as string]))
 
   // Profiles (DB is source of truth for name/role/title/cohort).
     const { data: profiles } = await supabase
@@ -123,7 +127,7 @@ export default async function AdminUsersPage({
       cohort: isCohort(p.cohort) ? p.cohort : null,
       deactivated_at: p.deactivated_at,
       cohort_id: cohort?.id ?? null,
-      cohort_name: cohort?.name ?? null,
+      cohort_name: cohort ? (teamNameByCohort.get(cohort.id) ?? cohort.name ?? null) : null,
       last_sign_in_at: authUser?.last_sign_in_at ?? null,
       invited_at: authUser?.invited_at ?? null,
       email_confirmed_at: authUser?.email_confirmed_at ?? null,
@@ -171,7 +175,7 @@ export default async function AdminUsersPage({
   const end = start + perPage
   const paginatedUsers = filteredUsers.slice(start, end)
 
-  const cohortList: CohortSummary[] = (cohorts ?? []).map((c) => ({ id: c.id, name: c.name }))
+  const cohortList: CohortSummary[] = (schoolTeams ?? []).map((t) => ({ id: t.cohort_id, name: t.name }))
 
   // Get unique school teams (cohort names) for filter dropdown
   const schoolTeamSet = new Set(

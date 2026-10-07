@@ -336,7 +336,23 @@ export async function updateCohortAction(formData: FormData): Promise<ActionResu
       if (insErr) return fail(insErr.message)
     }
 
+    // Profiles, team progress and Schools & teams follow the school_teams
+    // link (057); keep it in step with the membership.
+    const { data: schoolTeam } = cohortId
+      ? await admin.from('school_teams').select('id, school_id').eq('cohort_id', cohortId).maybeSingle()
+      : { data: null }
+    const { error: profErr } = await admin
+      .from('profiles')
+      .update(
+        schoolTeam
+          ? { school_team_id: schoolTeam.id, school_id: schoolTeam.school_id }
+          : { school_team_id: null },
+      )
+      .eq('id', userId)
+    if (profErr) return fail(profErr.message)
+
     revalidatePath('/admin/users')
+    revalidatePath('/admin/schools')
     return ok(cohortId ? 'Cohort updated' : 'Removed from cohort')
   } catch (e) {
     return fail(e instanceof Error ? e.message : 'Unknown error')
