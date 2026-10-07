@@ -346,6 +346,7 @@ export function CurriculumTree({ phases }: Props) {
                             {moduleOpen && (
                               <ModuleBody
                                 moduleId={module.id}
+                                description={module.description}
                                 items={module.items}
                                 activeItemId={null}
                                 locked
@@ -391,6 +392,7 @@ export function CurriculumTree({ phases }: Props) {
                           {moduleOpen && (
                             <ModuleBody
                               moduleId={module.id}
+                              description={module.description}
                               items={module.items}
                               activeItemId={activeItemId}
                             />
@@ -478,26 +480,31 @@ function ModuleTitle({
  */
 function ModuleBody({
   moduleId,
+  description = null,
   items,
   activeItemId,
   locked = false,
 }: {
   moduleId: string
+  /** Staff-written intro (Admin -> Curriculum); line breaks kept. */
+  description?: string | null
   items: readonly CurriculumItem[]
   activeItemId: string | null
   /** Module not open yet: list the items as plain, muted text. */
   locked?: boolean
 }) {
+  const intro = description?.trim() ? (
+    <p className="whitespace-pre-line px-3 text-xs leading-relaxed text-muted-foreground">
+      {description.trim()}
+    </p>
+  ) : null
+
   if (items.length === 0) {
     return (
-      <ul
-        id={`module-${moduleId}`}
-        className="flex flex-col pb-2 pl-6"
-      >
-        <li className="px-3 py-3 text-xs italic text-muted-foreground">
-          No content yet.
-        </li>
-      </ul>
+      <div id={`module-${moduleId}`} className="flex flex-col gap-2 pb-2 pl-6 pt-1">
+        {intro}
+        <p className="px-3 py-2 text-xs italic text-muted-foreground">No content yet.</p>
+      </div>
     )
   }
 
@@ -505,6 +512,7 @@ function ModuleBody({
 
   return (
     <div id={`module-${moduleId}`} className="flex flex-col gap-3 pb-2 pl-6 pt-1">
+      {intro}
       {labGroups.map((group) => (
         <div key={group.category} className="flex flex-col">
           {/* Stage label (Before / During / After the Lab). */}

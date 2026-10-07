@@ -348,7 +348,11 @@ async function upsertModule(
   log(`module ${fields.order_index}. ${fields.title}${fields.cohorts ? ` [${fields.cohorts}]` : ''}${fields.opens_at && !KEEP_DATES ? ` opens ${fields.opens_at}` : ''}`)
   // Modules open by date; the completion sequence is off (065).
   if (APPLY) {
-    const { opens_at, ...rest } = fields
+    // Staff edit module descriptions in Admin -> Curriculum (fellows see
+    // them in the sidebar), so only a new module gets the data file's.
+    const { data: existing } = await sb.from('modules').select('id').eq('id', id).maybeSingle()
+    const { opens_at, description, ...base } = fields
+    const rest = existing ? base : { ...base, description }
     check(
       await sb
         .from('modules')

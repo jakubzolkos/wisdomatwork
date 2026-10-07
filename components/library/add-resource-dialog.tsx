@@ -455,7 +455,11 @@ export function AddResourceDialog({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 required
-                type="url"
+                // Text, not url: uploaded files have in-app paths like
+                // /files/library/<id>, which the browser's URL check
+                // rejects. The server validates every link.
+                type="text"
+                inputMode="url"
                 placeholder="https://..."
               />
             </div>

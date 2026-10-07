@@ -109,6 +109,11 @@ export async function deleteSchoolAction(formData: FormData): Promise<ActionResu
 
 // ---------------------------------------------------------------------------
 // Cohorts (a.k.a. school teams)
+//
+// A team is two rows: the legacy `cohorts` row (memberships hang off it)
+// and its `school_teams` row (057), which this page and fellows'
+// profiles read. Create and rename keep both; deleting the cohort
+// cascades to the school team and clears fellows' links.
 // ---------------------------------------------------------------------------
 
 export async function createCohortAction(formData: FormData): Promise<ActionResult> {
@@ -124,10 +129,21 @@ export async function createCohortAction(formData: FormData): Promise<ActionResu
     if (!name) return fail('Team name is required')
 
     const admin = createAdminClient()
-    const { error } = await admin
+    const { data: cohort, error } = await admin
       .from('cohorts')
       .insert({ school_id: schoolId, name, current_year: currentYear })
-    if (error) return fail(error.message)
+      .select('id')
+      .single()
+    if (error || !cohort) return fail(error?.message ?? 'Could not create the team')
+
+    const { error: teamError } = await admin
+      .from('school_teams')
+      .insert({ school_id: schoolId, cohort_id: cohort.id, name })
+    if (teamError) {
+      // Don't leave a half-made team behind.
+      await admin.from('cohorts').delete().eq('id', cohort.id)
+      return fail(teamError.message)
+    }
 
     revalidatePath('/admin/schools')
     return ok(`Added ${name}`)
@@ -154,6 +170,8 @@ export async function updateCohortAction(formData: FormData): Promise<ActionResu
       .update({ name, current_year: currentYear })
       .eq('id', id)
     if (error) return fail(error.message)
+    const { error: teamError } = await admin.from('school_teams').update({ name }).eq('cohort_id', id)
+    if (teamError) return fail(teamError.message)
 
     revalidatePath('/admin/schools')
     return ok('Team updated')

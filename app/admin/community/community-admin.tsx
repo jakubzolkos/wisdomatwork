@@ -605,7 +605,8 @@ function AddResourceDialog() {
           </FormRow>
 
           <FormRow label="URL" htmlFor="res-url">
-            <Input id="res-url" name="url" type="url" required placeholder="https://" />
+            {/* Text, not url: uploaded files have in-app paths (/files/library/...). */}
+            <Input id="res-url" name="url" type="text" inputMode="url" required placeholder="https://" />
           </FormRow>
 
           <FormRow label="Category (optional)" htmlFor="res-cat">
