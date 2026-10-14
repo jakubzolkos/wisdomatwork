@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { requireUser } from '@/lib/auth-server'
+import { getSessionUser, requireUser } from '@/lib/auth-server'
 import { sendEmail } from '@/lib/email/client'
 import { isFeedbackKind, renderFeedbackEmail } from '@/lib/email/templates/feedback'
 import { getResearchId } from '@/lib/research-id'
@@ -19,15 +19,16 @@ export type FeedbackResult = { ok: true } | { ok: false; message: string }
 /**
  * Feedback button (components/feedback/feedback-button.tsx): emails the
  * WaW team with who sent it and from which page; replies go to the
- * fellow.
+ * sender. Staff can send too, always as themselves.
  */
 export async function sendFeedback(formData: FormData): Promise<FeedbackResult> {
   try {
     const user = await requireUser()
-    // Staff previewing as a fellow mustn't send mail in their name.
-    if (user.preview) {
-      return { ok: false, message: 'Feedback isn’t sent from preview mode.' }
-    }
+    // In "Preview as a fellow" the user is the previewed fellow; the
+    // message goes out as the admin actually signed in instead, so
+    // nothing is ever sent in a fellow's name.
+    const real = user.preview ? await getSessionUser() : null
+    if (user.preview && !real) return { ok: false, message: 'Please sign in again.' }
 
     const kind = formData.get('kind')
     const message = String(formData.get('message') ?? '').trim()
@@ -44,22 +45,33 @@ export async function sendFeedback(formData: FormData): Promise<FeedbackResult> 
       return { ok: false, message: 'You just sent a message. Please wait a moment before sending another.' }
     }
 
-    const [researchId, appUrl] = await Promise.all([getResearchId(user.id), getSiteOrigin()])
+    const sender = user.preview
+      ? {
+          name: `${user.preview.actualAdminName} (staff, previewing as ${user.preview.label})`,
+          email: real!.email,
+          cohort: null,
+          school: null,
+          researchId: null,
+        }
+      : {
+          name: user.role === 'fellow' ? user.fullName : `${user.fullName} (staff)`,
+          email: user.email,
+          cohort: user.cohort ? `Cohort ${user.cohort}` : null,
+          school: user.schoolName || null,
+          researchId: user.role === 'fellow' ? await getResearchId(user.id) : null,
+        }
+    const appUrl = await getSiteOrigin()
     const email = renderFeedbackEmail({
       kind,
       message,
-      name: user.fullName,
-      email: user.email,
-      cohort: user.cohort ? `Cohort ${user.cohort}` : null,
-      school: user.schoolName || null,
-      researchId,
+      ...sender,
       // Only a portal path, never an outside URL.
       page: page.startsWith('/') ? page.slice(0, 300) : null,
       appUrl,
     })
     const sent = await sendEmail({
       to: FEEDBACK_TO,
-      replyTo: user.email || undefined,
+      replyTo: sender.email || undefined,
       ...email,
       tags: [
         { name: 'category', value: 'feedback' },

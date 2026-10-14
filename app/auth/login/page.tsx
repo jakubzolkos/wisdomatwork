@@ -19,6 +19,7 @@ import {
   SegmentTab,
   authLinkClass,
 } from '../_components/auth-ui'
+import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 type Method = 'password' | 'code'
 type CodeStep = 'request' | 'verify'
@@ -471,7 +472,7 @@ function PasswordSetupPanel({
           <p className="mt-1 text-foreground">
             If an account exists for{' '}
             <span className="font-medium">{sentTo}</span>, we sent a
-            link to set or reset its password. The link expires in 1 hour.
+            link to set or reset its password. The link expires in {EMAIL_LINK_EXPIRY_LABEL}.
           </p>
         </AuthNotice>
         <div className="flex items-center justify-between gap-3 text-sm">

@@ -6,6 +6,7 @@ import { sendSignInCodeEmail, sendPasswordSetupEmail } from '@/lib/email/send'
 import { issueLoginCode, verifyLoginCode } from '@/lib/auth/email-login-code'
 import { markInvitationAccepted } from '@/lib/invitations/invite'
 import { siteUrl } from '@/lib/site'
+import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 export type SendCodeResult =
   | { ok: true; email: string }
@@ -273,7 +274,7 @@ export async function requestPasswordSetupAction(
     const sendResult = await sendPasswordSetupEmail(email, {
       recipientName: profile.full_name,
       passwordSetupUrl,
-      expiresAtLabel: '1 hour',
+      expiresAtLabel: EMAIL_LINK_EXPIRY_LABEL,
       isReset,
     })
     if (!sendResult.ok) return { ok: false, error: sendResult.error }

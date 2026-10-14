@@ -1,4 +1,5 @@
 import { bodyToHtml, escapeHtml, renderBaseLayout, renderCtaButton } from './base'
+import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 export type InvitationEmailArgs = {
   /** Display name to greet the recipient by. Falls back to "there". */
@@ -39,7 +40,7 @@ export function renderInvitationEmail(args: InvitationEmailArgs): RenderedEmail 
   const greeting = args.recipientName?.trim() ? args.recipientName.trim() : 'there'
   const invitedBy = args.invitedByName?.trim()
   const cohort = args.cohortLabel?.trim()
-  const expires = args.expiresAtLabel?.trim() || '1 hour'
+  const expires = args.expiresAtLabel?.trim() || EMAIL_LINK_EXPIRY_LABEL
 
   const subject = 'Activate your WaW Fellows Portal account'
 

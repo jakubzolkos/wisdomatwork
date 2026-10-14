@@ -3,6 +3,7 @@ import { sendInvitationEmail } from '@/lib/email/send'
 import { isEmailConfigured } from '@/lib/email/client'
 import { siteUrl } from '@/lib/site'
 import type { Role } from '@/lib/roles'
+import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 export interface InvitePayload {
   email: string
@@ -377,10 +378,8 @@ export async function sendBrandedInvite(
       activationUrl,
       invitedByName: payload.invitedByName,
       cohortLabel: payload.cohortLabel,
-      // Supabase OTP/link TTL defaults to 1 hour. Match it in the
-      // copy unless the project later overrides it in the Supabase
-      // dashboard.
-      expiresAtLabel: '1 hour',
+      // Must match Supabase's Email OTP Expiration (lib/auth/link-expiry.ts).
+      expiresAtLabel: EMAIL_LINK_EXPIRY_LABEL,
     })
 
     if (!sendResult.ok) {
