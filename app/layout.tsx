@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { FeedbackButton } from '@/components/feedback/feedback-button'
 import { Inter, Source_Serif_4 } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { UserProvider } from '@/lib/user-context'
@@ -80,6 +81,8 @@ export default async function RootLayout({
           <main id="main-content">
             {children}
           </main>
+          {/* Fellows (and staff previewing as one) can message the WaW team. */}
+          {user?.role === 'fellow' && <FeedbackButton />}
         </UserProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
