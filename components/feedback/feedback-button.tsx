@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { usePathname } from 'next/navigation'
-import { CheckCircle2, MessageCircle } from 'lucide-react'
+import { CheckCircle2, MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
@@ -60,7 +60,24 @@ export function FeedbackButton() {
           <MessageCircle className="size-5" aria-hidden="true" />
         </button>
       </PopoverTrigger>
-      <PopoverContent side="top" align="end" sideOffset={12} className="w-[min(22rem,calc(100vw-2rem))] p-4">
+      {/* Kept inside the window: never taller than the space Radix
+          measures above the button, scrolling if a screen is short. */}
+      <PopoverContent
+        side="top"
+        align="end"
+        sideOffset={12}
+        collisionPadding={16}
+        className="relative max-h-[var(--radix-popover-content-available-height)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto p-4"
+      >
+        {/* Clicking outside or Esc also closes it; the X makes that obvious. */}
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          aria-label="Close"
+          className="absolute top-2 right-2 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <X className="size-4" aria-hidden="true" />
+        </button>
         {sent ? (
           <div className="flex flex-col items-center gap-2 py-4 text-center" role="status">
             <CheckCircle2 className="size-8 text-primary" aria-hidden="true" />
@@ -69,7 +86,7 @@ export function FeedbackButton() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            <div>
+            <div className="pr-6">
               <p className="text-sm font-semibold text-foreground">Send a message to the WaW team</p>
               <p className="text-xs text-muted-foreground">Feedback, a problem with the portal, or a question.</p>
             </div>
@@ -105,7 +122,9 @@ export function FeedbackButton() {
               aria-label="Your message"
               rows={5}
               maxLength={5000}
-              className="resize-none text-sm"
+              // The shared Textarea grows with its text; cap it so a long
+              // message scrolls inside the box instead of off the page.
+              className="max-h-[40vh] resize-none overflow-y-auto text-sm"
             />
 
             {error && (
@@ -114,10 +133,7 @@ export function FeedbackButton() {
               </p>
             )}
 
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] leading-snug text-muted-foreground">
-                Goes to waw@abigailadamsinstitute.org with this page&rsquo;s address.
-              </p>
+            <div className="flex justify-end">
               <Button type="button" size="sm" onClick={submit} disabled={pending || message.trim().length < 3}>
                 {pending ? 'Sending…' : 'Send'}
               </Button>

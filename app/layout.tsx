@@ -81,8 +81,9 @@ export default async function RootLayout({
           <main id="main-content">
             {children}
           </main>
-          {/* Fellows (and staff previewing as one) can message the WaW team. */}
-          {user?.role === 'fellow' && <FeedbackButton />}
+          {/* Anyone signed in can message the WaW team; staff send as
+              themselves (preview mode refuses, lib/feedback/actions.ts). */}
+          {user && <FeedbackButton />}
         </UserProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
