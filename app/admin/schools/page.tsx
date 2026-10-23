@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requireAdmin } from '@/lib/auth-server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { PageHeader } from '@/components/page-header'
@@ -10,6 +9,7 @@ import { AddMemberForm } from './add-member-form'
 import { RemoveMemberButton } from './remove-member-button'
 import { TeamMenu } from './team-menu'
 import { SchoolMenu } from './school-menu'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 type SchoolRow = { id: string; name: string }
 type SchoolTeamRow = {
@@ -57,7 +57,7 @@ export default async function AdminSchoolsPage() {
   // Read with the service role: school_teams has row-level security
   // with no policy that lets staff read it, so the signed-in client got
   // no teams at all. Every read here is admin-only, checked first.
-  await requireAdmin()
+  await requireAdminPage('people')
   const supabase = createAdminClient()
 
   const [{ data: schools }, { data: schoolTeams }, { data: members }, { data: fellows }] =

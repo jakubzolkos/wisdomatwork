@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { COHORTS } from '@/lib/cohorts'
 import { STORED_FILES_BUCKET, isStoredFileUrl, storedFileUrl } from '@/lib/stored-files'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -12,6 +11,7 @@ import {
   type ContentCategory,
   type ResourceType,
 } from '@/lib/curriculum'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 // ============================================================================
 // Helpers
@@ -62,7 +62,7 @@ function readInheritableCohorts(formData: FormData): string[] | null {
 
 export async function createPhase(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const title = trim(formData.get('title'))
     const description = nullable(formData.get('description'))
     const cohorts = readCohortSelections(formData)
@@ -93,7 +93,7 @@ export async function createPhase(formData: FormData): Promise<ActionResult> {
 
 export async function updatePhase(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     const title = trim(formData.get('title'))
     const description = nullable(formData.get('description'))
@@ -120,7 +120,7 @@ export async function updatePhase(formData: FormData): Promise<ActionResult> {
 
 export async function deletePhase(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     if (!id) return fail('Missing phase id')
 
@@ -140,7 +140,7 @@ export async function deletePhase(formData: FormData): Promise<ActionResult> {
 
 export async function reorderPhases(orderedIds: string[]): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const supabase = await createClient()
 
     await Promise.all(
@@ -177,7 +177,7 @@ export async function reorderPhases(orderedIds: string[]): Promise<ActionResult>
 
 export async function createModule(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const phaseId = trim(formData.get('phase_id'))
     const title = trim(formData.get('title'))
     const description = nullable(formData.get('description'))
@@ -216,7 +216,7 @@ export async function createModule(formData: FormData): Promise<ActionResult> {
 
 export async function updateModule(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     const phaseId = trim(formData.get('phase_id'))
     const title = trim(formData.get('title'))
@@ -256,7 +256,7 @@ export async function updateModule(formData: FormData): Promise<ActionResult> {
 
 export async function deleteModule(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     const phaseId = trim(formData.get('phase_id'))
     if (!id) return fail('Missing module id')
@@ -282,7 +282,7 @@ export async function reorderModules(
   orderedIds: string[],
 ): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     if (!phaseId) return fail('Missing phase id')
     const supabase = await createClient()
 
@@ -461,7 +461,7 @@ async function storedFileExists(filePath: string): Promise<boolean> {
 
 export async function createContent(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const parsed = readContentInputs(formData)
     if (typeof parsed === 'string') return fail(parsed)
     const supabase = await createClient()
@@ -519,7 +519,7 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
 
 export async function updateContent(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     if (!id) return fail('Missing content id')
     const parsed = readContentInputs(formData)
@@ -589,7 +589,7 @@ export async function updateContent(formData: FormData): Promise<ActionResult> {
 
 export async function deleteContent(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     const id = trim(formData.get('id'))
     const phaseId = trim(formData.get('phase_id'))
     const moduleId = trim(formData.get('module_id'))
@@ -618,7 +618,7 @@ export async function reorderContent(
   orderedIds: string[],
 ): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('content')
     if (!isContentCategory(category)) return fail('Invalid category')
     const supabase = await createClient()
 

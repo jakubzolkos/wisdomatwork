@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import { NextResponse } from 'next/server'
+import { canAdmin } from '@/lib/admin-access'
 
 export async function GET(req: Request) {
   try {
@@ -9,7 +10,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url)
     const adminOnly = url.searchParams.get('admin') === 'true'
 
-    if (adminOnly && user.role !== 'admin') {
+    if (adminOnly && !canAdmin(user, 'comms', 'read')) {
       return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
         { status: 403 }
@@ -81,8 +82,8 @@ export async function POST(req: Request) {
   try {
     const user = await requireUser()
 
-    // Only admins can create polls
-    if (user.role !== 'admin') {
+    // Only admins whose role can change messaging create polls
+    if (!canAdmin(user, 'comms', 'write')) {
       return NextResponse.json(
         { error: 'Unauthorized: Only admins can create polls' },
         { status: 403 }

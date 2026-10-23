@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { logMaintenanceAction } from '@/lib/maintenance/audit-logging'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export async function GET(request: Request) {
-  await requireAdmin()
+  const denied = await adminRouteGuard('system')
+  if (denied) return denied
   const supabase = await createClient()
 
   const { searchParams } = new URL(request.url)
@@ -49,7 +50,8 @@ export async function GET(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  await requireAdmin()
+  const denied = await adminRouteGuard('system')
+  if (denied) return denied
   const supabase = await createClient()
   const user = await supabase.auth.getUser()
   const adminId = user.data.user?.id

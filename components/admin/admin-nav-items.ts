@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
+import { canAdmin, type AdminArea, type AdminRole } from '@/lib/admin-access'
 import {
   BarChart3,
   BookOpen,
@@ -17,6 +18,8 @@ export interface AdminNavItem {
   href: string
   label: string
   icon: LucideIcon
+  /** Admin area it belongs to; shown only to roles that can see it. */
+  area?: AdminArea
   /** Shown on the admin dashboard cards. */
   description?: string
 }
@@ -40,18 +43,21 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       {
         href: '/admin/users',
+        area: 'people',
         label: 'Users & cohorts',
         icon: Users,
         description: 'Invite fellows, set roles, assign cohort labels, deactivate accounts.',
       },
       {
         href: '/admin/progress',
+        area: 'progress',
         label: 'Progress',
         icon: BarChart3,
         description: "Each fellow's progress through the curriculum, with their reflections.",
       },
       {
         href: '/admin/schools',
+        area: 'people',
         label: 'Schools & teams',
         icon: Building2,
         description: 'Group fellows by school team for collaborative reporting and rosters.',
@@ -63,6 +69,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       {
         href: '/admin/curriculum',
+        area: 'content',
         label: 'Curriculum',
         icon: BookOpen,
         description:
@@ -70,6 +77,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: '/admin/library',
+        area: 'content',
         label: 'Library',
         icon: Library,
         description:
@@ -77,6 +85,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: '/admin/custom-pages',
+        area: 'content',
         label: 'Custom pages',
         icon: FileText,
         description:
@@ -89,6 +98,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       {
         href: '/admin/notifications',
+        area: 'comms',
         label: 'Notifications',
         icon: Megaphone,
         description:
@@ -96,6 +106,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: '/admin/schedule',
+        area: 'comms',
         label: 'Scheduling',
         icon: CalendarDays,
         description:
@@ -103,12 +114,14 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       },
       {
         href: '/admin/community',
+        area: 'comms',
         label: 'Community',
         icon: MessagesSquare,
         description: 'Moderate posts and events surfaced in the fellow community feed.',
       },
       {
         href: '/admin/email-logs',
+        area: 'comms',
         label: 'Email logs',
         icon: Mail,
         description:
@@ -117,3 +130,11 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     ],
   },
 ]
+
+/** The menu as `user`'s admin role sees it (lib/admin-access.ts). */
+export function visibleAdminNav(user: { role: string; adminRole?: AdminRole | null } | null | undefined): AdminNavGroup[] {
+  return ADMIN_NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => !i.area || canAdmin(user, i.area, 'read')),
+  })).filter((g) => g.items.length > 0)
+}

@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { Archive, ArrowLeft, Pin, Sparkles, Trash2 } from 'lucide-react'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +16,7 @@ import { initialsFor } from '@/lib/types/profile'
 import { PostAdminRow } from '@/components/community/post-admin-row'
 import { CommentDeleteButton } from './comment-delete-button'
 import { MemberOfWeekPicker } from './member-of-week-picker'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +35,7 @@ export const dynamic = 'force-dynamic'
  * over them.
  */
 export default async function ModerationHubPage() {
-  await requireAdmin()
+  await requireAdminPage('comms')
   const supabase = await createClient()
 
   // Pull the freshest 30 posts (any kind) so admins can quickly

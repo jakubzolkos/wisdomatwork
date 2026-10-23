@@ -1,5 +1,4 @@
 import { PageHeader } from '@/components/page-header'
-import { requireAdmin } from '@/lib/auth-server'
 import { PagesList } from '@/components/custom-pages/pages-list'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Plus } from 'lucide-react'
@@ -13,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { getCustomPages, deleteCustomPage } from './actions'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const metadata = {
   title: 'Custom Pages | Admin',
@@ -20,7 +20,7 @@ export const metadata = {
 }
 
 export default async function CustomPagesPage() {
-  await requireAdmin()
+  await requireAdminPage('content')
 
   // Fetch pages using server action
   const { pages, total, pageCount } = await getCustomPages(1, 20)

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import { NextResponse } from 'next/server'
+import { canAdmin } from '@/lib/admin-access'
 
 export async function POST(
   req: Request,
@@ -10,8 +11,8 @@ export async function POST(
     const user = await requireUser()
     const { id } = await params
 
-    // Only admins can finalize
-    if (user.role !== 'admin') {
+    // Only admins whose role can change messaging finalize
+    if (!canAdmin(user, 'comms', 'write')) {
       return NextResponse.json(
         { error: 'Unauthorized: Only admins can finalize schedules' },
         { status: 403 }

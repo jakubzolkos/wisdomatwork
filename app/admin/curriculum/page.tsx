@@ -2,12 +2,12 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { ArrowRight, Layers, Eye } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { CohortBadge } from '@/components/admin/cohort-access-field'
 import { CreatePhaseDialog } from './create-phase-dialog'
 import { PreviewLauncher, type PreviewFellow } from '@/components/admin/preview-launcher'
 import { isCohort, type Cohort } from '@/lib/cohorts'
 import { Card, CardContent } from '@/components/ui/card'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +32,7 @@ type ProfileRow = {
 }
 
 export default async function AdminCurriculumPage() {
-  await requireAdmin()
+  await requireAdminPage('content')
   const supabase = await createClient()
 
   const [{ data: phases }, { data: contents }, { data: fellows }] = await Promise.all([

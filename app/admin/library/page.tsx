@@ -1,6 +1,6 @@
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { LibraryAdmin, type AdminLibraryRow } from './library-admin'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const metadata = {
   title: 'Library | Admin',
@@ -39,7 +39,7 @@ interface RawResourceRow {
  * dialog already lives, but they don't get the catalogue-wide list.
  */
 export default async function AdminLibraryPage() {
-  await requireAdmin()
+  await requireAdminPage('content')
   const supabase = await createClient()
 
   const { data: rows } = await supabase

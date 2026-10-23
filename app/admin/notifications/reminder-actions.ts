@@ -1,18 +1,18 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireAdmin } from '@/lib/auth-server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { fetchCurriculumRows } from '@/lib/curriculum-tree'
 import { planProgramReminders, type PlannedReminder } from '@/lib/notifications/program-reminders'
 import { getSiteOrigin } from '@/lib/site'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 /**
  * Program reminders not created yet. A reminder that exists in any
  * state counts as made, so one staff cancelled is never recreated.
  */
 export async function pendingProgramReminders(): Promise<PlannedReminder[]> {
-  await requireAdmin()
+  await assertAdminArea('comms', 'read')
   const admin = createAdminClient()
   const [rows, { data: existing, error }] = await Promise.all([
     fetchCurriculumRows(admin),
@@ -36,7 +36,7 @@ export type ScheduleRemindersResult = { ok: true; created: number } | { ok: fals
  */
 export async function scheduleProgramReminders(): Promise<ScheduleRemindersResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('comms')
     const pending = await pendingProgramReminders()
     if (pending.length === 0) return { ok: true, created: 0 }
 

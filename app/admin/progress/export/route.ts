@@ -1,3 +1,4 @@
+import { adminRouteGuard } from '@/lib/admin-access-server'
 import { loadAllFellowProgress } from '@/lib/fellow-progress'
 import { isoDay, progressCsv } from '@/lib/progress-csv'
 
@@ -13,6 +14,9 @@ import { isoDay, progressCsv } from '@/lib/progress-csv'
  * loadAllFellowProgress checks the caller is an admin.
  */
 export async function GET(request: Request) {
+  // Downloading data is Research's (Call for Proposals): progress write.
+  const denied = await adminRouteGuard('progress', 'write')
+  if (denied) return denied
   const params = new URL(request.url).searchParams
   const format = params.get('format') === 'items' ? 'items' : 'summary'
   const cohort = params.get('cohort')

@@ -3,9 +3,9 @@ import { PageHeader } from '@/components/page-header'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { PhaseDetailsForm } from './phase-details-form'
 import { ModuleList } from './module-list'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +30,7 @@ export default async function AdminPhaseDetailPage({
 }: {
   params: Promise<{ phaseId: string }>
 }) {
-  await requireAdmin()
+  await requireAdminPage('content')
   const { phaseId } = await params
   const supabase = await createClient()
 

@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { ADMIN_NAV_GROUPS } from '@/components/admin/admin-nav-items'
+import { visibleAdminNav } from '@/components/admin/admin-nav-items'
+import { useMaybeUser } from '@/lib/user-context'
 
 function isActive(pathname: string, href: string): boolean {
   // Dashboard only matches exactly; every other section also owns its
@@ -19,6 +20,9 @@ function isActive(pathname: string, href: string): boolean {
  */
 export function AdminSidebar() {
   const pathname = usePathname()
+  // Only the sections this admin's role can open.
+  const { user } = useMaybeUser()
+  const groups = visibleAdminNav(user)
 
   return (
     <nav
@@ -26,7 +30,7 @@ export function AdminSidebar() {
       className="sticky top-16 h-[calc(100vh-4rem)] w-14 shrink-0 overflow-y-auto border-r border-sidebar-border py-4 md:w-60 md:py-6"
     >
       <div className="flex flex-col gap-4 px-2 md:gap-5 md:px-3">
-        {ADMIN_NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.label} className="flex flex-col gap-0.5">
             <p className="mb-1 hidden px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:block">
               {group.label}

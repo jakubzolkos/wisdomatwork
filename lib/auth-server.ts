@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/lib/roles'
 import { isCohort } from '@/lib/cohorts'
+import { isAdminRole } from '@/lib/admin-access'
 import { readPreviewCookie } from '@/lib/admin-preview'
 import type { CurrentUser, PreviewMeta } from '@/lib/user-context'
 
@@ -17,6 +18,8 @@ export interface ProfileRow {
   school_team_id: string | null
   deactivated_at: string | null
   cohort: string | null
+  /** 066; absent before it runs, which reads as tech (full admin). */
+  admin_role?: string | null
   // Embedded school + cohort via FK relationship through school_teams
   schools: { name: string | null } | null
   school_teams: { id: string; school_id: string; cohort_id: string } | null
@@ -45,11 +48,13 @@ function buildUserFromProfile(
     bio: profile.title ?? undefined,
     cohort: isCohort(profile.cohort) ? profile.cohort : null,
     preview,
+    adminRole: isAdminRole(profile.admin_role) ? profile.admin_role : null,
   }
 }
 
-const PROFILE_COLUMNS =
-  'id, full_name, email, title, avatar_url, role, school_id, school_team_id, deactivated_at, cohort, schools(name), school_teams(id, school_id, cohort_id)'
+// '*' rather than a column list so the query keeps working whether or
+// not 066 (admin_role) has run yet.
+const PROFILE_COLUMNS = '*, schools(name), school_teams(id, school_id, cohort_id)'
 
 export interface SessionUser {
   id: string

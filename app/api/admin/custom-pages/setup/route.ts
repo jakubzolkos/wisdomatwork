@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { setupCustomPagesDatabase } from '@/lib/custom-pages/setup'
-import { requireAdmin } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 /**
  * POST /api/admin/custom-pages/setup
@@ -8,7 +8,8 @@ import { requireAdmin } from '@/lib/auth-server'
  */
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
 
     const result = await setupCustomPagesDatabase()
 

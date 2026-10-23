@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
     const supabase = await createClient()
 
     const searchParams = request.nextUrl.searchParams

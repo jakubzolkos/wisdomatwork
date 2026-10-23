@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendInvitationEmail } from '@/lib/email/send'
 import { sendNotificationEmail } from '@/lib/email/send'
 import { isEmailConfigured } from '@/lib/email/client'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 export interface EmailLog {
   id: string
@@ -22,6 +23,8 @@ export interface EmailLog {
  * Fetch all email logs, ordered by most recent first.
  */
 export async function getEmailLogs(): Promise<EmailLog[]> {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('comms', 'read')
   const admin = createAdminClient()
 
   try {
@@ -103,6 +106,12 @@ export async function resendInvitationEmail(invitationId: string): Promise<{
   message?: string
   error?: string
 }> {
+  // Server actions are public endpoints: check the caller first.
+  try {
+    await assertAdminArea('comms')
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Not allowed' }
+  }
   if (!isEmailConfigured()) {
     return {
       ok: false,
@@ -192,6 +201,12 @@ export async function resendNotificationEmail(recipientId: string): Promise<{
   message?: string
   error?: string
 }> {
+  // Server actions are public endpoints: check the caller first.
+  try {
+    await assertAdminArea('comms')
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Not allowed' }
+  }
   if (!isEmailConfigured()) {
     return {
       ok: false,

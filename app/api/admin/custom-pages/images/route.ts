@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export const runtime = 'nodejs'
 
@@ -10,7 +10,8 @@ export const runtime = 'nodejs'
  */
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('content')
+    if (denied) return denied
     const supabase = await createClient()
 
     // Check for pageId query parameter

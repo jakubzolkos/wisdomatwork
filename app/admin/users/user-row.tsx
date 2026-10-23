@@ -41,7 +41,9 @@ import {
   updateCohortAction,
   updateCohortLetterAction,
   updateRoleAction,
+  updateAdminRoleAction,
 } from './actions'
+import { ADMIN_ROLES, ADMIN_ROLE_DESCRIPTIONS, ADMIN_ROLE_LABELS, type AdminRole } from '@/lib/admin-access'
 
 type SchoolTeam = { id: string; name: string }
 
@@ -68,15 +70,27 @@ type UserRowData = {
   email_confirmed_at: string | null
   invitation_status: InvitationStatus | null
   invitation_last_sent_at: string | null
+  /** Admin console role when role is admin (066); null = tech. */
+  admin_role: AdminRole | null
 }
 
 const NONE_TEAM = '__none__'
 const NONE_COHORT = '__none_cohort__'
 
-export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolTeam[] }) {
+export function UserRow({
+  user,
+  cohorts,
+  canAssignRoles = false,
+}: {
+  user: UserRowData
+  cohorts: SchoolTeam[]
+  /** Only tech admins change roles and admin roles. */
+  canAssignRoles?: boolean
+}) {
   const [pending, startTransition] = useTransition()
   const [toast, setToast] = useState<string | null>(null)
   const [role, setRole] = useState<Role>(user.role)
+  const [adminRole, setAdminRole] = useState<AdminRole>(user.admin_role ?? 'tech')
   const [schoolTeamId, setSchoolTeamId] = useState<string>(user.cohort_id ?? NONE_TEAM)
   const [cohortLetter, setCohortLetter] = useState<string>(user.cohort ?? NONE_COHORT)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -105,6 +119,14 @@ export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolT
     fd.set('userId', user.id)
     fd.set('role', next)
     run(() => updateRoleAction(fd))
+  }
+
+  function handleAdminRoleChange(next: string) {
+    setAdminRole(next as AdminRole)
+    const fd = new FormData()
+    fd.set('userId', user.id)
+    fd.set('adminRole', next)
+    run(() => updateAdminRoleAction(fd))
   }
 
   function handleSchoolTeamChange(next: string) {
@@ -196,9 +218,13 @@ export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolT
         </div>
       </div>
 
-      <div className="col-span-6 md:col-span-2">
-        <Select value={role} onValueChange={handleRoleChange} disabled={pending}>
-          <SelectTrigger className="h-9">
+      <div className="col-span-6 flex flex-col gap-1.5 md:col-span-2">
+        <Select
+          value={role}
+          onValueChange={handleRoleChange}
+          disabled={pending || !canAssignRoles}
+        >
+          <SelectTrigger className="h-9" title={canAssignRoles ? undefined : 'Only a Tech admin can change roles'}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -209,6 +235,29 @@ export function UserRow({ user, cohorts }: { user: UserRowData; cohorts: SchoolT
             ))}
           </SelectContent>
         </Select>
+        {/* What this admin can do in the admin console (lib/admin-access.ts). */}
+        {role === 'admin' && (
+          <Select
+            value={adminRole}
+            onValueChange={handleAdminRoleChange}
+            disabled={pending || !canAssignRoles}
+          >
+            <SelectTrigger
+              className="h-8 text-xs"
+              aria-label="Admin role"
+              title={ADMIN_ROLE_DESCRIPTIONS[adminRole]}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ADMIN_ROLES.map((r) => (
+                <SelectItem key={r} value={r} title={ADMIN_ROLE_DESCRIPTIONS[r]}>
+                  {ADMIN_ROLE_LABELS[r]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="col-span-6 min-w-0 md:col-span-3">

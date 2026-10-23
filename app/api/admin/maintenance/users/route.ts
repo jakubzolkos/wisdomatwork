@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { logMaintenanceAction } from '@/lib/maintenance/audit-logging'
 import { getCurrentUser } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
     const supabase = await createClient()
 
     const searchParams = request.nextUrl.searchParams
@@ -93,6 +94,9 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Same gate as GET: maintenance is tech only (lib/admin-access.ts).
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
     const user = await getCurrentUser()
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
@@ -189,6 +193,9 @@ export async function DELETE(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    // Same gate as GET: maintenance is tech only (lib/admin-access.ts).
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
     const user = await getCurrentUser()
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })

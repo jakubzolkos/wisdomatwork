@@ -2,7 +2,6 @@
 
 import { PageHeader } from '@/components/page-header'
 import { redirect } from 'next/navigation'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import {
@@ -15,19 +14,20 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DeletePollModal } from '@/components/schedule/delete-poll-modal'
+import { assertAdminArea, requireAdminPage } from '@/lib/admin-access-server'
 
 export default async function AdminScheduleDetailPage({
   params,
 }: {
   params: { id: string }
 }) {
-  await requireAdmin()
+  await requireAdminPage('comms')
   const supabase = await createClient()
 
   async function deletePoll(scheduleId: string) {
     'use server'
     const supabase = await createClient()
-    const admin = await requireAdmin()
+    const admin = await assertAdminArea('comms')
 
     // Verify the poll belongs to this admin
     const { data: schedule } = await supabase

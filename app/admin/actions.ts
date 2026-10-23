@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/auth-server'
+import { canAdmin } from '@/lib/admin-access'
 
 interface AdminPageContentItem {
   id: string
@@ -23,7 +24,7 @@ interface AdminPageContentItem {
 export async function getAdminPageContent(pageId: string, slotName?: string) {
   const user = await getCurrentUser()
   
-  if (!user || user.role !== 'admin') {
+  if (!user || !canAdmin(user, 'content', 'read')) {
     return { ok: false, message: 'Unauthorized', data: [] }
   }
 
@@ -62,7 +63,7 @@ export async function createAdminPageContent(payload: {
   image_alt?: string
 }) {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') {
+  if (!user || !canAdmin(user, 'content', 'write')) {
     return { ok: false, message: 'Unauthorized' }
   }
 
@@ -114,7 +115,7 @@ export async function updateAdminPageContent(
   }
 ) {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') {
+  if (!user || !canAdmin(user, 'content', 'write')) {
     return { ok: false, message: 'Unauthorized' }
   }
 
@@ -142,7 +143,7 @@ export async function updateAdminPageContent(
  */
 export async function deleteAdminPageContent(id: string) {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') {
+  if (!user || !canAdmin(user, 'content', 'write')) {
     return { ok: false, message: 'Unauthorized' }
   }
 
@@ -168,7 +169,7 @@ export async function reorderAdminPageContent(
   orderedIds: string[]
 ) {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'admin') {
+  if (!user || !canAdmin(user, 'content', 'write')) {
     return { ok: false, message: 'Unauthorized' }
   }
 

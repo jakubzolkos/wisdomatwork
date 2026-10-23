@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireUser } from '@/lib/auth-server'
+import { canAdmin } from '@/lib/admin-access'
 import { createClient } from '@/lib/supabase/server'
 import { deriveCoverFromUrl } from '@/lib/library/derive-cover'
 import { isStoredFileUrl } from '@/lib/stored-files'
@@ -90,7 +91,7 @@ export async function addLibraryResource(
 ): Promise<LibraryActionResult> {
   try {
     const user = await requireUser()
-    if (user.role !== 'admin' && user.role !== 'facilitator') {
+    if (!canAdmin(user, 'content', 'write')) {
       return { ok: false, message: 'You do not have permission to add resources.' }
     }
 
@@ -332,7 +333,7 @@ export async function updateLibraryResource(
 ): Promise<LibraryActionResult> {
   try {
     const user = await requireUser()
-    if (user.role !== 'admin' && user.role !== 'facilitator') {
+    if (!canAdmin(user, 'content', 'write')) {
       return { ok: false, message: 'You do not have permission to edit resources.' }
     }
     if (!id || typeof id !== 'string') {
@@ -550,7 +551,7 @@ export async function deleteLibraryResource(
 ): Promise<LibraryActionResult> {
   try {
     const user = await requireUser()
-    if (user.role !== 'admin' && user.role !== 'facilitator') {
+    if (!canAdmin(user, 'content', 'write')) {
       return { ok: false, message: 'You do not have permission to delete resources.' }
     }
     if (!id || typeof id !== 'string') {

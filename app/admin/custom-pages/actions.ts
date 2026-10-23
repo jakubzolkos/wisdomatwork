@@ -4,11 +4,14 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidateTag } from 'next/cache'
 import { revalidatePath } from 'next/cache'
 import type { CustomPage, PageBlock } from '@/lib/custom-pages/types'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 /**
  * Get all custom pages with pagination
  */
 export async function getCustomPages(page: number = 1, pageSize: number = 20) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content', 'read')
   const admin = createAdminClient()
 
   try {
@@ -32,6 +35,8 @@ export async function getCustomPages(page: number = 1, pageSize: number = 20) {
 }
 
 export async function getCustomPage(pageId: string) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content', 'read')
   const admin = createAdminClient()
 
   try {
@@ -83,6 +88,8 @@ export async function getCustomPage(pageId: string) {
  * Create a new custom page
  */
 export async function createCustomPage(data: { title: string; slug: string; description?: string }) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -157,6 +164,8 @@ export async function updateCustomPage(
     show_in_menu?: boolean
   }
 ) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -192,6 +201,8 @@ export async function updateCustomPage(
  * Delete a custom page
  */
 export async function deleteCustomPage(pageId: string) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -229,6 +240,8 @@ export async function addPageBlock(
   pageId: string,
   block: Omit<PageBlock, 'id' | 'created_at' | 'updated_at'>
 ) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -270,6 +283,8 @@ export async function updatePageBlock(
   blockId: string,
   block: Partial<Omit<PageBlock, 'id' | 'created_at' | 'updated_at'>>
 ) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -306,6 +321,8 @@ export async function updatePageBlock(
  * Delete a page block
  */
 export async function deletePageBlock(blockId: string) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {
@@ -325,6 +342,8 @@ export async function deletePageBlock(blockId: string) {
  * Reorder page blocks
  */
 export async function reorderPageBlocks(pageId: string, blockIds: string[]) {
+  // Server actions are public endpoints: check the caller first.
+  await assertAdminArea('content')
   const admin = createAdminClient()
 
   try {

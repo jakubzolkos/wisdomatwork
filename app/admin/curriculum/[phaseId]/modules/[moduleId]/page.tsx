@@ -3,11 +3,11 @@ import { PageHeader } from '@/components/page-header'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import type { ContentCategory, ResourceType } from '@/lib/curriculum'
 import { effectiveModuleCohorts } from '@/lib/curriculum'
 import { ModuleDetailsForm } from './module-details-form'
 import { ContentList } from './content-list'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,7 +60,7 @@ export default async function AdminModuleDetailPage({
 }: {
   params: Promise<{ phaseId: string; moduleId: string }>
 }) {
-  await requireAdmin()
+  await requireAdminPage('content')
   const { phaseId, moduleId } = await params
   const supabase = await createClient()
 

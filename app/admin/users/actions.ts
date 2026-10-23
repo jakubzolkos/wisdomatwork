@@ -2,11 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requireAdmin } from '@/lib/auth-server'
 import { sendBrandedInvite, type InvitePayload } from '@/lib/invitations/invite'
 import { parseCsv, parsePastedList, type ParsedInviteRow } from '@/lib/invitations/parse'
 import type { Role } from '@/lib/roles'
 import { isCohort, type Cohort } from '@/lib/cohorts'
+import { assertAdminArea, assertCanAssignRoles } from '@/lib/admin-access-server'
+import { ADMIN_ROLE_LABELS, isAdminRole } from '@/lib/admin-access'
 
 const ROLES: readonly Role[] = ['fellow', 'facilitator', 'admin'] as const
 
@@ -37,7 +38,7 @@ async function profileDisplayName(profileId: string): Promise<string | null> {
 
 export async function inviteUserAction(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('people')
 
     const email = String(formData.get('email') ?? '').trim().toLowerCase()
     const firstName = String(formData.get('firstName') ?? '').trim()
@@ -60,6 +61,8 @@ export async function inviteUserAction(formData: FormData): Promise<ActionResult
     if (!lastName) return fail('Last Name is required')
     if (!email) return fail('Email Address is required')
     assertRole(role)
+    // Inviting someone as staff hands out a role: tech only.
+    if (role !== 'fellow') await assertCanAssignRoles()
 
     // The downstream invite + profile pipeline still uses a single
     // `fullName` string. Build it from the split inputs so we don't
@@ -121,7 +124,7 @@ export type BulkInviteResult = BulkInviteSummary | { ok: false; message: string 
 
 export async function bulkInviteAction(formData: FormData): Promise<BulkInviteResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('people')
 
     const source = String(formData.get('source') ?? 'paste') as 'paste' | 'csv'
     const text = String(formData.get('text') ?? '')
@@ -131,6 +134,7 @@ export async function bulkInviteAction(formData: FormData): Promise<BulkInviteRe
 
     if (!text.trim()) return fail('Paste or upload at least one row')
     assertRole(role)
+    if (role !== 'fellow') await assertCanAssignRoles()
     const defaultCohort: Cohort | null =
       role === 'fellow' && isCohort(cohortLetterRaw) ? cohortLetterRaw : null
 
@@ -236,7 +240,8 @@ export async function bulkInviteAction(formData: FormData): Promise<BulkInviteRe
 
 export async function updateRoleAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    // Changing anyone's role is tech only (066 enforces it too).
+    await assertCanAssignRoles()
     const userId = String(formData.get('userId') ?? '')
     const role = String(formData.get('role') ?? '')
     if (!userId) return fail('Missing user id')
@@ -262,6 +267,43 @@ export async function updateRoleAction(formData: FormData): Promise<ActionResult
 }
 
 /**
+ * Sets an admin's admin role (what they can do in the admin console,
+ * lib/admin-access.ts). Tech admins only; needs 066.
+ */
+export async function updateAdminRoleAction(formData: FormData): Promise<ActionResult> {
+  try {
+    const me = await assertCanAssignRoles()
+    const userId = String(formData.get('userId') ?? '')
+    const adminRole = String(formData.get('adminRole') ?? '')
+    if (!userId) return fail('Missing user id')
+    if (!isAdminRole(adminRole)) return fail('Unknown admin role')
+    // Don't let the last way back in disappear: a tech admin can't
+    // demote themselves (another tech admin can).
+    if (userId === me.id && adminRole !== 'tech') {
+      return fail('You can’t change your own admin role. Ask another Tech admin.')
+    }
+
+    const { error } = await createAdminClient()
+      .from('profiles')
+      .update({ admin_role: adminRole })
+      .eq('id', userId)
+      .eq('role', 'admin')
+    if (error) {
+      return fail(
+        error.message.includes('admin_role')
+          ? 'Admin roles need database migration 066 first.'
+          : error.message,
+      )
+    }
+
+    revalidatePath('/admin/users')
+    return ok(`Admin role set to ${ADMIN_ROLE_LABELS[adminRole]}`)
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : 'Unknown error')
+  }
+}
+
+/**
  * Updates the high-level cohort label (A/B/C) stored on profiles.cohort.
  * Empty string clears the cohort. This is the field that gates phase /
  * item / resource access for fellows in the user-facing UI.
@@ -272,7 +314,7 @@ export async function updateRoleAction(formData: FormData): Promise<ActionResult
  */
 export async function updateCohortLetterAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const userId = String(formData.get('userId') ?? '')
     const raw = String(formData.get('cohort') ?? '')
     if (!userId) return fail('Missing user id')
@@ -318,7 +360,7 @@ export async function updateCohortLetterAction(formData: FormData): Promise<Acti
  */
 export async function updateCohortAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const userId = String(formData.get('userId') ?? '')
     const cohortId = String(formData.get('cohortId') ?? '')
     if (!userId) return fail('Missing user id')
@@ -361,7 +403,7 @@ export async function updateCohortAction(formData: FormData): Promise<ActionResu
 
 export async function resendInviteAction(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('people')
     const email = String(formData.get('email') ?? '').trim().toLowerCase()
     if (!email) return fail('Missing email')
 
@@ -424,7 +466,7 @@ export async function resendInviteAction(formData: FormData): Promise<ActionResu
  */
 export async function deleteUserAction(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('people')
     const userId = String(formData.get('userId') ?? '').trim()
     if (!userId) return fail('Missing user id')
     if (userId === me.id) return fail('You cannot delete your own account')
@@ -451,7 +493,7 @@ export async function deleteUserAction(formData: FormData): Promise<ActionResult
 
 export async function toggleDeactivateAction(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('people')
     const userId = String(formData.get('userId') ?? '')
     const deactivate = String(formData.get('deactivate') ?? '') === 'true'
     if (!userId) return fail('Missing user id')

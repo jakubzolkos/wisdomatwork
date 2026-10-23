@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export const runtime = 'nodejs'
 
@@ -13,7 +13,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('content')
+    if (denied) return denied
     const supabase = await createClient()
     const { id: imageId } = await params
 
@@ -91,7 +92,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('content')
+    if (denied) return denied
     const supabase = await createClient()
     const { id: imageId } = await params
     const body = await request.json()

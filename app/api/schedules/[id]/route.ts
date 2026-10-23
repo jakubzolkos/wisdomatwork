@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import { NextResponse } from 'next/server'
+import { canAdmin } from '@/lib/admin-access'
 
 export async function GET(
   req: Request,
@@ -42,7 +43,7 @@ export async function GET(
 
     // Get votes (only show all votes if user is admin)
     let votes = null
-    if (user.role === 'admin' || schedule.created_by_admin === user.id) {
+    if (canAdmin(user, 'comms', 'read') || schedule.created_by_admin === user.id) {
       const { data: votesData, error: votesError } = await supabase
         .from('schedule_votes')
         .select(

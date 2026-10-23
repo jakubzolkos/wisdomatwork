@@ -1,10 +1,10 @@
 import { PageHeader } from '@/components/page-header'
 import { redirect } from 'next/navigation'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertTriangle } from 'lucide-react'
 import { MaintenanceClient } from '@/components/admin/maintenance/maintenance-client'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const metadata = {
   title: 'Portal Maintenance | Admin',
@@ -12,7 +12,7 @@ export const metadata = {
 }
 
 export default async function PortalMaintenancePage() {
-  await requireAdmin()
+  await requireAdminPage('system')
   const supabase = await createClient()
 
   return (

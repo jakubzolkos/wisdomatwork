@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 export const runtime = 'nodejs'
 
@@ -10,7 +10,7 @@ export const runtime = 'nodejs'
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAdmin()
+    const user = await assertAdminArea('content')
     const supabase = await createClient()
 
     const formData = await request.formData()

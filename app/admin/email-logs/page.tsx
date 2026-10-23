@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/page-header'
-import { requireAdmin } from '@/lib/auth-server'
 import { getRecentEmailLogs, getFailedEmailsForRetry } from '@/lib/email/logs'
 import { EmailLogsClient } from '@/components/email-logs/email-logs-client'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const metadata = {
   title: 'Email Logs | Admin',
@@ -13,7 +13,7 @@ export default async function EmailLogsPage({
 }: {
   searchParams: Promise<Record<string, string>>
 }) {
-  await requireAdmin()
+  await requireAdminPage('comms')
 
   const params = await searchParams
   const page = parseInt(params.page || '1', 10)

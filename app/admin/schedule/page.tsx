@@ -2,7 +2,6 @@
 
 import { redirect } from 'next/navigation'
 import { PageHeader } from '@/components/page-header'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
 import { CreatePollForm } from '@/components/schedule/create-poll-form'
 import { AdminPollList } from '@/components/schedule/admin-poll-list'
@@ -14,9 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { assertAdminArea, requireAdminPage } from '@/lib/admin-access-server'
 
 export default async function AdminSchedulePage() {
-  await requireAdmin()
+  await requireAdminPage('comms')
   const supabase = await createClient()
 
   // Get all active fellows
@@ -75,7 +75,7 @@ export default async function AdminSchedulePage() {
     'use server'
     console.log('[v0] createPoll: Starting poll creation with title:', data.title)
     const supabase = await createClient()
-    const admin = await requireAdmin()
+    const admin = await assertAdminArea('comms')
 
     // Create schedule
     const { data: schedule, error: scheduleError } = await supabase
@@ -157,7 +157,7 @@ export default async function AdminSchedulePage() {
   async function deletePoll(scheduleId: string) {
     'use server'
     const supabase = await createClient()
-    const admin = await requireAdmin()
+    const admin = await assertAdminArea('comms')
 
     // Verify the poll belongs to this admin
     const { data: schedule } = await supabase

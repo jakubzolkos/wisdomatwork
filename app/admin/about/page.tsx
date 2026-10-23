@@ -2,12 +2,12 @@ import Link from 'next/link'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/page-header'
-import { requireAdmin } from '@/lib/auth-server'
 import { getAdminPageContent } from '@/app/admin/actions'
 import { AdminAboutClient } from '@/components/admin/admin-about-client'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export default async function AdminAboutPage() {
-  await requireAdmin()
+  await requireAdminPage('content')
   
   const bodyContent = await getAdminPageContent('about', 'body')
 

@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { dispatchNotification } from '@/lib/notifications/dispatch'
 import {
   isSupportedScope,
@@ -13,6 +12,7 @@ import {
   type NotificationKind,
   type NotificationStatus,
 } from '@/lib/notifications/types'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 export type NotificationFormResult =
   | { ok: true; id: string; status: NotificationStatus; message: string }
@@ -226,7 +226,7 @@ export async function createNotification(
   fd: FormData,
 ): Promise<NotificationFormResult> {
   try {
-    const admin = await requireAdmin()
+    const admin = await assertAdminArea('comms')
     const supabase = await createClient()
 
     const kind = parseKind(requiredString(fd, 'kind'))
@@ -319,7 +319,7 @@ export async function updateNotification(
   fd: FormData,
 ): Promise<NotificationFormResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('comms')
     const supabase = await createClient()
 
     const id = requiredString(fd, 'id')
@@ -376,7 +376,7 @@ export async function updateNotification(
 // ---------------------------------------------------------------------------
 
 export async function deleteNotification(fd: FormData) {
-  await requireAdmin()
+  await assertAdminArea('comms')
   const supabase = await createClient()
   const id = requiredString(fd, 'id')
   const { error } = await supabase.from('notifications').delete().eq('id', id)
@@ -391,7 +391,7 @@ export async function deleteNotification(fd: FormData) {
 // ---------------------------------------------------------------------------
 
 export async function sendNotificationNow(fd: FormData) {
-  await requireAdmin()
+  await assertAdminArea('comms')
   const id = requiredString(fd, 'id')
   await dispatchNotification(id, {
     allowedFromStatuses: ['draft', 'scheduled', 'failed'],
@@ -406,7 +406,7 @@ export async function sendNotificationNow(fd: FormData) {
 // ---------------------------------------------------------------------------
 
 export async function cancelScheduledNotification(fd: FormData) {
-  await requireAdmin()
+  await assertAdminArea('comms')
   const supabase = await createClient()
   const id = requiredString(fd, 'id')
   const { error } = await supabase
@@ -423,7 +423,7 @@ export async function cancelScheduledNotification(fd: FormData) {
 // ---------------------------------------------------------------------------
 
 export async function toggleNotificationPin(fd: FormData) {
-  await requireAdmin()
+  await assertAdminArea('comms')
   const supabase = await createClient()
   const id = requiredString(fd, 'id')
 

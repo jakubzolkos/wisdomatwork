@@ -17,6 +17,7 @@ import {
   type FellowDetail,
   type ItemStatus,
 } from '@/lib/fellow-progress'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 const STATUS_ICONS: Record<ItemStatus['kind'], typeof Check> = {
   'finished-year': History,
@@ -33,6 +34,7 @@ export default async function AdminFellowProgressPage({
 }: {
   params: Promise<{ profileId: string }>
 }) {
+  await requireAdminPage('progress')
   const { profileId } = await params
   const detail = await loadFellowProgress(profileId)
   if (!detail) notFound()

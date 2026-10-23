@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { UserRole } from './roles'
 import type { Cohort } from './cohorts'
 import { createClient } from './supabase/client'
+import type { AdminRole } from '@/lib/admin-access'
 
 export interface CurrentUser {
   id: string
@@ -29,6 +30,8 @@ export interface CurrentUser {
    * the impersonated session.
    */
   preview?: PreviewMeta
+  /** Admin console permissions when role is admin (lib/admin-access.ts); null = tech. */
+  adminRole?: AdminRole | null
 }
 
 export interface PreviewMeta {

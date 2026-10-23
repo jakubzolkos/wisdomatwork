@@ -9,6 +9,8 @@ import { ROLE_LABELS, type Role } from '@/lib/roles'
 import { isCohort, type Cohort } from '@/lib/cohorts'
 import { UsersSearch } from './users-search'
 import { Users, Building2, BarChart3, CheckCircle2 } from 'lucide-react'
+import { requireAdminPage } from '@/lib/admin-access-server'
+import { canAssignRoles, isAdminRole, type AdminRole } from '@/lib/admin-access'
 
 type CohortSummary = { id: string; name: string }
 
@@ -41,6 +43,7 @@ type UserRowData = {
     | 'cancelled'
     | null
   invitation_last_sent_at: string | null
+  admin_role: AdminRole | null
 }
 
 export default async function AdminUsersPage({
@@ -48,6 +51,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ search?: string; role?: string; school_team?: string; cohort?: string; page?: string }>
 }) {
+  const me = await requireAdminPage('people')
   const params = await searchParams
   const search = params.search?.toLowerCase() || ''
   const roleFilter = params.role || ''
@@ -73,8 +77,9 @@ export default async function AdminUsersPage({
     const { data: profiles } = await supabase
     .from('profiles')
     .select(
+      // '*' (not a column list) so this works before and after 066 adds admin_role.
       `
-        id, full_name, email, title, role, cohort, deactivated_at, school_team_id,
+        *,
         cohort_members ( cohort_id, cohorts ( id, name ) ),
         school_teams ( id, cohort_id, cohorts ( id, name ) )
       `,
@@ -133,6 +138,7 @@ export default async function AdminUsersPage({
       email_confirmed_at: authUser?.email_confirmed_at ?? null,
       invitation_status: invitation?.status ?? null,
       invitation_last_sent_at: invitation?.last_sent_at ?? null,
+      admin_role: isAdminRole(p.admin_role) ? p.admin_role : null,
     }
   })
 
@@ -283,7 +289,7 @@ export default async function AdminUsersPage({
           </div>
           <ul className="divide-y divide-border">
             {paginatedUsers.map((u) => (
-              <UserRow key={u.id} user={u} cohorts={cohortList} />
+              <UserRow key={u.id} user={u} cohorts={cohortList} canAssignRoles={canAssignRoles(me)} />
             ))}
             {paginatedUsers.length === 0 && (
               <li className="p-10 text-center text-sm text-muted-foreground">

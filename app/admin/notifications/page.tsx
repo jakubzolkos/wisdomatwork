@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/page-header'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -44,6 +43,7 @@ import {
 } from '@/lib/notifications/types'
 import { ProgramRemindersCard } from './program-reminders-card'
 import { pendingProgramReminders } from './reminder-actions'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -195,7 +195,7 @@ export default async function AdminNotificationsPage({
 }: {
   searchParams: Promise<{ tab?: string }>
 }) {
-  await requireAdmin()
+  await requireAdminPage('comms')
   const supabase = await createClient()
   const params = await searchParams
   const tab: Tab = isTab(params.tab) ? params.tab : 'sent'

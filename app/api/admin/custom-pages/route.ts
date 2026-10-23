@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag, revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 export const runtime = 'nodejs'
 
@@ -11,7 +11,7 @@ export const runtime = 'nodejs'
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAdmin()
+    const user = await assertAdminArea('content')
     const supabase = await createClient()
     const body = await request.json()
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await requireAdmin()
+    const user = await assertAdminArea('content')
     const supabase = await createClient()
     const body = await request.json()
 
@@ -225,7 +225,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireAdmin()
+    const user = await assertAdminArea('content')
     const supabase = await createClient()
     const pageId = request.nextUrl.searchParams.get('pageId')
 

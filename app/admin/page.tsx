@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ADMIN_NAV_GROUPS } from '@/components/admin/admin-nav-items'
+import { visibleAdminNav } from '@/components/admin/admin-nav-items'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth-server'
 import { PageHeader } from '@/components/page-header'
@@ -40,7 +40,7 @@ export default async function AdminHomePage() {
       {/* Quick management actions */}
       <section aria-label="Admin tools">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ADMIN_NAV_GROUPS.flatMap((group) => group.items)
+          {visibleAdminNav(admin).flatMap((group) => group.items)
             .filter((item) => item.description)
             .map(({ href, label, icon: Icon, description }) => (
               <ActionCard

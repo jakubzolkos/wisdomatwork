@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { COHORTS } from '@/lib/cohorts'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 /**
  * Pull the cohort selections out of a form. Mirrors the helper in
@@ -38,7 +38,7 @@ function bust() {
 // ---------------------------------------------------------------------------
 export async function createEvent(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('comms')
     const title = String(formData.get('title') ?? '').trim()
     const description = String(formData.get('description') ?? '').trim() || null
     const startsAtRaw = String(formData.get('starts_at') ?? '').trim()
@@ -70,7 +70,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult> {
 
 export async function deleteEvent(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('comms')
     const id = String(formData.get('id') ?? '').trim()
     if (!id) return fail('Missing event id')
 
@@ -103,7 +103,7 @@ const ADMIN_POST_KINDS = new Set([
 
 export async function createPost(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('comms')
     const kindRaw = String(formData.get('kind') ?? 'announcement')
     const kind = ADMIN_POST_KINDS.has(kindRaw) ? kindRaw : 'announcement'
     const title = String(formData.get('title') ?? '').trim()
@@ -137,7 +137,7 @@ export async function createPost(formData: FormData): Promise<ActionResult> {
 
 export async function togglePostPublished(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('comms')
     const id = String(formData.get('id') ?? '').trim()
     const publish = formData.get('publish') === 'true'
     if (!id) return fail('Missing post id')
@@ -158,7 +158,7 @@ export async function togglePostPublished(formData: FormData): Promise<ActionRes
 
 export async function deletePost(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('comms')
     const id = String(formData.get('id') ?? '').trim()
     if (!id) return fail('Missing post id')
 
@@ -178,7 +178,7 @@ export async function deletePost(formData: FormData): Promise<ActionResult> {
 // ---------------------------------------------------------------------------
 export async function createResource(formData: FormData): Promise<ActionResult> {
   try {
-    const me = await requireAdmin()
+    const me = await assertAdminArea('comms')
     const title = String(formData.get('title') ?? '').trim()
     const description = String(formData.get('description') ?? '').trim() || null
     const url = String(formData.get('url') ?? '').trim()
@@ -213,7 +213,7 @@ export async function createResource(formData: FormData): Promise<ActionResult> 
 
 export async function deleteResource(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('comms')
     const id = String(formData.get('id') ?? '').trim()
     if (!id) return fail('Missing resource id')
 

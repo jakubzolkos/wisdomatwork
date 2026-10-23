@@ -3,11 +3,11 @@ import { PageHeader } from '@/components/page-header'
 import { Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { CommunityAdmin } from './community-admin'
+import { requireAdminPage } from '@/lib/admin-access-server'
 
 export default async function AdminCommunityPage() {
-  await requireAdmin()
+  await requireAdminPage('comms')
   const supabase = await createClient()
 
   // Admins see everything (including drafts and past events) to manage them.

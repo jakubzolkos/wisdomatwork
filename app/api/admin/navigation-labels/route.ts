@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export async function GET() {
   try {
@@ -53,7 +53,8 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
     const supabase = await createClient()
     const labels = await request.json()
 

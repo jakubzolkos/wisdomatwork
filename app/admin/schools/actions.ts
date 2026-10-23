@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { put } from '@vercel/blob'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requireAdmin } from '@/lib/auth-server'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 export type ActionResult =
   | { ok: true; message: string }
@@ -22,7 +22,7 @@ function fail(message: string): ActionResult {
 
 export async function createSchoolAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const name = String(formData.get('name') ?? '').trim()
     const iconFile = formData.get('icon') as File | null
     if (!name) return fail('Name is required')
@@ -63,7 +63,7 @@ export async function createSchoolAction(formData: FormData): Promise<ActionResu
 
 export async function renameSchoolAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const id = String(formData.get('id') ?? '')
     const name = String(formData.get('name') ?? '').trim()
     if (!id) return fail('Missing id')
@@ -82,7 +82,7 @@ export async function renameSchoolAction(formData: FormData): Promise<ActionResu
 
 export async function deleteSchoolAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const id = String(formData.get('id') ?? '')
     if (!id) return fail('Missing id')
 
@@ -118,7 +118,7 @@ export async function deleteSchoolAction(formData: FormData): Promise<ActionResu
 
 export async function createCohortAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const schoolId = String(formData.get('schoolId') ?? '')
     const name = String(formData.get('name') ?? '').trim()
     const currentYear = Math.max(
@@ -154,7 +154,7 @@ export async function createCohortAction(formData: FormData): Promise<ActionResu
 
 export async function updateCohortAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const id = String(formData.get('id') ?? '')
     const name = String(formData.get('name') ?? '').trim()
     const currentYear = Math.max(
@@ -182,7 +182,7 @@ export async function updateCohortAction(formData: FormData): Promise<ActionResu
 
 export async function deleteCohortAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const id = String(formData.get('id') ?? '')
     if (!id) return fail('Missing id')
 
@@ -210,7 +210,7 @@ export async function deleteCohortAction(formData: FormData): Promise<ActionResu
 
 export async function addMemberAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     // The add-member form sends the team's cohort id; accept either id.
     const schoolTeamId = String(formData.get('schoolTeamId') ?? '')
     const cohortId = String(formData.get('cohortId') ?? '')
@@ -250,7 +250,7 @@ export async function addMemberAction(formData: FormData): Promise<ActionResult>
 
 export async function removeMemberAction(formData: FormData): Promise<ActionResult> {
   try {
-    await requireAdmin()
+    await assertAdminArea('people')
     const cohortId = String(formData.get('cohortId') ?? '')
     const profileId = String(formData.get('profileId') ?? '')
     if (!cohortId || !profileId) return fail('Missing cohort or profile')

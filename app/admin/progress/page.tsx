@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { formatProgressDate, loadFellowProgressList } from '@/lib/fellow-progress'
+import { requireAdminPage } from '@/lib/admin-access-server'
+import { canAdmin } from '@/lib/admin-access'
 
 const COHORT_FILTERS = [
   { value: '', label: 'All' },
@@ -19,6 +21,9 @@ export default async function AdminProgressPage({
 }: {
   searchParams: Promise<{ cohort?: string; q?: string }>
 }) {
+  const me = await requireAdminPage('progress')
+  // Downloads are Research's (and Tech's); Operations only views.
+  const canExport = canAdmin(me, 'progress', 'write')
   const { cohort = '', q = '' } = await searchParams
   const query = q.trim().toLowerCase()
 
@@ -48,6 +53,7 @@ export default async function AdminProgressPage({
         title="Progress"
         description="Where each fellow is in the curriculum and what they've written. Open a fellow to see every item and their reflections."
         actions={
+          canExport && (
           <>
             {/* Plain links: the route answers with a CSV download. */}
             <Button asChild variant="outline" className="gap-2">
@@ -63,6 +69,7 @@ export default async function AdminProgressPage({
               </a>
             </Button>
           </>
+          )
         }
       />
 

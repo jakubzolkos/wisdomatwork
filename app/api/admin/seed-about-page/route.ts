@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 /**
  * Seed the About page with original content structure
@@ -13,7 +13,8 @@ import { requireAdmin } from '@/lib/auth-server'
 export async function POST() {
   try {
     // Require admin authentication
-    await requireAdmin()
+    const denied = await adminRouteGuard('system')
+    if (denied) return denied
 
     const supabase = await createClient()
 

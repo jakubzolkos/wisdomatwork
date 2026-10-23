@@ -1,10 +1,11 @@
 import { put } from '@vercel/blob'
 import { type NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth-server'
+import { adminRouteGuard } from '@/lib/admin-access-server'
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin()
+    const denied = await adminRouteGuard('content')
+    if (denied) return denied
     
     const formData = await request.formData()
     const file = formData.get('file') as File

@@ -1,8 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireAdmin } from '@/lib/auth-server'
 import { createClient } from '@/lib/supabase/server'
+import { assertAdminArea } from '@/lib/admin-access-server'
 
 /**
  * Set (or clear) the "Member of the Week" feature.
@@ -24,7 +24,7 @@ export async function setMemberOfWeek(input: {
   /** YYYY-MM-DD; ignored when profileId is null. */
   until: string | null
 }): Promise<{ ok: boolean; message?: string }> {
-  await requireAdmin()
+  await assertAdminArea('comms')
   const supabase = await createClient()
 
   // Always clear any existing schedule first so we don't leave a
