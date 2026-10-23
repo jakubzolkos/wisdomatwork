@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Settings, LogOut, User as UserIcon, Shield, Menu } from 'lucide-react'
+import { Settings, LogOut, User as UserIcon, Shield, Menu, NotebookPen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -278,6 +278,12 @@ export function TopBar({ customPages: initialCustomPages = [] }: TopBarProps) {
                 <Link href="/profile" className="cursor-pointer">
                   <UserIcon />
                   Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/reflections" className="cursor-pointer">
+                  <NotebookPen />
+                  My reflections
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

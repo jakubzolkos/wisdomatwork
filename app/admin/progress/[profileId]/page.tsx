@@ -11,6 +11,7 @@ import type { CurriculumItem, CurriculumModule } from '@/lib/curriculum-tree'
 import {
   currentPhaseId,
   formatProgressDate,
+  countDone,
   itemStatus,
   loadFellowProgress,
   type FellowDetail,
@@ -95,7 +96,10 @@ export default async function AdminFellowProgressPage({
                 {isCurrent && <Badge>Current</Badge>}
                 {isFinished && <Badge variant="secondary">Finished year</Badge>}
                 <span className="tabular-nums">
-                  {phase.completedCount}/{phase.itemCount}
+                  {(() => {
+                    const c = countDone(phase.modules.flatMap((m) => m.items), detail.completedAt)
+                    return `${c.done}/${c.total}`
+                  })()}
                 </span>
               </div>
             </div>
@@ -128,8 +132,8 @@ function Fact({ label, value, mono = false }: { label: string; value: string; mo
 }
 
 function ModuleProgress({ module, detail }: { module: CurriculumModule; detail: FellowDetail }) {
-  const counted = module.items.filter((i) => !i.isPending)
-  const done = counted.filter((i) => i.isCompleted).length
+  // Staff count only what the fellow did (lib/fellow-progress.ts).
+  const { done, total } = countDone(module.items, detail.completedAt)
   return (
     <div className="px-4 py-4 sm:px-5">
       <div className="flex items-baseline justify-between gap-3">
@@ -141,7 +145,7 @@ function ModuleProgress({ module, detail }: { module: CurriculumModule; detail: 
               {module.opensAt ? `Opens ${formatOpensAt(module.opensAt)}` : 'Not open yet'}
             </span>
           ) : (
-            `${done}/${counted.length}`
+            `${done}/${total}`
           )}
         </span>
       </div>

@@ -162,15 +162,33 @@ export function currentPhaseId(phases: readonly CurriculumPhase[]): string | nul
   return phases.findLast((p) => !p.isLocked && p.modules.length > 0)?.id ?? null
 }
 
-function phaseProgress(curriculum: FullCurriculum): PhaseProgress[] {
-  const current = currentPhaseId(curriculum.phases)
-  return curriculum.phases
+/**
+ * Whether the fellow themselves did this item. Fellows see an ended
+ * session as done without ticking it, but on staff screens that would
+ * credit people who never signed in, so only their own tick (or a
+ * finished year) counts here.
+ */
+export function doneByFellow(item: CurriculumItem, completedAt: ReadonlyMap<string, string>): boolean {
+  return item.isPast || (item.isCompleted && completedAt.has(item.id))
+}
+
+/** Done / total for a set of items, as staff count it (doneByFellow). */
+export function countDone(items: readonly CurriculumItem[], completedAt: ReadonlyMap<string, string>) {
+  const counted = items.filter((i) => !i.isPending)
+  return { done: counted.filter((i) => doneByFellow(i, completedAt)).length, total: counted.length }
+}
+
+function phaseProgress(detail: FellowDetail): PhaseProgress[] {
+  const current = currentPhaseId(detail.curriculum.phases)
+  return detail.curriculum.phases
     .filter((p) => !p.isLocked)
     .map((p) => ({
       id: p.id,
       title: p.title,
-      done: p.completedCount,
-      total: p.itemCount,
+      ...countDone(
+        p.modules.flatMap((m) => m.items),
+        detail.completedAt,
+      ),
       isCurrent: p.id === current,
     }))
 }
@@ -246,7 +264,7 @@ export async function loadAllFellowProgress(): Promise<FellowDetail[]> {
 export function summarize(detail: FellowDetail): FellowSummary {
   return {
     ...detail.fellow,
-    phases: phaseProgress(detail.curriculum),
+    phases: phaseProgress(detail),
     reflectionCount: detail.reflections.size,
     lastActivity: latest(
       ...detail.completedAt.values(),
@@ -278,7 +296,7 @@ export function itemStatus(
   if (item.isCompleted) {
     return completedAt
       ? { kind: 'completed', label: `Completed ${formatProgressDate(completedAt)}`, done: true }
-      : { kind: 'session-ended', label: 'Session ended', done: true }
+      : { kind: 'session-ended', label: 'Session ended, not ticked', done: false }
   }
   if (item.isPending) return { kind: 'survey-pending', label: 'Survey not published', done: false }
   if (moduleLocked) return { kind: 'not-open', label: 'Not open yet', done: false }

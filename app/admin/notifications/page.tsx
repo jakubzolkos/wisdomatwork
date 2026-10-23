@@ -42,6 +42,8 @@ import {
   type NotificationKind,
   type NotificationStatus,
 } from '@/lib/notifications/types'
+import { ProgramRemindersCard } from './program-reminders-card'
+import { pendingProgramReminders } from './reminder-actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -349,6 +351,9 @@ export default async function AdminNotificationsPage({
     .map(({ _sort: _drop, ...rest }) => rest)
 
   const tabOrder: Tab[] = ['sent', 'scheduled', 'drafts', 'failed']
+  // Session + module-opening reminders the curriculum calls for and
+  // nobody has scheduled yet.
+  const pendingReminders = await pendingProgramReminders()
 
   return (
     <div className="space-y-6">
@@ -366,6 +371,12 @@ export default async function AdminNotificationsPage({
           />
         }
       />
+
+      {pendingReminders.length > 0 && (
+        <ProgramRemindersCard
+          reminders={pendingReminders.map((r) => ({ title: r.title, sendAt: r.sendAt, cohorts: r.cohorts }))}
+        />
+      )}
 
       {/* Status tabs */}
       <nav className="flex flex-wrap gap-1 border-b border-border">
