@@ -55,7 +55,7 @@ export async function scheduleProgramReminders(): Promise<ScheduleRemindersResul
           body: r.body,
           pinned: false,
           cta_label: r.ctaLabel,
-          cta_url: `${origin}${r.ctaPath}`,
+          cta_url: /^https?:\/\//.test(r.ctaPath) ? r.ctaPath : `${origin}${r.ctaPath}`,
           email_enabled: true,
           email_subject: null,
           scheduled_for: r.sendAt,

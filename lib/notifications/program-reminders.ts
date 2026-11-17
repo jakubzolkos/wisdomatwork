@@ -4,7 +4,8 @@ import type { CurriculumRows } from '@/lib/curriculum-tree'
  * Program reminders: email + in-app notifications worked out from the
  * curriculum, so staff don't write them one by one.
  *
- *   - a session reminder 24 hours before each scheduled live session
+ *   - a session reminder at 7:00 AM Eastern on the day of each scheduled
+ *     live session, with the Zoom link as the button
  *   - a "now open" notice when a module's release date passes
  *
  * They become ordinary scheduled notifications (Admin -> Notifications),
@@ -20,11 +21,35 @@ export interface PlannedReminder {
   sendAt: string
   cohorts: string[]
   ctaLabel: string
-  /** Portal path; made absolute when saved (emails need full links). */
+  /** Portal path (made absolute when saved) or a full https link such as the Zoom URL. */
   ctaPath: string
 }
 
-const SESSION_LEAD_MS = 24 * 60 * 60 * 1000
+/** Session-day reminders go out at this hour, Eastern. */
+const SEND_HOUR_ET = 7
+
+const ET_DATE = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/New_York',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}) // YYYY-MM-DD
+const ET_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: 'numeric',
+  hourCycle: 'h23',
+})
+
+/** 7:00 AM Eastern on the (Eastern) day `start` falls on, as epoch ms. Handles EST/EDT. */
+export function morningOf(start: Date): number {
+  const [y, m, d] = ET_DATE.format(start).split('-').map(Number)
+  // Eastern is UTC-4 (summer) or UTC-5 (winter): whichever offset lands on 7 AM there.
+  for (const offset of [4, 5]) {
+    const t = Date.UTC(y, m - 1, d, SEND_HOUR_ET + offset)
+    if (Number(ET_HOUR.format(new Date(t))) === SEND_HOUR_ET) return t
+  }
+  return start.getTime() - 24 * 60 * 60 * 1000 // unreachable; keeps the old lead time as a fallback
+}
 
 const DAY_TIME = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/New_York',
@@ -72,13 +97,13 @@ export function planProgramReminders(rows: CurriculumRows, now = Date.now()): Pl
 
   const out: PlannedReminder[] = []
 
-  // 1. The day before each session.
+  // 1. The morning of each session.
   for (const item of rows.items) {
     if (item.resource_type !== 'live_session' || !item.scheduled_at || !item.module_id) continue
     const module = moduleById.get(item.module_id)
     if (!module) continue
     const start = new Date(item.scheduled_at)
-    const sendAt = start.getTime() - SESSION_LEAD_MS
+    const sendAt = morningOf(start)
     if (sendAt <= now) continue
     const cohorts = cohortsOf(module.phase_id, module.cohorts, item.cohorts)
     if (cohorts.length === 0) continue
@@ -89,11 +114,16 @@ export function planProgramReminders(rows: CurriculumRows, now = Date.now()): Pl
       .filter((i) => i.category === 'during_lab' && i.resource_type === 'survey')
       .map((i) => i.title)
     const name = shortTitle(module.title)
+    // The Zoom link itself is the button, so it works straight from the
+    // inbox; without one, point at the session page.
+    const zoom = item.url && /^https?:\/\//.test(item.url) ? item.url : null
     out.push({
       key: { content_id: item.id, module_id: null },
-      title: `Tomorrow: ${name} at ${TIME.format(start)} ET`,
+      title: `Today: ${name} at ${TIME.format(start)} ET`,
       body: [
-        `${name} is tomorrow, ${DAY_TIME.format(start)}, at ${TIME.format(start)} ET on Zoom. The join link is on the session page.`,
+        `${name} is today, ${DAY_TIME.format(start)}, at ${TIME.format(start)} ET on Zoom. ${
+          zoom ? 'Use the button below to join.' : 'The join link is on the session page.'
+        }`,
         prep.length ? `Before the call: ${list(prep)}.` : null,
         onCall.length
           ? `On the call you'll complete ${list(onCall)}. Have your Unique ID ready (it's on your dashboard).`
@@ -103,8 +133,8 @@ export function planProgramReminders(rows: CurriculumRows, now = Date.now()): Pl
         .join('\n\n'),
       sendAt: new Date(sendAt).toISOString(),
       cohorts,
-      ctaLabel: 'Open the session',
-      ctaPath: href(item),
+      ctaLabel: zoom ? 'Join on Zoom' : 'Open the session',
+      ctaPath: zoom ?? href(item),
     })
   }
 

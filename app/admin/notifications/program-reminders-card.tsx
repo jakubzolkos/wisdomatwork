@@ -60,7 +60,7 @@ export function ProgramRemindersCard({ reminders }: { reminders: ReminderPreview
                 {reminders.length} program reminder{reminders.length === 1 ? '' : 's'} ready to schedule
               </p>
               <p className="text-sm text-muted-foreground">
-                An email + notification the day before each session, and when each module opens, to that
+                An email + notification at 7:00 AM ET on the day of each session (with a Join on Zoom button), and when each module opens, to that
                 module&rsquo;s cohort. Once scheduled, edit or cancel any of them in the Scheduled tab before it
                 sends.
               </p>

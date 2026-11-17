@@ -9,6 +9,7 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
   - Code done (Nov 16): Liaisons are **Cohort C** (no database change; the checks already allow C). Cohort names now show everywhere staff assign people ("Cohort A (Wisdom Coaching)", "Cohort B (Deep Learning)", "Liaisons"), including invite emails. Liaisons do not see the other pathways, not even as locked titles.
   - **Update (Nov 16): Liaisons are already users with the Facilitator role** (professional consultants Karen consults, not fellows). So no Liaison phase is needed; the Cohort C work above is unused. Instead they get a **Staff Library**: a third Library tab visible only to Admins and Facilitators, never Fellows. Built in code (migration `scripts/067_library_staff_only.sql`, Staff Library tab, "Staff Library" option in the add/edit form, Admin → Library group). Facilitators can view and download but not add, edit or delete; only Admins curate.
   - **Progress (Nov 16):** 067 SQL run. Liaison slide deck PDF uploaded to the Staff Library (by you; `scripts/upload-staff-library.ts` does this for any PDF). Still open: deploy the code, the one-page handout, the WAW Toolkit parts (post in parts, timed to what Liaisons review each month), and sending Liaison access.
+  - **Preview fix (Nov 16):** "Preview as Liaisons" used to build a fake Fellow in Cohort C, so it hid the Staff Library and still said "Cohort C" in the banner and welcome line. It now previews a Facilitator (what a real Liaison sees) and says "Liaisons"; the cohort names also show in the admin lists, notification audiences and curriculum forms. Not yet checked in the browser.
   - **To do to make it live:** (1) Run `scripts/067_library_staff_only.sql` in Supabase **before** deploying the code, or the Library page will error. (2) Deploy. (3) Admin → Library → Add resource → choose "Staff Library" for the Liaison meeting deck (`WAW Liaison Meeting Nov 10 2026.pptx.pdf`, in Downloads), the one-page handout, and the Toolkit parts. Files are linked by URL today; uploading a PDF into the private bucket is still a script (see scripts/upload-*.ts). (4) Preview as a Fellow to confirm the tab is not there.
   - Leak check (Nov 16, read through the code, not tested with a real Liaison account): library, files, dashboard session card, community and phases are gated correctly. Two things to know: (a) a notification sent to **Everyone** also reaches Liaisons, so pathway-specific posts must use the cohort audience; (b) any signed-in user, Liaisons included, can read the other pathways' Zoom/survey links directly through the database API, because the curriculum tables are only filtered in app code (already listed as accepted in todo.txt). Fixing (b) means writing cohort rules into the database. **Decision (Nov 16): accepted as low risk and not planned now.** The users are not software engineers, so reading the database directly is very unlikely. Revisit only if the portal opens to people outside the invited groups. Cheap cover instead: passcodes on the Zoom links, and cohort audiences (not "Everyone") for pathway-specific notifications.
   - Open: Liaisons can still see the people directory and profiles (every signed-in user can; see todo.txt). Decide if that is acceptable for the alumni panel. Barbara may invite them at the first meeting next week. The pathway includes these three files:
@@ -25,8 +26,19 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
 - [ ] **Dec 4:** Wisdom Coaching launch.
 - [ ] Report access as of today:
   - Only Wisdom Coaching Cohort A and Staff can log in right now.
-  - How many members of each cohort have registered.
-  - What Fellows need on hand to sign in each time.
+  - How many members of each cohort have registered. (Query below; run it in the Supabase SQL editor.)
+  - What Fellows need on hand to sign in each time. **Answer (from the code):** their program email address and access to that inbox. They choose "Email me a code", get a 6-digit code (valid 10 minutes, single use) and type it in. If they have set a password (via "Set or reset your password", link valid 24 hours), they can use email + password instead. Nothing else: no app or authenticator.
+  - Counts query:
+    ```sql
+    select coalesce(p.cohort, 'none') as cohort, p.role,
+      count(*) filter (where p.deactivated_at is null) as active_accounts,
+      count(*) filter (where p.deactivated_at is null and u.last_sign_in_at is not null) as signed_in_at_least_once,
+      count(*) filter (where p.deactivated_at is null and u.last_sign_in_at is null) as not_yet
+    from public.profiles p
+    left join auth.users u on u.id = p.id
+    group by 1, 2 order by 1, 2;
+    ```
+    Note: accounts for both cohorts were pre-created (confirmed, passwordless), so "has an account" is not "has registered". Use `signed_in_at_least_once` as "registered".
 
 ## Three pathways
 
@@ -90,9 +102,10 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
 ## Emails and reminders
 
 - [ ] Day-of email to each Fellow's inbox, with the Zoom link, on the day of each meeting. This is the feature they want first. A calendar reminder with the Zoom link, the same day.
+  - Code done (Nov 16, not yet deployed or seen): the program reminders (Admin → Notifications) now go out at **7:00 AM ET on the day of each session**, with a **Join on Zoom** button linking straight to the Zoom, and a "view in portal" link. Before, they went out the day before and only linked to the session page. Tested for winter and summer clock times. **Not done: the calendar reminder** (an `.ics` invite the Fellow can add to their calendar). **If reminders were already scheduled** (Admin → Notifications → Scheduled), they still have the old day-before wording and timing; cancel those and create them again so the new ones apply.
 - [ ] Reminder emails can go out in Karen's voice or Mark's voice.
 - [ ] Schedule emails and short videos to send on set dates (the three emails before a Deep Learning Wisdom Lab).
-- [ ] Personalize those emails with the Fellow's name.
+- [x] Personalize those emails with the Fellow's name. (Done in code Nov 16: scheduled notification emails now say "Hi Jane," using the first name, skipping titles like Dr.; before they used the full name. Applies to the reminder and announcement emails, not yet to the invite and sign-in emails.)
 
 ## Launch and how people learn the portal (Barbara)
 
