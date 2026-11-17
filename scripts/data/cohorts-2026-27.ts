@@ -218,11 +218,11 @@ export const WISDOM_COACHING_SESSIONS: {
   startsAt: string
   toolkitPages: string | null
 }[] = [
-  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', opensAt: null, title: 'Wisdom Coaching One', startsAt: '2026-10-07T14:00:00-04:00', toolkitPages: '1–21' },
-  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', opensAt: '2026-10-07T15:00:00-04:00', title: 'Wisdom Coaching Two', startsAt: '2026-11-04T14:00:00-05:00', toolkitPages: null },
-  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', opensAt: '2026-11-04T15:00:00-05:00', title: 'Wisdom Coaching Three', startsAt: '2026-12-02T14:00:00-05:00', toolkitPages: null },
-  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', opensAt: '2026-12-02T15:00:00-05:00', title: 'Wisdom Coaching Four', startsAt: '2027-02-03T14:00:00-05:00', toolkitPages: null },
-  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', opensAt: '2027-02-03T15:00:00-05:00', title: 'Wisdom Coaching Five', startsAt: '2027-03-03T14:00:00-05:00', toolkitPages: null },
+  { moduleId: '25784f6b-0efb-40ee-9918-417a871e64be', opensAt: null, title: 'Wisdom Coaching Module One', startsAt: '2026-10-07T14:00:00-04:00', toolkitPages: '1–21' },
+  { moduleId: '0883e217-6200-4716-971e-e5eeddee65dc', opensAt: '2026-10-07T15:00:00-04:00', title: 'Wisdom Coaching Module Two', startsAt: '2026-11-04T14:00:00-05:00', toolkitPages: null },
+  { moduleId: '181b2c81-dfda-4872-a1f9-55759fa9cdbc', opensAt: '2026-11-04T15:00:00-05:00', title: 'Wisdom Coaching Module Three', startsAt: '2026-12-02T14:00:00-05:00', toolkitPages: null },
+  { moduleId: '4fd0074c-231c-4bea-ba0c-c6ec93ef19a2', opensAt: '2026-12-02T15:00:00-05:00', title: 'Wisdom Coaching Module Four', startsAt: '2027-02-03T14:00:00-05:00', toolkitPages: null },
+  { moduleId: 'fd550623-dcb8-4f33-a970-f0b7fbe65de0', opensAt: '2027-02-03T15:00:00-05:00', title: 'Wisdom Coaching Module Five', startsAt: '2027-03-03T14:00:00-05:00', toolkitPages: null },
 ]
 
 /**

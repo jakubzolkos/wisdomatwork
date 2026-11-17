@@ -5,6 +5,7 @@ import { StandalonePageTemplate } from '@/components/custom-pages/standalone-pag
 import { getAdminPageContent } from '@/app/admin/actions'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/page-header'
+import { KeyDates } from '@/components/about/key-dates'
 
 // Skip prerendering since this page requires authentication
 export const dynamic = 'force-dynamic'
@@ -134,6 +135,9 @@ export default async function AboutPage() {
             className="w-full rounded-xl border border-border shadow-xs"
           />
         </figure>
+
+        {/* Key dates: the viewer's own scheduled sessions, from the curriculum. */}
+        <KeyDates />
 
         {/* Foundation attribution section */}
         <section className="rounded-xl border border-border bg-card p-6 shadow-xs">

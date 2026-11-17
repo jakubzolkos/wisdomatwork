@@ -580,8 +580,10 @@ async function wisdomCoaching() {
   for (const [i, s] of WISDOM_COACHING_SESSIONS.entries()) {
     await upsertModule(s.moduleId, PHASE_WISDOM_COACHING, {
       title: s.title,
-      description:
-        'Prep: frame a current problem of practice. Live: share wins and challenges and test strategies with WaW tools. Field Work: implement, iterate and capture what you notice.',
+      // No sidebar blurb: the same Prep / Live / Field Work text on every
+      // module was too much (Ashleigh). The module's goals belong on its
+      // landing page once that exists.
+      description: null,
       order_index: i + 3,
       opens_at: s.opensAt,
     })
