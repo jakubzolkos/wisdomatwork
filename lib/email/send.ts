@@ -1,4 +1,4 @@
-import { sendEmail, type SendResult } from './client'
+import { sendEmail, type EmailAttachment, type SendResult } from './client'
 import {
   renderInvitationEmail,
   type InvitationEmailArgs,
@@ -85,7 +85,7 @@ export async function sendPasswordSetupEmail(
  */
 export async function sendNotificationEmail(
   to: string,
-  args: NotificationEmailArgs,
+  args: NotificationEmailArgs & { attachments?: EmailAttachment[] },
 ): Promise<SendResult> {
   const { subject, html, text } = renderNotificationEmail(args)
   return sendEmail({
@@ -93,6 +93,7 @@ export async function sendNotificationEmail(
     subject,
     html,
     text,
+    attachments: args.attachments,
     tags: [
       { name: 'category', value: 'notification' },
       { name: 'kind', value: args.kind },

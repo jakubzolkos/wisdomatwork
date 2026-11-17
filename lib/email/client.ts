@@ -36,6 +36,13 @@ export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY)
 }
 
+export type EmailAttachment = {
+  filename: string
+  /** File contents. Text is sent as UTF-8. */
+  content: string | Buffer
+  contentType?: string
+}
+
 export type SendArgs = {
   to: string | string[]
   subject: string
@@ -49,6 +56,8 @@ export type SendArgs = {
    * notification kind / invitation flow.
    */
   tags?: { name: string; value: string }[]
+  /** Optional attachments, e.g. a calendar invite (.ics). */
+  attachments?: EmailAttachment[]
 }
 
 export type SendResult =
@@ -72,6 +81,11 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
       text: args.text,
       replyTo: args.replyTo,
       tags: args.tags,
+      attachments: args.attachments?.map((a) => ({
+        filename: a.filename,
+        content: typeof a.content === 'string' ? Buffer.from(a.content, 'utf-8') : a.content,
+        contentType: a.contentType,
+      })),
     })
 
     if (error) {

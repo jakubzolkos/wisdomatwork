@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendNotificationEmail } from '@/lib/email/send'
-import { isEmailConfigured } from '@/lib/email/client'
+import { isEmailConfigured, type EmailAttachment } from '@/lib/email/client'
+import { buildSessionIcs } from '@/lib/email/ics'
 import { siteUrl } from '@/lib/site'
 import { describeAudience, resolveRecipients } from './audience'
 import type {
@@ -22,6 +23,57 @@ interface RecipientToSend {
   profile_id: string
   email: string
   full_name: string | null
+}
+
+/**
+ * For a session reminder (the notification points at a scheduled live
+ * session), build the calendar invite to attach so a Fellow can add the
+ * session, with its Zoom link, to their calendar. Null for anything else,
+ * and on any lookup problem: the email still goes out without it.
+ */
+async function sessionInviteFor(
+  supabase: SupabaseClient,
+  contentId: string | null,
+): Promise<EmailAttachment | null> {
+  if (!contentId) return null
+  try {
+    const { data: item } = await supabase
+      .from('labs')
+      .select('id, module_id, url, resource_type, scheduled_at, duration_minutes')
+      .eq('id', contentId)
+      .maybeSingle<{
+        id: string
+        module_id: string | null
+        url: string | null
+        resource_type: string | null
+        scheduled_at: string | null
+        duration_minutes: number | null
+      }>()
+    if (!item || item.resource_type !== 'live_session' || !item.scheduled_at) return null
+    const start = new Date(item.scheduled_at)
+    if (Number.isNaN(start.getTime())) return null
+
+    let moduleTitle = 'Wisdom at Work session'
+    if (item.module_id) {
+      const { data: module } = await supabase
+        .from('modules')
+        .select('title')
+        .eq('id', item.module_id)
+        .maybeSingle<{ title: string }>()
+      if (module?.title) moduleTitle = module.title.split(': ')[0]
+    }
+
+    const content = buildSessionIcs({
+      uid: item.id,
+      title: `${moduleTitle} (Wisdom at Work)`,
+      start,
+      minutes: item.duration_minutes ?? 60,
+      url: item.url && /^https?:\/\//.test(item.url) ? item.url : null,
+    })
+    return { filename: 'session.ics', content, contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }
+  } catch {
+    return null
+  }
 }
 
 export interface DispatchResult {
@@ -192,6 +244,9 @@ export async function dispatchNotification(
 
       const portalUrl = await siteUrl('/notifications')
       const audienceLabel = describeAudience(notification)
+      // Same invite for every recipient, so build it once.
+      const sessionInvite =
+        notification.kind === 'reminder' ? await sessionInviteFor(supabase, notification.content_id) : null
 
       // Strictly serial: keeps us comfortably inside Resend's free
       // rate limit (2 req/s) and lets us record per-row results
@@ -207,6 +262,7 @@ export async function dispatchNotification(
           portalUrl,
           subjectOverride: notification.email_subject,
           footerNote: `Audience: ${audienceLabel}`,
+          attachments: sessionInvite ? [sessionInvite] : undefined,
         })
 
         if (result.ok) {
