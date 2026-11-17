@@ -47,7 +47,7 @@ export default async function LibraryPage() {
   const { data: rows } = await supabase
     .from('community_resources')
     .select(
-      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, staff_only, created_at, cover_url',
+      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, staff_only, file_path, created_at, cover_url',
     )
     .order('created_at', { ascending: false })
 
@@ -86,6 +86,7 @@ export default async function LibraryPage() {
       cohorts: Array.isArray(r.cohorts) ? (r.cohorts as string[]) : [],
       isUniversal: r.is_universal === true,
       staffOnly: r.staff_only === true,
+      filePath: (r as { file_path?: string | null }).file_path ?? null,
       createdAt: r.created_at,
       coverUrl: r.cover_url ?? null,
     }

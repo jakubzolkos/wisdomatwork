@@ -63,6 +63,8 @@ export interface LibraryResource {
   isUniversal: boolean
   /** True when the row is in the Staff Library (admins + facilitators only). */
   staffOnly: boolean
+  /** Key of an uploaded PDF in the private bucket; null for an external link. */
+  filePath: string | null
   /** ISO timestamp; null when the underlying row is missing one. */
   createdAt: string | null
   /** Public URL of the cover image. Null falls back to a type-icon panel. */

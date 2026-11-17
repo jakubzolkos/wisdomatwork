@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { COHORTS, cohortLabel, type Cohort } from '@/lib/cohorts'
+import { StoredFileField } from '@/components/admin/stored-file-field'
 // Pulled from a leaf module - importing this from library-view
 // would create a cycle (library-view itself imports this file),
 // which throws a TDZ ReferenceError when Next.js evaluates the
@@ -145,7 +146,9 @@ export function AddResourceDialog({
   // trip just to surface the error.
   const [author, setAuthor] = useState(initial?.author ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
-  const [url, setUrl] = useState(initial?.url ?? '')
+  const [url, setUrl] = useState(initial?.filePath ? '' : (initial?.url ?? ''))
+  // Key of an uploaded PDF; when set it replaces the link.
+  const [filePath, setFilePath] = useState<string | null>(initial?.filePath ?? null)
   const [resourceType, setResourceType] = useState<ResourceType>(
     (initial?.resourceType as ResourceType) ?? 'document',
   )
@@ -198,7 +201,8 @@ export function AddResourceDialog({
       setTitle(initial.title)
       setAuthor(initial.author ?? '')
       setDescription(initial.description ?? '')
-      setUrl(initial.url)
+      setUrl(initial.filePath ? '' : initial.url)
+      setFilePath(initial.filePath ?? null)
       setResourceType(initial.resourceType as ResourceType)
       setVisibility(visibilityOf(initial))
       const valid = (initial.cohorts ?? []).filter((c): c is Cohort =>
@@ -212,6 +216,7 @@ export function AddResourceDialog({
       setAuthor('')
       setDescription('')
       setUrl('')
+      setFilePath(null)
       setResourceType('document')
       setVisibility('cohort')
       setCohorts([COHORTS[0]])
@@ -311,7 +316,7 @@ export function AddResourceDialog({
     // instant feedback instead of a round trip.
     if (!title.trim()) return setError('Title is required.')
     if (!author.trim()) return setError('Author is required.')
-    if (!url.trim()) return setError('URL is required.')
+    if (!url.trim() && !filePath) return setError('Add a link or upload a PDF.')
     if (visibility === 'cohort' && cohorts.length === 0) {
       return setError('Pick at least one cohort or switch to Recommended Resources.')
     }
@@ -329,7 +334,8 @@ export function AddResourceDialog({
         title: title.trim(),
         author: author.trim(),
         description: description.trim() || null,
-        url: url.trim(),
+        url: filePath ? '' : url.trim(),
+        filePath,
         resourceType,
         tags: finalTags,
         isUniversal: visibility === 'universal',
@@ -454,23 +460,32 @@ export function AddResourceDialog({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="library-url">URL</Label>
-              <Input
-                id="library-url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                required
-                // Text, not url: uploaded files have in-app paths like
-                // /files/library/<id>, which the browser's URL check
-                // rejects. The server validates every link.
-                type="text"
-                inputMode="url"
-                placeholder="https://..."
+              <Label htmlFor="library-url">PDF or link</Label>
+              {/* Upload a PDF (opens in the portal's own viewer), or paste a link. */}
+              <StoredFileField
+                name="library_file"
+                initialPath={filePath}
+                folder="library"
+                onChange={setFilePath}
               />
+              {!filePath && (
+                <Input
+                  id="library-url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                  // Text, not url: uploaded files have in-app paths like
+                  // /files/library/<id>, which the browser's URL check
+                  // rejects. The server validates every link.
+                  type="text"
+                  inputMode="url"
+                  placeholder="...or paste a link: https://..."
+                />
+              )}
             </div>
           </div>
           <p className="-mt-2 text-xs text-muted-foreground">
-            File uploads (PDF, MP4) are coming soon. Paste a link for now.
+            Upload a PDF (up to 25 MB), or paste a link to a web page, video or document.
           </p>
 
           {/* Cover image. Optional - if omitted, the card on the

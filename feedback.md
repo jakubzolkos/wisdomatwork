@@ -48,6 +48,7 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
   - Liaisons — expert alumni panel, selected access to pilot tools and resources (Toolkit in parts, timed to the monthly review)
 - [ ] Put the syllabus and the WaW Toolkit v1.2 inside each pathway. The Toolkit lives in the pathway syllabus, not in the shared library.
 - [ ] Make it possible for the team to update each group's syllabi and materials without technical help.
+  - Gap closed in code (Nov 16, not yet deployed or tried): the Library and Staff Library form now has **Upload PDF** (up to 25 MB, opens in the portal's own viewer) as well as a link, the same way lesson items already did. Admins can add and replace Library PDFs with no script. Not changed: deleting a Library item leaves its file in storage (harmless). Everything else (curriculum, dates, cohort access, PDFs on lesson items, scheduled emails) already works in the admin.
 
 ## About page, times, and look
 
@@ -66,7 +67,7 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
 
 ## Library and resources
 
-- [ ] Delete all contents of the Current Library. Field Guides are now the WAW Toolkit. They belong in the Deep Learning syllabus, the Wisdom Coaching syllabus, or in the resources tied to that user's syllabus. They do not belong in the shared library.
+- [x] Delete all contents of the Current Library. (Nov 16, per you: **My Resources is already empty**, so the cohort-gated Field Guides are gone. Recommended Reading stays, as Karen wants. The Toolkit lives in each pathway's syllabus, not the Library. Nothing more to delete unless the team adds items back.) Field Guides are now the WAW Toolkit. They belong in the Deep Learning syllabus, the Wisdom Coaching syllabus, or in the resources tied to that user's syllabus. They do not belong in the shared library.
   - **Clarify scope first.** Karen also says Recommended Reading is "beautiful" and stays, so "all contents" cannot mean the whole library. In the database, Recommended Reading is `community_resources` with `is_universal = true`. "My Resources" is the cohort-gated rows (`is_universal = false`). Confirm with Karen that she means the Field Guides and other cohort-gated items, and move the Toolkit into the syllabi **before** deleting, so nothing the cohorts rely on disappears.
 - [ ] Fix the Library. Some links do not work. Others open a slide instead of a protocol. Ashleigh could not tell what the Library is for.
   - Audit query ready (Nov 16): run `scripts/audit_library_links.sql` in the Supabase SQL editor. It only reads, and lists each suspicious row with the reason: demo rows with fake `example.com` links (from the 034/036 seed scripts, likely still in the live Library), empty links, stored-file links with no file, Google Slides links (the "opens a slide" complaint), and Google Drive links. Then fix or delete each in Admin → Library. Not run yet.
@@ -112,6 +113,7 @@ Today is Nov 16. Dates already past are marked **OVERDUE**.
 ## Launch and how people learn the portal (Barbara)
 
 - [ ] Make a short video tutorial: what to do when you log in.
+  - Draft script and a one-page Fellow sign-in guide written (Nov 16): see `fellow-sign-in-guide.md`. Needs a read-through against the live portal, then someone to record the video.
 - [ ] Plan a live walkthrough so each group can be shown the platform before they are expected to use it.
   - Deep Learning: emails Nov 18
   - Wisdom Coaching launch: Dec 4

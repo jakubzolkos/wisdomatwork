@@ -5,7 +5,7 @@ import { requireUser } from '@/lib/auth-server'
 import { canAdmin } from '@/lib/admin-access'
 import { createClient } from '@/lib/supabase/server'
 import { deriveCoverFromUrl } from '@/lib/library/derive-cover'
-import { isStoredFileUrl } from '@/lib/stored-files'
+import { STORED_FILES_BUCKET, isStoredFileUrl, storedFileUrl } from '@/lib/stored-files'
 
 /**
  * Result envelope used by every Library mutation. Returning a plain
@@ -30,6 +30,26 @@ function isValidResourceUrl(url: string): boolean {
   } catch {
     return false
   }
+}
+
+/**
+ * An uploaded PDF's key in the private course-files bucket. The admin form
+ * uploads under `library/` (see StoredFileField); anything else isn't ours.
+ */
+function isLibraryFilePath(path: string): boolean {
+  return /^library\/[A-Za-z0-9._/-]+\.pdf$/.test(path) && !path.includes('..')
+}
+
+/** Whether the uploaded object really exists before a row points at it. */
+async function storedFileExists(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  filePath: string,
+): Promise<boolean> {
+  const slash = filePath.lastIndexOf('/')
+  const { data } = await supabase.storage
+    .from(STORED_FILES_BUCKET)
+    .list(filePath.slice(0, slash), { search: filePath.slice(slash + 1), limit: 5 })
+  return !!data?.some((o) => o.name === filePath.slice(slash + 1))
 }
 
 const MAX_TITLE_LEN = 200
@@ -81,6 +101,8 @@ export async function addLibraryResource(
     isUniversal?: boolean
     /** Staff Library: visible only to admins and facilitators. */
     staffOnly?: boolean
+    /** Key of an uploaded PDF (library/...). When set, it replaces the link. */
+    filePath?: string | null
     cohorts?: string[]
     /**
      * Optional cover image. Sent from the client as a File via
@@ -116,11 +138,15 @@ export async function addLibraryResource(
     if (description && description.length > MAX_DESC_LEN) {
       return { ok: false, message: `Description must be ${MAX_DESC_LEN} characters or fewer.` }
     }
-    if (!url) return { ok: false, message: 'URL is required.' }
+    const filePath = (input.filePath ?? '').trim() || null
+    if (filePath && !isLibraryFilePath(filePath)) {
+      return { ok: false, message: 'Invalid file. Upload the PDF again.' }
+    }
+    if (!filePath && !url) return { ok: false, message: 'Add a link or upload a PDF.' }
     // Lightweight URL sanity check. We don't require http/https here
     // because facilitators may legitimately link to internal LMS
     // schemes - but we do reject obvious garbage.
-    if (!isValidResourceUrl(url)) {
+    if (!filePath && !isValidResourceUrl(url)) {
       return { ok: false, message: 'URL must be a valid web address.' }
     }
     if (!VALID_TYPES.has(resourceType)) {
@@ -180,6 +206,10 @@ export async function addLibraryResource(
     }
 
     const supabase = await createClient()
+
+    if (filePath && !(await storedFileExists(supabase, filePath))) {
+      return { ok: false, message: 'The uploaded file was not found. Upload it again.' }
+    }
 
     // Optional cover image. Validate, upload to the `resource-covers`
     // bucket, then persist the resulting public URL alongside the
@@ -244,22 +274,29 @@ export async function addLibraryResource(
       // already filled in the form correctly; auto-cover is a
       // courtesy, not a requirement.
       console.log('[v0] addLibraryResource: deriving cover', { url })
-      coverUrl = await deriveCoverFromUrl(url)
+      coverUrl = filePath ? null : await deriveCoverFromUrl(url)
       console.log('[v0] addLibraryResource: derived', { url, coverUrl })
     }
 
-    const { error } = await supabase.from('community_resources').insert({
-      title,
-      author,
-      description,
-      url,
-      resource_type: resourceType,
-      tags,
-      cohorts,
-      is_universal: isUniversal,
-      staff_only: staffOnly,
-      cover_url: coverUrl,
-    })
+    // An uploaded file's link needs the row id, so such a row is inserted
+    // with a placeholder link and pointed at its file right after.
+    const { data: inserted, error } = await supabase
+      .from('community_resources')
+      .insert({
+        title,
+        author,
+        description,
+        url: filePath ? 'pending' : url,
+        file_path: filePath,
+        resource_type: resourceType,
+        tags,
+        cohorts,
+        is_universal: isUniversal,
+        staff_only: staffOnly,
+        cover_url: coverUrl,
+      })
+      .select('id')
+      .single<{ id: string }>()
     if (error) {
       // Best-effort cleanup: if we uploaded a cover but the row
       // insert failed, drop the orphan blob so the bucket doesn't
@@ -271,6 +308,18 @@ export async function addLibraryResource(
         }
       }
       return { ok: false, message: error.message }
+    }
+
+    if (filePath && inserted) {
+      const { error: linkError } = await supabase
+        .from('community_resources')
+        .update({ url: storedFileUrl('library', inserted.id) })
+        .eq('id', inserted.id)
+      if (linkError) {
+        // Don't leave a row whose link is the placeholder.
+        await supabase.from('community_resources').delete().eq('id', inserted.id)
+        return { ok: false, message: `Could not link the uploaded file: ${linkError.message}` }
+      }
     }
 
     revalidatePath('/resources')
@@ -335,6 +384,8 @@ export async function updateLibraryResource(
     isUniversal?: boolean
     /** Staff Library: visible only to admins and facilitators. */
     staffOnly?: boolean
+    /** Key of an uploaded PDF (library/...). When set, it replaces the link. */
+    filePath?: string | null
     cohorts?: string[]
     coverFile?: File | null
     /** If true, drop the existing cover image (overrides coverFile). */
@@ -367,8 +418,12 @@ export async function updateLibraryResource(
     if (description && description.length > MAX_DESC_LEN) {
       return { ok: false, message: `Description must be ${MAX_DESC_LEN} characters or fewer.` }
     }
-    if (!url) return { ok: false, message: 'URL is required.' }
-    if (!isValidResourceUrl(url)) {
+    const filePath = (input.filePath ?? '').trim() || null
+    if (filePath && !isLibraryFilePath(filePath)) {
+      return { ok: false, message: 'Invalid file. Upload the PDF again.' }
+    }
+    if (!filePath && !url) return { ok: false, message: 'Add a link or upload a PDF.' }
+    if (!filePath && !isValidResourceUrl(url)) {
       return { ok: false, message: 'URL must be a valid web address.' }
     }
     if (!VALID_TYPES.has(resourceType)) {
@@ -417,6 +472,10 @@ export async function updateLibraryResource(
     }
 
     const supabase = await createClient()
+
+    if (filePath && !(await storedFileExists(supabase, filePath))) {
+      return { ok: false, message: 'The uploaded file was not found. Upload it again.' }
+    }
 
     // Load the prior row so we know the existing cover path. We
     // also use this read as an existence check - bail with a clean
@@ -498,7 +557,7 @@ export async function updateLibraryResource(
       // which is harmless; if the URL has been fixed up since the
       // first save, this is where the auto-cover finally lands.
       console.log('[v0] updateLibraryResource: deriving cover', { id, url })
-      const derived = await deriveCoverFromUrl(url)
+      const derived = filePath ? null : await deriveCoverFromUrl(url)
       console.log('[v0] updateLibraryResource: derived', { id, url, derived })
       if (derived) nextCoverUrl = derived
     }
@@ -507,7 +566,8 @@ export async function updateLibraryResource(
       title,
       author,
       description,
-      url,
+      url: filePath ? storedFileUrl('library', id) : url,
+      file_path: filePath,
       resource_type: resourceType,
       tags,
       cohorts,
