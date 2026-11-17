@@ -1,4 +1,4 @@
-import { bodyToHtml, escapeHtml, renderBaseLayout, renderCtaButton } from './base'
+import { bodyToHtml, escapeHtml, firstNameOf, renderBaseLayout, renderCtaButton } from './base'
 import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 export type PasswordSetupEmailArgs = {
@@ -44,7 +44,7 @@ export type RenderedPasswordSetupEmail = {
 export function renderPasswordSetupEmail(
   args: PasswordSetupEmailArgs,
 ): RenderedPasswordSetupEmail {
-  const greeting = args.recipientName?.trim() ? args.recipientName.trim() : 'there'
+  const greeting = firstNameOf(args.recipientName) ?? 'there'
   const expires = args.expiresAtLabel?.trim() || EMAIL_LINK_EXPIRY_LABEL
   const isReset = args.isReset
 

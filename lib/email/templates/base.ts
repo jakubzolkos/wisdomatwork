@@ -12,6 +12,20 @@ export function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;')
 }
 
+const NAME_TITLES = new Set(['dr', 'mr', 'mrs', 'ms', 'mx', 'prof', 'rev', 'fr', 'sr', 'br'])
+
+/**
+ * First name for a greeting: "Jane Doe" -> "Jane", "Dr. Jane Doe" -> "Jane".
+ * Falls back to the whole name if nothing else is usable, and to null when
+ * empty.
+ */
+export function firstNameOf(fullName: string | null | undefined): string | null {
+  const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return null
+  const rest = parts.filter((p, i) => !(i === 0 && NAME_TITLES.has(p.replace(/\.$/, '').toLowerCase())))
+  return (rest[0] ?? parts[0]) || null
+}
+
 /**
  * Converts a plain-text body (paragraphs separated by blank lines) into
  * safe HTML <p> blocks with <br> for single line breaks.

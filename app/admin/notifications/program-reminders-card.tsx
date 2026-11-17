@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { BellRing } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { cohortLabel } from '@/lib/cohorts'
 import { scheduleProgramReminders } from './reminder-actions'
 
 export interface ReminderPreview {
@@ -82,7 +83,7 @@ export function ProgramRemindersCard({ reminders }: { reminders: ReminderPreview
               <li key={`${r.sendAt}-${r.title}`} className="flex flex-wrap justify-between gap-x-4 gap-y-0.5 px-3 py-2">
                 <span className="text-foreground">{r.title}</span>
                 <span className="text-xs text-muted-foreground">
-                  {WHEN.format(new Date(r.sendAt))} ET &middot; Cohort {r.cohorts.join(', ')}
+                  {WHEN.format(new Date(r.sendAt))} ET &middot; {r.cohorts.map((c) => cohortLabel(c)).join(', ')}
                 </span>
               </li>
             ))}

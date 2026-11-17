@@ -5,6 +5,7 @@ import { getSessionUser, requireUser } from '@/lib/auth-server'
 import { sendEmail } from '@/lib/email/client'
 import { isFeedbackKind, renderFeedbackEmail } from '@/lib/email/templates/feedback'
 import { getResearchId } from '@/lib/research-id'
+import { cohortLabel } from '@/lib/cohorts'
 import { getSiteOrigin } from '@/lib/site'
 
 /** Where fellows' feedback goes (override with FEEDBACK_EMAIL). */
@@ -56,7 +57,7 @@ export async function sendFeedback(formData: FormData): Promise<FeedbackResult> 
       : {
           name: user.role === 'fellow' ? user.fullName : `${user.fullName} (staff)`,
           email: user.email,
-          cohort: user.cohort ? `Cohort ${user.cohort}` : null,
+          cohort: user.cohort ? cohortLabel(user.cohort) : null,
           school: user.schoolName || null,
           researchId: user.role === 'fellow' ? await getResearchId(user.id) : null,
         }

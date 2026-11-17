@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { KeyRound, Mail } from 'lucide-react'
 import { AuthCard, AuthNotice, MethodCard } from '../_components/auth-ui'
+import { ResendLinkForm } from '../error/resend-link-form'
 
 type Method = 'password' | 'code'
 
@@ -32,6 +33,8 @@ export default function AcceptInvitePage() {
   const [email, setEmail] = useState<string | null>(null)
   const [bootstrapped, setBootstrapped] = useState(false)
   const [bootstrapError, setBootstrapError] = useState<string | null>(null)
+  // True when there is no signed-in session: the invite link was expired or used.
+  const [linkExpired, setLinkExpired] = useState(false)
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -47,8 +50,9 @@ export default function AcceptInvitePage() {
         if (cancelled) return
         if (!data.user) {
           setBootstrapError(
-            'Your invite link is no longer valid. Ask your program admin to resend it.',
+            'This link has expired or was already used. Enter your email below and we will send you a new one.',
           )
+          setLinkExpired(true)
           setBootstrapped(true)
           return
         }
@@ -135,6 +139,7 @@ export default function AcceptInvitePage() {
             {bootstrapError}
           </AuthNotice>
         )}
+        {linkExpired && <ResendLinkForm />}
 
         <MethodPicker method={method} onChange={setMethod} disabled={!canSubmit} />
 

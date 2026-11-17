@@ -1,4 +1,4 @@
-import { bodyToHtml, escapeHtml, renderBaseLayout, renderCtaButton } from './base'
+import { bodyToHtml, escapeHtml, firstNameOf, renderBaseLayout, renderCtaButton } from './base'
 import { EMAIL_LINK_EXPIRY_LABEL } from '@/lib/auth/link-expiry'
 
 export type InvitationEmailArgs = {
@@ -37,7 +37,7 @@ export type RenderedEmail = {
  * user opts into email verification, not blasted out at invite time.
  */
 export function renderInvitationEmail(args: InvitationEmailArgs): RenderedEmail {
-  const greeting = args.recipientName?.trim() ? args.recipientName.trim() : 'there'
+  const greeting = firstNameOf(args.recipientName) ?? 'there'
   const invitedBy = args.invitedByName?.trim()
   const cohort = args.cohortLabel?.trim()
   const expires = args.expiresAtLabel?.trim() || EMAIL_LINK_EXPIRY_LABEL

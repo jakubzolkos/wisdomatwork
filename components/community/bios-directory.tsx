@@ -6,6 +6,7 @@ import { MemberCard } from '@/components/profile/member-card'
 import { ProfileModal } from '@/components/profile/profile-view'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { cohortLabel } from '@/lib/cohorts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -343,7 +344,7 @@ export function BiosDirectory({ profiles, showCohort = false }: Props) {
                 <SelectItem value={ALL}>All cohorts</SelectItem>
                 {cohortOptions.map((c) => (
                   <SelectItem key={c} value={c}>
-                    Cohort {c}
+                    {cohortLabel(c)}
                   </SelectItem>
                 ))}
               </SelectContent>

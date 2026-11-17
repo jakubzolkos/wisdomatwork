@@ -32,7 +32,7 @@ export async function activateWithPasswordAction(args: {
     return {
       ok: false,
       error:
-        'This activation link is missing required fields. Ask your program admin to resend your invitation.',
+        'This activation link is incomplete. On the sign-in page, choose "Set or reset your password" to get a new link.',
     }
   }
   if (password.length < 8) {
@@ -49,7 +49,7 @@ export async function activateWithPasswordAction(args: {
     return {
       ok: false,
       error:
-        'This activation link is invalid or has expired. Ask your program admin to resend your invitation, or use the email-code option below.',
+        'This activation link is invalid or has expired. Use the email-code option below, or on the sign-in page choose "Set or reset your password" to get a new link.',
     }
   }
 

@@ -210,7 +210,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
             >
               {pending && <Spinner className="h-4 w-4" />}
               <Eye className="h-4 w-4" aria-hidden="true" />
-              Preview as Cohort {selectedCohort}
+              Preview as {cohortLabel(selectedCohort)}
             </Button>
           </div>
         )}

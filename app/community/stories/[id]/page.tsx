@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, BookmarkCheck } from 'lucide-react'
 import { requireUser } from '@/lib/auth-server'
+import { cohortLabel } from '@/lib/cohorts'
 import { createClient } from '@/lib/supabase/server'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -213,7 +214,7 @@ export default async function StoryPage({
           </div>
           {author?.cohort && (
             <Badge variant="secondary">
-              Cohort {author.cohort}
+              {cohortLabel(author.cohort)}
             </Badge>
           )}
         </div>

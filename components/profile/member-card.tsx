@@ -8,6 +8,7 @@ import {
   roleLabelFor,
 } from '@/lib/types/profile'
 import { cn } from '@/lib/utils'
+import { cohortLabel } from '@/lib/cohorts'
 
 interface Props {
   profile: DirectoryProfile
@@ -105,7 +106,7 @@ export function MemberCard({
           {showCohort && profile.cohort && (
             <Badge variant="outline" className="text-[11px] font-medium"
 >
-              Cohort {profile.cohort}
+              {cohortLabel(profile.cohort)}
             </Badge>
           )}
           {/*

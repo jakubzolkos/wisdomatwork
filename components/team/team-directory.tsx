@@ -6,6 +6,7 @@ import { ProfileModal } from '@/components/profile/profile-view'
 import { Button } from '@/components/ui/button'
 import type { DirectoryProfile } from '@/lib/types/profile'
 import { cn } from '@/lib/utils'
+import { cohortLabel } from '@/lib/cohorts'
 
 interface Props {
   members: DirectoryProfile[]
@@ -76,7 +77,7 @@ export function TeamDirectory({ members, showCohort = false }: Props) {
                 active={cohortFilter === c}
                 onClick={() => setCohortFilter(c)}
               >
-                Cohort {c}
+                {cohortLabel(c)}
                 <span className="ml-1 text-[11px] tabular-nums opacity-70">
                   {count}
                 </span>

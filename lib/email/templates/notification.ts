@@ -1,4 +1,7 @@
-import { bodyToHtml, escapeHtml, renderBaseLayout, renderCtaButton } from './base'
+import { bodyToHtml, escapeHtml, firstNameOf, renderBaseLayout, renderCtaButton } from './base'
+
+// Kept importable from here for existing callers; it lives in ./base so every template can use it.
+export { firstNameOf }
 import type { RenderedEmail } from './invitation'
 
 export type NotificationKind = 'announcement' | 'reminder' | 'alert'
@@ -36,20 +39,6 @@ const KIND_BADGE_BG: Record<NotificationKind, string> = {
   announcement: '#0f172a',
   reminder: '#1e3a8a',
   alert: '#b91c1c',
-}
-
-const TITLES = new Set(['dr', 'mr', 'mrs', 'ms', 'mx', 'prof', 'rev', 'fr', 'sr', 'br'])
-
-/**
- * First name for a greeting: "Jane Doe" -> "Jane", "Dr. Jane Doe" -> "Jane".
- * Falls back to the whole name if nothing else is usable, and to null when
- * empty.
- */
-export function firstNameOf(fullName: string | null | undefined): string | null {
-  const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return null
-  const rest = parts.filter((p, i) => !(i === 0 && TITLES.has(p.replace(/\.$/, '').toLowerCase())))
-  return (rest[0] ?? parts[0]) || null
 }
 
 /**

@@ -1,4 +1,4 @@
-import { bodyToHtml, escapeHtml, renderBaseLayout, renderCtaButton } from './base'
+import { bodyToHtml, escapeHtml, firstNameOf, renderBaseLayout, renderCtaButton } from './base'
 
 export type SchedulingInviteEmailArgs = {
   /** Display name to greet the recipient by. Falls back to "there". */
@@ -22,7 +22,7 @@ export type RenderedSchedulingEmail = {
 export function renderSchedulingInviteEmail(
   args: SchedulingInviteEmailArgs,
 ): RenderedSchedulingEmail {
-  const greeting = args.fellowName?.trim() ? args.fellowName.trim() : 'there'
+  const greeting = firstNameOf(args.fellowName) ?? 'there'
   const subject = `Action Required: Set Your Availability for "${escapeHtml(args.scheduleTitle)}"`
 
   const text = [

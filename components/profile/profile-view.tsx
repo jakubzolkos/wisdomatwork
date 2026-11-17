@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { cohortLabel } from '@/lib/cohorts'
 import {
   Dialog,
   DialogContent,
@@ -82,7 +83,7 @@ export function ProfileView({ profile, showCohort = false }: ProfileViewProps) {
             {/* Cohort chip is admin-only - same rule as MemberCard. */}
             {showCohort && profile.cohort && (
               <Badge variant="outline" className="text-xs">
-                Cohort {profile.cohort}
+                {cohortLabel(profile.cohort)}
               </Badge>
             )}
             {profile.community_role && (

@@ -20,6 +20,7 @@ import {
   MethodCard,
   authLinkClass,
 } from '../_components/auth-ui'
+import { ResendLinkForm } from '../error/resend-link-form'
 
 type Method = 'password' | 'code'
 type CodeStep = 'request' | 'verify'
@@ -162,7 +163,7 @@ function ActivateForm() {
   async function handleSendCode() {
     setError(null)
     if (!email) {
-      setError('This activation link is missing an email address. Ask your admin to resend.')
+      setError('This activation link is missing an email address. On the sign-in page, choose "Set or reset your password" to get a new link.')
       return
     }
 
@@ -243,10 +244,13 @@ function ActivateForm() {
       }
     >
       {!linkLooksValid && (
-        <AuthNotice tone="error" role="alert">
-          This activation link is missing or malformed. Ask your program admin to
-          resend your invitation.
-        </AuthNotice>
+        <>
+          <AuthNotice tone="error" role="alert">
+            This activation link is missing or incomplete. Enter your email below and we will send you a
+            new one.
+          </AuthNotice>
+          <ResendLinkForm />
+        </>
       )}
 
       {!isPasswordOnly && (

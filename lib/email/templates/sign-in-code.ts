@@ -1,4 +1,4 @@
-import { escapeHtml, renderBaseLayout } from './base'
+import { escapeHtml, firstNameOf, renderBaseLayout } from './base'
 
 export type SignInCodeEmailArgs = {
   /** Display name to greet the recipient by. Falls back to "there". */
@@ -23,7 +23,7 @@ export type RenderedEmail = {
  * the link bypasses the code UI entirely.
  */
 export function renderSignInCodeEmail(args: SignInCodeEmailArgs): RenderedEmail {
-  const greeting = args.recipientName?.trim() ? args.recipientName.trim() : 'there'
+  const greeting = firstNameOf(args.recipientName) ?? 'there'
   const expires = args.expiresInLabel?.trim() || '1 hour'
   const subject = `Your WaW Fellows Portal sign-in code: ${args.code}`
 

@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cohortLabel as labelForCohort } from '@/lib/cohorts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { PageHeader } from '@/components/page-header'
@@ -50,7 +51,7 @@ function initialsFor(name: string | null): string {
 
 function cohortLabel(year: number): string {
   const labels: { [key: number]: string } = { 1: 'A', 2: 'B', 3: 'C' }
-  return `Cohort ${labels[year] || '?'}`
+  return labelForCohort(labels[year] ?? null)
 }
 
 export default async function AdminSchoolsPage() {

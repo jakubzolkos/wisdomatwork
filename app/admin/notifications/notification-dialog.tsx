@@ -36,6 +36,7 @@ import {
   NOTIFICATION_KIND_LABELS,
   type NotificationKind,
 } from '@/lib/notifications/types'
+import { cohortLabel } from '@/lib/cohorts'
 import {
   MERGE_FIELDS,
   hasMergeFields,
@@ -400,7 +401,7 @@ export function NotificationDialog({
                           toggle(cohortCodes, setCohortCodes, code)
                         }
                       />
-                      Cohort {code}
+                      {cohortLabel(code)}
                     </label>
                   )
                 })}
@@ -571,7 +572,7 @@ export function NotificationDialog({
                             </span>
                             {f.cohort && (
                               <Badge variant="outline" className="shrink-0">
-                                Cohort {f.cohort}
+                                {cohortLabel(f.cohort)}
                               </Badge>
                             )}
                           </label>
