@@ -13,6 +13,7 @@ import {
   type NotificationStatus,
 } from '@/lib/notifications/types'
 import { assertAdminArea } from '@/lib/admin-access-server'
+import { isAllowedCtaTemplate } from '@/lib/notifications/merge-fields'
 
 export type NotificationFormResult =
   | { ok: true; id: string; status: NotificationStatus; message: string }
@@ -212,8 +213,11 @@ function parseCta(fd: FormData): { cta_label: string | null; cta_url: string | n
   if (url && !label) {
     throw new Error('CTA needs a label when a link URL is set')
   }
-  if (url && !/^(https?:\/\/|\/)/i.test(url)) {
-    throw new Error('CTA link must start with http(s):// or /')
+  // Only a web address, a site path, or exactly one link field ({{zoom_link}}
+  // or {{portal_link}}) is allowed. Name and other fields cannot be a link, so
+  // a value can never turn it into something like a javascript: link.
+  if (url && !isAllowedCtaTemplate(url)) {
+    throw new Error('CTA link must start with http(s):// or /, or be just {{zoom_link}} or {{portal_link}}')
   }
   return { cta_label: label, cta_url: url }
 }

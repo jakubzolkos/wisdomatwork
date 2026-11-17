@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { hasMergeFields, safeCtaUrl } from './merge-fields'
+import { createViewerMerger } from './merge-for-viewer'
 import type { NotificationFeedItem, NotificationRow } from './types'
 
 interface RecipientRow {
@@ -80,6 +82,22 @@ export async function getNotificationFeedForUser(
   let filtered = items
   if (excludeDismissed) filtered = filtered.filter((i) => !i.dismissed_at)
   if (options.onlyUnread) filtered = filtered.filter((i) => !i.read_at)
+
+  // Fill merge fields ({{first_name}}, ...) as this person sees them.
+  if (filtered.some((i) => hasMergeFields(i.title, i.body, i.cta_label, i.cta_url))) {
+    const merge = await createViewerMerger(userId, filtered.map((i) => i.content_id))
+    filtered = filtered.map((i) => {
+      // The link must still be a real address after filling; else no button.
+      const url = i.cta_url ? safeCtaUrl(merge(i.cta_url, i.content_id)) : null
+      return {
+        ...i,
+        title: merge(i.title, i.content_id),
+        body: merge(i.body, i.content_id),
+        cta_label: url && i.cta_label ? merge(i.cta_label, i.content_id) : null,
+        cta_url: url,
+      }
+    })
+  }
   return filtered
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useMemo, useState, useTransition } from 'react'
+import { useId, useMemo, useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -36,6 +36,14 @@ import {
   NOTIFICATION_KIND_LABELS,
   type NotificationKind,
 } from '@/lib/notifications/types'
+import {
+  MERGE_FIELDS,
+  hasMergeFields,
+  mergeProblems,
+  renderMerge,
+  sampleData,
+  writesOwnGreeting,
+} from '@/lib/notifications/merge-fields'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -178,8 +186,45 @@ export function NotificationDialog({
   const [schoolQuery, setSchoolQuery] = useState('')
   const [fellowQuery, setFellowQuery] = useState('')
 
+  // The text fields are uncontrolled (the form reads them on submit), so
+  // mirror what is typed for the merge-field preview and warnings, and
+  // remember which one was last focused so a field button inserts there.
+  const [titleText, setTitleText] = useState(merged.title)
+  const [bodyText, setBodyText] = useState(merged.body)
+  const [ctaLabelText, setCtaLabelText] = useState(merged.cta_label ?? '')
+  const [ctaUrlText, setCtaUrlText] = useState(merged.cta_url ?? '')
+  const [subjectText, setSubjectText] = useState(merged.email_subject ?? '')
+  const activeField = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
+  const rememberField = (e: { currentTarget: HTMLInputElement | HTMLTextAreaElement }) => {
+    activeField.current = e.currentTarget
+  }
+
   const titleId = useId()
   const bodyId = useId()
+
+  /** Insert `{{key}}` at the cursor of the last-focused text field (the message by default). */
+  function insertMergeField(key: string) {
+    const el =
+      activeField.current ?? (document.getElementById(bodyId) as HTMLTextAreaElement | null)
+    if (!el) return
+    const token = `{{${key}}}`
+    const start = el.selectionStart ?? el.value.length
+    const end = el.selectionEnd ?? start
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
+    Object.getOwnPropertyDescriptor(proto, 'value')?.set?.call(
+      el,
+      el.value.slice(0, start) + token + el.value.slice(end),
+    )
+    // Tell React the value changed so the mirrored state (and preview) update.
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+    el.focus()
+    el.setSelectionRange(start + token.length, start + token.length)
+  }
+
+  const mergeTexts = [titleText, bodyText, ctaLabelText, ctaUrlText, subjectText]
+  const usesMerge = hasMergeFields(...mergeTexts)
+  const problems = mergeProblems(mergeTexts, !!contentId)
+  const preview = sampleData()
   const contentSelectId = useId()
   const ctaLabelId = useId()
   const ctaUrlId = useId()
@@ -549,6 +594,8 @@ export function NotificationDialog({
               id={titleId}
               name="title"
               defaultValue={merged.title}
+              onChange={(e) => setTitleText(e.target.value)}
+              onFocus={rememberField}
               placeholder="e.g. New reading added to Lab 3"
               required
             />
@@ -560,10 +607,62 @@ export function NotificationDialog({
               id={bodyId}
               name="body"
               defaultValue={merged.body}
+              onChange={(e) => setBodyText(e.target.value)}
+              onFocus={rememberField}
               placeholder="Share context, links, reminders..."
               rows={6}
               required
             />
+          </div>
+
+          {/* Merge fields: filled in per recipient when the message goes out. */}
+          <div className="space-y-2 rounded-lg border border-dashed border-border bg-muted/30 p-3">
+            <p className="text-sm font-medium">Personalize with fields</p>
+            <p className="text-xs text-muted-foreground">
+              Click a field to add it where your cursor is. Each person gets their own
+              value when it sends; you can still edit the draft until then.
+              {writesOwnGreeting(bodyText)
+                ? ' You used a name field, so no automatic "Hi …," is added: write your own greeting.'
+                : ' We add "Hi <first name>," for you unless you use a name field yourself.'}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {MERGE_FIELDS.map((f) => (
+                <Button
+                  key={f.key}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  title={`Example: ${f.sample}`}
+                  onClick={() => insertMergeField(f.key)}
+                >
+                  {f.label}
+                </Button>
+              ))}
+            </div>
+            {problems.unknown.length > 0 && (
+              <p className="text-xs text-destructive" role="alert">
+                Not a field: {problems.unknown.map((u) => `{{${u}}}`).join(', ')}. Check the spelling,
+                or use the buttons above.
+              </p>
+            )}
+            {problems.needsSession.length > 0 && (
+              <p className="text-xs text-destructive" role="alert">
+                {problems.needsSession.map((k) => `{{${k}}}`).join(', ')} need a live session. Pick one
+                under &ldquo;Pin to a curriculum item&rdquo; below, or they will be blank.
+              </p>
+            )}
+            {usesMerge && (
+              <div className="rounded-md border border-border bg-card p-3 text-sm">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Preview with example values
+                </p>
+                <p className="font-medium">{renderMerge(titleText, preview) || '(no title)'}</p>
+                <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
+                  {renderMerge(bodyText, preview)}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Optional CTA */}
@@ -580,6 +679,8 @@ export function NotificationDialog({
                   id={ctaLabelId}
                   name="cta_label"
                   defaultValue={merged.cta_label ?? ''}
+                  onChange={(e) => setCtaLabelText(e.target.value)}
+                  onFocus={rememberField}
                   placeholder="e.g. Open the lab"
                   maxLength={64}
                 />
@@ -592,7 +693,9 @@ export function NotificationDialog({
                   id={ctaUrlId}
                   name="cta_url"
                   defaultValue={merged.cta_url ?? ''}
-                  placeholder="https:// or /path"
+                  onChange={(e) => setCtaUrlText(e.target.value)}
+                  onFocus={rememberField}
+                  placeholder="https://, /path, or {{zoom_link}}"
                 />
               </div>
             </div>
@@ -668,6 +771,8 @@ export function NotificationDialog({
                   id={emailSubjectId}
                   name="email_subject"
                   defaultValue={merged.email_subject ?? ''}
+                  onChange={(e) => setSubjectText(e.target.value)}
+                  onFocus={rememberField}
                   placeholder="Defaults to the notification title"
                   maxLength={140}
                 />

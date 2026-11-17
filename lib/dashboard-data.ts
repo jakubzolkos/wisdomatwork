@@ -8,6 +8,8 @@ import {
 import type { CurrentUser } from '@/lib/user-context'
 import type { FeedItemView } from '@/components/notifications/notifications-feed'
 import type { NotificationKind } from '@/lib/notifications/types'
+import { hasMergeFields, safeCtaUrl } from '@/lib/notifications/merge-fields'
+import { createViewerMerger } from '@/lib/notifications/merge-for-viewer'
 
 // ============================================================================
 // Types
@@ -263,6 +265,20 @@ export async function getDashboardData(): Promise<DashboardData> {
     }
   }
 
+  // Fill merge fields ({{first_name}}, ...) as this person sees them.
+  const needsMerge = (notificationRows ?? []).some((r: any) =>
+    hasMergeFields(r.title, r.body, r.cta_label, r.cta_url),
+  )
+  const merge = needsMerge
+    ? await createViewerMerger(
+        user.id,
+        (notificationRows ?? []).map((r: any) => {
+          const c = Array.isArray(r.content) ? r.content[0] : r.content
+          return c?.id ?? null
+        }),
+      )
+    : null
+
   const notifications: FeedItemView[] = (notificationRows ?? []).map((row: any) => {
     const authorRecord = Array.isArray(row.author) ? row.author[0] : row.author
     // Supabase returns embedded relations as either a single object
@@ -272,11 +288,16 @@ export async function getDashboardData(): Promise<DashboardData> {
       : (row.content as
           | { id: string; title: string; year_id: string; module_id: string }
           | null) ?? null
+    const ctaUrl: string | null = !row.cta_url
+      ? null
+      : merge
+        ? safeCtaUrl(merge(row.cta_url, contentRecord?.id))
+        : row.cta_url
     return {
       id: row.id,
       kind: (row.kind ?? 'announcement') as NotificationKind,
-      title: row.title,
-      body: row.body,
+      title: merge ? merge(row.title, contentRecord?.id) : row.title,
+      body: merge ? merge(row.body, contentRecord?.id) : row.body,
       pinned: row.pinned,
       publishedAt: row.sent_at ?? row.published_at,
       readAt: recipientByNotification.get(row.id) ?? null,
@@ -286,8 +307,10 @@ export async function getDashboardData(): Promise<DashboardData> {
             initials: initialsFor(authorRecord.full_name),
           }
         : null,
-      ctaLabel: row.cta_label ?? null,
-      ctaUrl: row.cta_url ?? null,
+      // With merge fields the link must still be a real address after
+      // filling; otherwise there is no button.
+      ctaLabel: ctaUrl && row.cta_label ? (merge ? merge(row.cta_label, contentRecord?.id) : row.cta_label) : null,
+      ctaUrl,
       content: contentRecord
         ? {
             id: contentRecord.id,

@@ -19,6 +19,11 @@ export type NotificationEmailArgs = {
   subjectOverride?: string | null
   /** Optional footer note shown below the body, e.g. audience scope. */
   footerNote?: string | null
+  /**
+   * Add "Hi <first name>," above the message. Defaults to true; turned off
+   * when the author wrote their own greeting with a name merge field.
+   */
+  autoGreeting?: boolean
 }
 
 const KIND_LABEL: Record<NotificationKind, string> = {
@@ -62,9 +67,9 @@ export function renderNotificationEmail(
 
   const greeting = firstNameOf(args.recipientName) ?? 'there'
 
+  const showGreeting = args.autoGreeting !== false
   const textLines: string[] = [
-    `Hi ${greeting},`,
-    '',
+    ...(showGreeting ? [`Hi ${greeting},`, ''] : []),
     args.body.trim(),
   ]
   if (args.ctaLabel && args.ctaUrl) {
@@ -97,9 +102,13 @@ export function renderNotificationEmail(
     <h2 style="margin:0 0 16px;font-size:20px;line-height:1.3;color:#0f172a;font-weight:600;">${escapeHtml(
       args.title,
     )}</h2>
-    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1f2937;">Hi ${escapeHtml(
-      greeting,
-    )},</p>
+    ${
+      showGreeting
+        ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1f2937;">Hi ${escapeHtml(
+            greeting,
+          )},</p>`
+        : ''
+    }
     ${bodyToHtml(args.body)}
     ${cta}
     ${portalLink}

@@ -5,6 +5,8 @@ import { isEmailConfigured, type EmailAttachment } from '@/lib/email/client'
 import { buildSessionIcs } from '@/lib/email/ics'
 import { siteUrl } from '@/lib/site'
 import { describeAudience, resolveRecipients } from './audience'
+import { renderMerge, safeCtaUrl, writesOwnGreeting } from './merge-fields'
+import { loadSessionInfo, recipientMergeData, sessionMergeData, type SessionInfo } from './session-info'
 import type {
   NotificationKind,
   NotificationRow,
@@ -26,54 +28,18 @@ interface RecipientToSend {
 }
 
 /**
- * For a session reminder (the notification points at a scheduled live
- * session), build the calendar invite to attach so a Fellow can add the
- * session, with its Zoom link, to their calendar. Null for anything else,
- * and on any lookup problem: the email still goes out without it.
+ * The calendar invite to attach to a session reminder, so a Fellow can add
+ * the session, with its Zoom link, to their calendar.
  */
-async function sessionInviteFor(
-  supabase: SupabaseClient,
-  contentId: string | null,
-): Promise<EmailAttachment | null> {
-  if (!contentId) return null
-  try {
-    const { data: item } = await supabase
-      .from('labs')
-      .select('id, module_id, url, resource_type, scheduled_at, duration_minutes')
-      .eq('id', contentId)
-      .maybeSingle<{
-        id: string
-        module_id: string | null
-        url: string | null
-        resource_type: string | null
-        scheduled_at: string | null
-        duration_minutes: number | null
-      }>()
-    if (!item || item.resource_type !== 'live_session' || !item.scheduled_at) return null
-    const start = new Date(item.scheduled_at)
-    if (Number.isNaN(start.getTime())) return null
-
-    let moduleTitle = 'Wisdom at Work session'
-    if (item.module_id) {
-      const { data: module } = await supabase
-        .from('modules')
-        .select('title')
-        .eq('id', item.module_id)
-        .maybeSingle<{ title: string }>()
-      if (module?.title) moduleTitle = module.title.split(': ')[0]
-    }
-
-    const content = buildSessionIcs({
-      uid: item.id,
-      title: `${moduleTitle} (Wisdom at Work)`,
-      start,
-      minutes: item.duration_minutes ?? 60,
-      url: item.url && /^https?:\/\//.test(item.url) ? item.url : null,
-    })
-    return { filename: 'session.ics', content, contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }
-  } catch {
-    return null
-  }
+function inviteFromSession(session: SessionInfo): EmailAttachment {
+  const content = buildSessionIcs({
+    uid: session.id,
+    title: `${session.name} (Wisdom at Work)`,
+    start: session.start,
+    minutes: session.minutes,
+    url: session.url,
+  })
+  return { filename: 'session.ics', content, contentType: 'text/calendar; charset=utf-8; method=PUBLISH' }
 }
 
 export interface DispatchResult {
@@ -232,6 +198,9 @@ export async function dispatchNotification(
       const nameByProfile = new Map(
         recipients.map((r) => [r.id, r.full_name] as const),
       )
+      const cohortByProfile = new Map(
+        recipients.map((r) => [r.id, r.cohort] as const),
+      )
 
       const toSend: RecipientToSend[] = (pendingRows ?? [])
         .filter((row) => typeof row.email === 'string' && row.email.length > 0)
@@ -244,25 +213,43 @@ export async function dispatchNotification(
 
       const portalUrl = await siteUrl('/notifications')
       const audienceLabel = describeAudience(notification)
-      // Same invite for every recipient, so build it once.
+      // The pinned session, if any, is the same for every recipient, so
+      // load it once: it feeds the session merge fields and the invite.
+      const session = await loadSessionInfo(supabase, notification.content_id)
       const sessionInvite =
-        notification.kind === 'reminder' ? await sessionInviteFor(supabase, notification.content_id) : null
+        notification.kind === 'reminder' && session ? inviteFromSession(session) : null
+      const sessionFields = sessionMergeData(session)
+      const ownGreeting = writesOwnGreeting(notification.body)
 
       // Strictly serial: keeps us comfortably inside Resend's free
       // rate limit (2 req/s) and lets us record per-row results
       // without burning the whole batch on one transient failure.
       for (const target of toSend) {
+        // Fill this recipient's merge fields ({{first_name}}, {{zoom_link}}, ...).
+        // The saved notification keeps the {{...}} text; only what is sent changes.
+        const data = {
+          ...recipientMergeData(
+            { full_name: target.full_name, cohort: cohortByProfile.get(target.profile_id) ?? null },
+            portalUrl,
+          ),
+          ...sessionFields,
+        }
+        const fill = (s: string | null) => (s ? renderMerge(s, data) : s)
+        // The button link must still be a real web address or site path
+        // after filling; otherwise drop the whole button.
+        const ctaUrl = notification.cta_url ? safeCtaUrl(renderMerge(notification.cta_url, data)) : null
         const result = await sendNotificationEmail(target.email, {
           recipientName: target.full_name,
           kind: notification.kind as NotificationKind,
-          title: notification.title,
-          body: notification.body,
-          ctaLabel: notification.cta_label,
-          ctaUrl: notification.cta_url,
+          title: renderMerge(notification.title, data),
+          body: renderMerge(notification.body, data),
+          ctaLabel: ctaUrl ? fill(notification.cta_label) : null,
+          ctaUrl,
           portalUrl,
-          subjectOverride: notification.email_subject,
+          subjectOverride: fill(notification.email_subject),
           footerNote: `Audience: ${audienceLabel}`,
           attachments: sessionInvite ? [sessionInvite] : undefined,
+          autoGreeting: !ownGreeting,
         })
 
         if (result.ok) {
