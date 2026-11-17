@@ -40,7 +40,7 @@ async function setupDatabase() {
       const aboutPageContent = {
         title: 'Welcome to the Wisdom at Work Fellows\' Portal',
         slug: 'about',
-        description: 'This site is your dashboard for the WAW Syllabus, Learning Journals, Additional Resources.',
+        description: 'This site is your dashboard for the WAW Syllabus, Toolkit, Calendar, and Additional Resources.',
         header1: 'Welcome to the Wisdom at Work Fellows\' Portal',
         header2: null,
         header3: null,

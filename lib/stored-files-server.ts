@@ -102,12 +102,13 @@ async function resolveLibraryFile(user: CurrentUser, id: string): Promise<Stored
   const supabase = await createClient()
   const { data: resource } = await supabase
     .from('community_resources')
-    .select('title, cohorts, is_universal, file_path')
+    .select('title, cohorts, is_universal, staff_only, file_path')
     .eq('id', id)
     .maybeSingle<{
       title: string
       cohorts: string[] | null
       is_universal: boolean | null
+      staff_only: boolean | null
       file_path: string | null
     }>()
   if (!resource?.file_path) return null

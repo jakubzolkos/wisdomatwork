@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AuthCard, AuthNotice, authLinkClass } from '../_components/auth-ui'
+import { ResendLinkForm } from './resend-link-form'
 
 /**
  * Landing page for auth failures. Called from two places:
@@ -26,13 +27,14 @@ export default async function Page({
             : 'An unspecified error occurred.'}
         </AuthNotice>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Invite links expire after 24 hours and can only be used once. If
-          yours has expired, ask your program admin to resend it, or contact{' '}
+          Email links expire after 24 hours and can only be used once. Enter
+          your email below for a fresh one, or contact{' '}
           <a className={authLinkClass} href="mailto:waw@abigailadamsinstitute.org">
             waw@abigailadamsinstitute.org
           </a>
           .
         </p>
+        <ResendLinkForm />
         <Button asChild size="lg" className="w-full">
           <Link href="/auth/login">Back to sign in</Link>
         </Button>

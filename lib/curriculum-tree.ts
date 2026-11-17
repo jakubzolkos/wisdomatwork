@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Cohort } from '@/lib/cohorts'
+import { isLiaisonCohort, type Cohort } from '@/lib/cohorts'
 import { createClient } from '@/lib/supabase/server'
 import { requireUser } from '@/lib/auth-server'
 import {
@@ -480,6 +480,10 @@ export function buildCurriculum(
       isLocked,
     }
   })
+    // Liaisons stay inside their own pathway: other pathways' phases are
+    // not even listed as locked stubs (their titles would give away what
+    // the fellows get).
+    .filter((p) => !(isFellow && isLiaisonCohort(userCohort) && p.isLocked))
 
   return { phases, isPrivileged: !isFellow }
 }

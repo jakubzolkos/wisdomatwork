@@ -18,7 +18,7 @@ export async function POST() {
       {
         title: 'Year Two: Wisdom Coaching',
         description:
-          'Five 60-minute interactive team coaching sessions across Fall and Spring. Real-time collaborative problem-solving and team-based implementation.',
+          'Five 90-minute interactive team coaching sessions across Fall and Spring. Real-time collaborative problem-solving and team-based implementation.',
         year: 'year_two',
         start_date: '2025-09-01',
         end_date: '2026-05-31',

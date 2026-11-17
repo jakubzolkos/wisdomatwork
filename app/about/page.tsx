@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'WaW Fellowship | Wisdom at Work',
   description:
-    'Welcome to the Wisdom at Work Fellowship Portal - your dashboard for the WAW Syllabus, Learning Journals, and Additional Resources.',
+    'Welcome to the Wisdom at Work Fellowship Portal - your dashboard for the WAW Syllabus, Toolkit, Calendar, and Additional Resources.',
 }
 
 interface ContentBlock {
@@ -93,7 +93,7 @@ export default async function AboutPage() {
                 !
               </span>
               <span className="mt-2 block">
-                This site is your dashboard for the WAW Syllabus, Learning Journals, Additional Resources.
+                This site is your dashboard for the WAW Syllabus, Toolkit, Calendar, and Additional Resources.
               </span>
             </>
           }

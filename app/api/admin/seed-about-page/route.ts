@@ -79,7 +79,7 @@ export async function POST() {
         block_type: 'text',
         order_number: 3,
         title: null,
-        content: 'This site is your dashboard for the WAW Syllabus, Learning Journals, Additional Resources.',
+        content: 'This site is your dashboard for the WAW Syllabus, Toolkit, Calendar, and Additional Resources.',
         metadata: { size: 'small' },
       },
       {

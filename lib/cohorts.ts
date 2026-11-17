@@ -18,6 +18,29 @@ export function isCohort(value: unknown): value is Cohort {
 }
 
 /**
+ * The three pathways, by cohort letter. The letter is the stored value
+ * (and what content is gated by); the name is what people see.
+ *   A = Wisdom Coaching, B = Deep Learning, C = Liaisons (the expert
+ *   alumni panel, who get selected pilot tools and resources).
+ */
+export const COHORT_NAMES: Record<Cohort, string> = {
+  A: 'Wisdom Coaching',
+  B: 'Deep Learning',
+  C: 'Liaisons',
+}
+
+/** Display label for a cohort letter, e.g. "Cohort A (Wisdom Coaching)" or "Liaisons". */
+export function cohortLabel(value: string | null | undefined): string {
+  if (!isCohort(value)) return value ? `Cohort ${value}` : 'No cohort'
+  return value === 'C' ? COHORT_NAMES.C : `Cohort ${value} (${COHORT_NAMES[value]})`
+}
+
+/** The Liaisons pathway: expert alumni, kept to their own content. */
+export function isLiaisonCohort(value: string | null | undefined): boolean {
+  return value === 'C'
+}
+
+/**
  * Returns true if a fellow with `userCohort` should be allowed to see
  * content gated by `targetCohorts`. Strict assigned-only access:
  *

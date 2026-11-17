@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
-import { COHORTS, type Cohort } from '@/lib/cohorts'
+import { COHORTS, cohortLabel, type Cohort } from '@/lib/cohorts'
 import { startPreviewAsCohort, startPreviewAsFellow } from '@/app/admin/preview/actions'
 
 export type PreviewFellow = {
@@ -191,7 +191,7 @@ export function PreviewLauncher({ fellows }: { fellows: PreviewFellow[] }) {
                         : 'border-border bg-background text-muted-foreground hover:border-border-strong hover:text-foreground',
                     )}
                   >
-                    <span>Cohort {c}</span>
+                    <span>{cohortLabel(c)}</span>
                   </button>
                 )
               })}
@@ -269,7 +269,7 @@ function CohortPill({ cohort }: { cohort: Cohort | null }) {
   }
   return (
     <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
-      Cohort {cohort}
+      {cohortLabel(cohort)}
     </span>
   )
 }

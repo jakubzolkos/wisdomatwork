@@ -28,6 +28,7 @@ export async function loadPwfProtocols(): Promise<FrameworkOption[]> {
     .from('community_resources')
     .select('id, title')
     .eq('is_pwf_protocol', true)
+    .eq('staff_only', false)
     .order('title', { ascending: true })
     .limit(200)
 

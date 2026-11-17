@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendBrandedInvite, type InvitePayload } from '@/lib/invitations/invite'
 import { parseCsv, parsePastedList, type ParsedInviteRow } from '@/lib/invitations/parse'
 import type { Role } from '@/lib/roles'
-import { isCohort, type Cohort } from '@/lib/cohorts'
+import { cohortLabel as labelForCohort, isCohort, type Cohort } from '@/lib/cohorts'
 import { assertAdminArea, assertCanAssignRoles } from '@/lib/admin-access-server'
 import { ADMIN_ROLE_LABELS, isAdminRole } from '@/lib/admin-access'
 
@@ -87,7 +87,7 @@ export async function inviteUserAction(formData: FormData): Promise<ActionResult
         schoolTeamId: schoolTeamId || null,
         cohortLetter,
         invitedByName,
-        cohortLabel: cohortLetter ? `Cohort ${cohortLetter}` : null,
+        cohortLabel: cohortLetter ? labelForCohort(cohortLetter) : null,
         schoolDescription: schoolDescription || null,
         schoolLocation: schoolLocation || null,
         schoolContactEmail: schoolContactEmail || null,
@@ -204,7 +204,7 @@ export async function bulkInviteAction(formData: FormData): Promise<BulkInviteRe
         schoolTeamId: resolvedSchoolTeamId,
         cohortLetter: defaultCohort,
         invitedByName,
-        cohortLabel: defaultCohort ? `Cohort ${defaultCohort}` : null,
+        cohortLabel: defaultCohort ? labelForCohort(defaultCohort) : null,
         schoolName: row.data.school_name ?? null,
         schoolDescription: row.data.school_description ?? null,
         schoolLocation: row.data.school_location ?? null,
@@ -440,7 +440,7 @@ export async function resendInviteAction(formData: FormData): Promise<ActionResu
         schoolTeamId,
         cohortLetter: profile?.cohort ?? null,
         invitedByName,
-        cohortLabel: profile?.cohort ? `Cohort ${profile.cohort}` : null,
+        cohortLabel: profile?.cohort ? labelForCohort(profile.cohort) : null,
       },
       me.id,
     )

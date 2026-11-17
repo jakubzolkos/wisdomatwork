@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { COHORTS, type Cohort } from '@/lib/cohorts'
+import { COHORTS, cohortLabel, type Cohort } from '@/lib/cohorts'
 // Pulled from a leaf module - importing this from library-view
 // would create a cycle (library-view itself imports this file),
 // which throws a TDZ ReferenceError when Next.js evaluates the
@@ -48,13 +48,13 @@ const TYPE_OPTIONS: ReadonlyArray<{
   label: ReactNode
 }> = [
   { value: 'document', label: PWF_PROTOCOLS_LABEL },
-  { value: 'link',     label: 'Field Guides' },
+  { value: 'link',     label: 'WAW Toolkit' },
   { value: 'video',    label: 'Video' },
   { value: 'reading',  label: 'Readings' },
 ]
 
 // Recommended Resources type options: only Reading, Video, and Audio
-// (document is PWF Protocols, link is Field Guides - both cohort-gated only)
+// (document is PWF Protocols, link is WAW Toolkit - both cohort-gated only)
 const RECOMMENDED_TYPE_OPTIONS: ReadonlyArray<{
   value: 'document' | 'link' | 'video' | 'reading'
   label: ReactNode
@@ -64,7 +64,11 @@ const RECOMMENDED_TYPE_OPTIONS: ReadonlyArray<{
 ]
 
 type ResourceType = (typeof TYPE_OPTIONS)[number]['value']
-type Visibility = 'cohort' | 'universal'
+type Visibility = 'cohort' | 'universal' | 'staff'
+
+function visibilityOf(r: { staffOnly?: boolean; isUniversal: boolean }): Visibility {
+  return r.staffOnly ? 'staff' : r.isUniversal ? 'universal' : 'cohort'
+}
 
 const MAX_TAGS = 8
 /** Mirror server validation so users get instant feedback. */
@@ -146,7 +150,7 @@ export function AddResourceDialog({
     (initial?.resourceType as ResourceType) ?? 'document',
   )
   const [visibility, setVisibility] = useState<Visibility>(
-    initial?.isUniversal ? 'universal' : 'cohort',
+    initial ? visibilityOf(initial) : 'cohort',
   )
   // Default to the earliest cohort so the form has a valid state on
   // open without forcing a click. In edit mode, fall back to A so
@@ -196,7 +200,7 @@ export function AddResourceDialog({
       setDescription(initial.description ?? '')
       setUrl(initial.url)
       setResourceType(initial.resourceType as ResourceType)
-      setVisibility(initial.isUniversal ? 'universal' : 'cohort')
+      setVisibility(visibilityOf(initial))
       const valid = (initial.cohorts ?? []).filter((c): c is Cohort =>
         (COHORTS as readonly string[]).includes(c),
       )
@@ -329,6 +333,7 @@ export function AddResourceDialog({
         resourceType,
         tags: finalTags,
         isUniversal: visibility === 'universal',
+        staffOnly: visibility === 'staff',
         cohorts: visibility === 'cohort' ? cohorts : [],
         coverFile: coverFile ?? null,
       }
@@ -594,6 +599,19 @@ export function AddResourceDialog({
                   </span>
                 </span>
               </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                <RadioGroupItem value="staff" id="vis-staff" className="mt-0.5" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium text-foreground">
+                    Staff Library
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Visible only to Admins and Facilitators (including the
+                    Liaisons). Never shown to Fellows. Lands on the Staff
+                    Library tab.
+                  </span>
+                </span>
+              </label>
             </RadioGroup>
           </fieldset>
 
@@ -621,7 +639,7 @@ export function AddResourceDialog({
                         checked={checked}
                         onCheckedChange={() => toggleCohort(c)}
                       />
-                      Cohort {c}
+                      {cohortLabel(c)}
                     </label>
                   )
                 })}

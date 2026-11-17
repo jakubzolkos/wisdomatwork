@@ -1,4 +1,5 @@
 import { requireUser } from '@/lib/auth-server'
+import { canAdmin } from '@/lib/admin-access'
 import { canUserSeeLibraryResource } from '@/lib/content-access'
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/top-bar'
@@ -46,7 +47,7 @@ export default async function LibraryPage() {
   const { data: rows } = await supabase
     .from('community_resources')
     .select(
-      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, created_at, cover_url',
+      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, staff_only, created_at, cover_url',
     )
     .order('created_at', { ascending: false })
 
@@ -55,9 +56,14 @@ export default async function LibraryPage() {
   // Two parallel slices. Visibility comes from the same rule the
   // stored-file route uses (canUserSeeLibraryResource), so a row a
   // fellow can't see here can't be downloaded either.
-  const universalRows = all.filter((r) => r.is_universal === true)
+  // Staff-only rows (the Staff Library) never mix into the other two
+  // tabs, and canUserSeeLibraryResource keeps them from fellows.
+  const universalRows = all.filter((r) => r.is_universal === true && r.staff_only !== true)
   const cohortGatedRows = all
-    .filter((r) => r.is_universal !== true)
+    .filter((r) => r.is_universal !== true && r.staff_only !== true)
+    .filter((r) => canUserSeeLibraryResource(user, r))
+  const staffRows = all
+    .filter((r) => r.staff_only === true)
     .filter((r) => canUserSeeLibraryResource(user, r))
 
   // Map raw rows -> view shape. Old rows that pre-date 033 may have
@@ -79,6 +85,7 @@ export default async function LibraryPage() {
       tags: Array.isArray(r.tags) ? (r.tags as string[]) : [],
       cohorts: Array.isArray(r.cohorts) ? (r.cohorts as string[]) : [],
       isUniversal: r.is_universal === true,
+      staffOnly: r.staff_only === true,
       createdAt: r.created_at,
       coverUrl: r.cover_url ?? null,
     }
@@ -86,7 +93,7 @@ export default async function LibraryPage() {
 
   const myResources: LibraryResource[] = cohortGatedRows.map(toResource)
   // Further Reading (Recommended): filter to only include Readings,
-  // Videos, and Documents. Exclude Field Guides (link type).
+  // Videos, and Documents. Exclude WAW Toolkit (link type).
   const furtherReading: LibraryResource[] = universalRows
     .filter((r) => {
       const type = VALID_TYPES.has(r.resource_type)
@@ -96,7 +103,12 @@ export default async function LibraryPage() {
     })
     .map(toResource)
 
-  const canManage = user.role === 'admin' || user.role === 'facilitator'
+  // Only admins with content access can add / edit / delete (the actions
+  // enforce the same rule). Facilitators, Liaisons included, browse only.
+  const canManage = canAdmin(user, 'content', 'write')
+  // The Staff Library tab exists for admins and facilitators only.
+  const staffLibrary: LibraryResource[] | null =
+    user.role === 'fellow' ? null : staffRows.map(toResource)
   // Cohort labels are program-internal staging metadata. Surface
   // them on cards / list rows for admins only - facilitators and
   // fellows shouldn't see them.
@@ -109,6 +121,7 @@ export default async function LibraryPage() {
         <LibraryView
           myResources={myResources}
           furtherReading={furtherReading}
+          staffLibrary={staffLibrary}
           canManage={canManage}
           showCohort={showCohort}
         />

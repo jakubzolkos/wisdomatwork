@@ -40,13 +40,20 @@ export function canUserSeeItem(
 }
 
 /**
- * Library resource. Universal rows are open to everyone signed in;
- * cohort-gated rows use strict assignment for fellows. Staff see all.
+ * Library resource. Staff-only rows (the Staff Library) are for admins
+ * and facilitators and never reach a fellow. Otherwise universal rows
+ * are open to everyone signed in; cohort-gated rows use strict
+ * assignment for fellows. Staff see all.
  */
 export function canUserSeeLibraryResource(
   user: AccessUser,
-  resource: { cohorts: string[] | null; is_universal: boolean | null },
+  resource: {
+    cohorts: string[] | null
+    is_universal: boolean | null
+    staff_only?: boolean | null
+  },
 ): boolean {
+  if (resource.staff_only === true) return user.role !== 'fellow'
   if (resource.is_universal === true) return true
   if (user.role !== 'fellow') return true
   return fellowCanAccess(resource.cohorts, user.cohort ?? null)

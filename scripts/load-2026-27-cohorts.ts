@@ -421,15 +421,16 @@ async function deepLearning() {
       order_index: order[i],
       opens_at: lab.opensAt,
     })
-    // During the Lab: Reflection on Practice (start of the Zoom),
-    // the Wisdom Lab, Reflection on Learning (end of the Zoom). RoP forms
+    // During the Lab: the Wisdom Lab and Reflection on Learning (hidden).
+    // Reflection on Practice sits under the "Wisdom Lab Fieldwork" header
+    // (category after_lab) right after the Field Work item. RoP forms
     // aren't published yet: placeholders. Lab Two's session was titled
     // "Wisdom Lab Two".
     await upsertItem(
       PHASE_DEEP_LEARNING,
       lab.moduleId,
       {
-        title: 'Reflection on Practice', resource_type: 'survey', category: 'during_lab', order_index: 1,
+        title: 'Reflection on Practice', resource_type: 'survey', category: 'after_lab', order_index: 2,
         description: ROP_START_OF_LAB, url: SURVEYS.dlRoP[i], cohorts: onlyB,
       },
       undefined,
@@ -457,12 +458,15 @@ async function deepLearning() {
       lab.moduleId,
       {
         title: 'Reflection on Learning', resource_type: 'survey', category: 'during_lab', order_index: 3,
-        description: ROL_END_OF_LAB, url: SURVEYS.dlRoL[i], cohorts: onlyB,
+        // Hidden from fellows (cohorts = []): Reflection on Learning is
+        // completed inside the Wisdom Lab, not ahead of or after it (Mark,
+        // Nov 2026). Staff still see the row; add 'B' back to show it.
+        description: ROL_END_OF_LAB, url: SURVEYS.dlRoL[i], cohorts: [],
       },
       undefined,
       { reorder: true },
     )
-    // After the Lab: Field Work only.
+    // Wisdom Lab Fieldwork: Field Work first, then Reflection on Practice.
     log('  field work -> after the lab, position 1')
     if (APPLY) {
       check(
@@ -598,7 +602,8 @@ async function wisdomCoaching() {
       s.moduleId,
       {
         title: 'Wisdom Coaching Check-in', resource_type: 'survey', category: 'during_lab', order_index: 1,
-        description: CHECK_IN_START, url: SURVEYS.wcCheckIn[i],
+        // Hidden from fellows (cohorts = []): done in the session itself (Mark, Nov 2026).
+        description: CHECK_IN_START, url: SURVEYS.wcCheckIn[i], cohorts: [],
       },
       ['Wisdom Coaching Check-in', 'Reflection on Learning'],
       { reorder: true },
@@ -608,7 +613,7 @@ async function wisdomCoaching() {
       s.moduleId,
       {
         title: 'Live Wisdom Coaching', resource_type: 'live_session', category: 'during_lab', order_index: 2,
-        url: WISDOM_COACHING_ZOOM, scheduled_at: s.startsAt, duration_minutes: 60,
+        url: WISDOM_COACHING_ZOOM, scheduled_at: s.startsAt, duration_minutes: 90,
       },
       undefined,
       { reorder: true },
@@ -618,7 +623,8 @@ async function wisdomCoaching() {
       s.moduleId,
       {
         title: 'Wisdom Coaching Retrospective', resource_type: 'survey', category: 'during_lab', order_index: 3,
-        description: RETRO_END, url: SURVEYS.wcRetrospective[i],
+        // Hidden from fellows (cohorts = []): done in the session itself (Mark, Nov 2026).
+        description: RETRO_END, url: SURVEYS.wcRetrospective[i], cohorts: [],
       },
       ['Wisdom Coaching Retrospective', 'Reflection on Practice'],
       { reorder: true },

@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { MoreHorizontal, Mail, Trash2, UserX, UserCheck } from 'lucide-react'
 import { ROLE_LABELS, type Role } from '@/lib/roles'
-import { COHORTS, type Cohort } from '@/lib/cohorts'
+import { COHORTS, COHORT_NAMES, type Cohort } from '@/lib/cohorts'
 import {
   deleteUserAction,
   resendInviteAction,
@@ -299,7 +299,7 @@ export function UserRow({
               <SelectItem value={NONE_COHORT}>—</SelectItem>
               {COHORTS.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {c}
+                  {c} · {COHORT_NAMES[c]}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -79,6 +79,8 @@ export async function addLibraryResource(
     resourceType: string
     tags?: string[]
     isUniversal?: boolean
+    /** Staff Library: visible only to admins and facilitators. */
+    staffOnly?: boolean
     cohorts?: string[]
     /**
      * Optional cover image. Sent from the client as a File via
@@ -143,15 +145,20 @@ export async function addLibraryResource(
       if (tags.length >= MAX_TAGS) break
     }
 
-    const isUniversal = input.isUniversal === true
+    // Staff Library: admins and facilitators only, never fellows.
+    // Overrides the other visibility settings.
+    const staffOnly = input.staffOnly === true
+    const isUniversal = !staffOnly && input.isUniversal === true
 
     // Cohort assignment: universal rows always store the full A/B/C
     // set so any consumer that bypasses the `is_universal` flag (e.g.
     // RLS policies) still allows them through. Cohort-gated rows
     // require at least one valid label; we dedupe and clamp to the
-    // canonical A/B/C set.
+    // canonical A/B/C set. Staff-only rows carry no cohorts.
     let cohorts: string[]
-    if (isUniversal) {
+    if (staffOnly) {
+      cohorts = []
+    } else if (isUniversal) {
       cohorts = ['A', 'B', 'C']
     } else {
       const seenC = new Set<string>()
@@ -250,6 +257,7 @@ export async function addLibraryResource(
       tags,
       cohorts,
       is_universal: isUniversal,
+      staff_only: staffOnly,
       cover_url: coverUrl,
     })
     if (error) {
@@ -325,6 +333,8 @@ export async function updateLibraryResource(
     resourceType: string
     tags?: string[]
     isUniversal?: boolean
+    /** Staff Library: visible only to admins and facilitators. */
+    staffOnly?: boolean
     cohorts?: string[]
     coverFile?: File | null
     /** If true, drop the existing cover image (overrides coverFile). */
@@ -380,9 +390,12 @@ export async function updateLibraryResource(
       if (tags.length >= MAX_TAGS) break
     }
 
-    const isUniversal = input.isUniversal === true
+    const staffOnly = input.staffOnly === true
+    const isUniversal = !staffOnly && input.isUniversal === true
     let cohorts: string[]
-    if (isUniversal) {
+    if (staffOnly) {
+      cohorts = []
+    } else if (isUniversal) {
       cohorts = ['A', 'B', 'C']
     } else {
       const seenC = new Set<string>()
@@ -499,6 +512,7 @@ export async function updateLibraryResource(
       tags,
       cohorts,
       is_universal: isUniversal,
+      staff_only: staffOnly,
     }
     if (nextCoverUrl !== undefined) {
       updatePayload.cover_url = nextCoverUrl

@@ -60,6 +60,8 @@ export interface LibraryResource {
   cohorts: string[]
   /** True when the row lives on the Further Reading tab. */
   isUniversal: boolean
+  /** True when the row is in the Staff Library (admins + facilitators only). */
+  staffOnly: boolean
   /** ISO timestamp; null when the underlying row is missing one. */
   createdAt: string | null
   /** Public URL of the cover image. Null falls back to a type-icon panel. */
@@ -71,6 +73,11 @@ export interface LibraryViewProps {
   myResources: LibraryResource[]
   /** Universal "Further Reading" resources, visible to everyone. */
   furtherReading: LibraryResource[]
+  /**
+   * Staff Library: resources only admins and facilitators may see.
+   * `null` for fellows (the tab is not rendered at all).
+   */
+  staffLibrary?: LibraryResource[] | null
   /** Whether to render the admin-only "Add resource" affordance. */
   canManage: boolean
   /**
@@ -84,7 +91,7 @@ export interface LibraryViewProps {
 
 type TypeFilter = 'all' | 'document' | 'video' | 'link' | 'reading'
 type SortMode = 'newest' | 'alpha'
-type TabId = 'mine' | 'further'
+type TabId = 'mine' | 'further' | 'staff'
 
 /** Keep label + icon decisions in one place so cards and filters
  *  stay consistent without prop-drilling. Labels are ReactNode so
@@ -96,9 +103,9 @@ const TYPE_META: Record<
   // The legacy enum values stay (`document` / `link` / `video` /
   // `reading`) so the DB / CHECK constraint don't have to move.
   // Only the user-visible labels change:
-  //   document -> PWF Protocols, link -> Field Guides.
+  //   document -> PWF Protocols, link -> WAW Toolkit.
   document: { label: PWF_PROTOCOLS_LABEL, Icon: FileText,   cta: 'Open' },
-  link:     { label: 'Field Guides',      Icon: Link2,      cta: 'Open' },
+  link:     { label: 'WAW Toolkit',       Icon: Link2,      cta: 'Open' },
   video:    { label: 'Video',             Icon: PlayCircle, cta: 'Watch' },
   reading:  { label: 'Reading',           Icon: BookOpen,   cta: 'Read' },
 }
@@ -112,11 +119,11 @@ const RECOMMENDED_TYPE_FILTERS: Array<{ id: TypeFilter; label: ReactNode }> = [
 ]
 
 // Filter pill order matches the user's preferred reading order:
-// All, PWF Protocols, Field Guides, Video, Readings.
+// All, PWF Protocols, WAW Toolkit, Video, Readings.
 const TYPE_FILTERS: Array<{ id: TypeFilter; label: ReactNode }> = [
   { id: 'all',      label: 'All' },
   { id: 'document', label: PWF_PROTOCOLS_LABEL },
-  { id: 'link',     label: 'Field Guides' },
+  { id: 'link',     label: 'WAW Toolkit' },
   { id: 'video',    label: 'Video' },
   { id: 'reading',  label: 'Reading' },
 ]
@@ -124,6 +131,7 @@ const TYPE_FILTERS: Array<{ id: TypeFilter; label: ReactNode }> = [
 export function LibraryView({
   myResources,
   furtherReading,
+  staffLibrary = null,
   canManage,
   showCohort = false,
 }: LibraryViewProps) {
@@ -139,7 +147,11 @@ export function LibraryView({
   // usually looking for a single thing; switching tabs preserves
   // the narrowing they've already typed.
   const activeSource =
-    tab === 'mine' ? myResources : furtherReading
+    tab === 'mine'
+      ? myResources
+      : tab === 'staff'
+        ? (staffLibrary ?? [])
+        : furtherReading
 
   // Tags are derived from the visible slice so the dropdown only
   // ever offers tags that can actually narrow the result set.
@@ -211,7 +223,12 @@ export function LibraryView({
       />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="flex flex-col gap-6">
-        <TabsList className="grid h-10 w-full grid-cols-2 rounded-lg border border-border bg-muted/70 p-1 sm:inline-grid sm:w-auto">
+        <TabsList
+          className={cn(
+            'grid h-10 w-full rounded-lg border border-border bg-muted/70 p-1 sm:inline-grid sm:w-auto',
+            staffLibrary ? 'grid-cols-3' : 'grid-cols-2',
+          )}
+        >
           <TabsTrigger
             value="mine"
             className="gap-2 px-4 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-xs"
@@ -231,6 +248,17 @@ export function LibraryView({
               {furtherReading.length}
             </span>
           </TabsTrigger>
+          {staffLibrary && (
+            <TabsTrigger
+              value="staff"
+              className="gap-2 px-4 text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+            >
+              Staff Library
+              <span className="rounded-full bg-muted px-1.5 py-px text-[11px] font-medium tabular-nums text-muted-foreground">
+                {staffLibrary.length}
+              </span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Per-tab caption strip. Sits between the tab list and the
@@ -245,7 +273,9 @@ export function LibraryView({
         >
           {tab === 'mine'
             ? 'Resources released to your cohort - books, videos, podcasts, and other materials tied to the labs you are working through right now.'
-            : 'Curated books, videos, podcasts, and other recommendations from the program team. These materials sit alongside the curriculum and are available to every fellow, regardless of cohort or pace.'}
+            : tab === 'staff'
+              ? 'Private to Admins and Facilitators. Fellows never see this tab or anything in it.'
+              : 'Curated books, videos, podcasts, and other recommendations from the program team. These materials sit alongside the curriculum and are available to every fellow, regardless of cohort or pace.'}
         </p>
 
         {/* Search + filter row. Visible on both tabs since the state
@@ -378,6 +408,20 @@ export function LibraryView({
             showCohort={showCohort}
           />
         </TabsContent>
+        {staffLibrary && (
+          <TabsContent value="staff" className="mt-0">
+            <ResultsBody
+              tab="staff"
+              view={view}
+              filtered={filtered}
+              totalForTab={staffLibrary.length}
+              query={query}
+              typeFilter={typeFilter}
+              tagFilter={tagFilter}
+              showCohort={false}
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
@@ -800,7 +844,9 @@ function EmptyState({
     message =
       tab === 'mine'
           ? 'No cohort resources have been published for you yet. Check back soon, or try Recommended Resources.'
-        : "There's no recommended reading yet. New resources will show up here when published."
+        : tab === 'staff'
+          ? 'The Staff Library is empty. Admins can add private resources with Add resource, choosing the Staff Library option.'
+          : "There's no recommended reading yet. New resources will show up here when published."
   } else if (isNarrowing) {
     message =
       'No resources match your current filters. Try clearing a filter or searching for something else.'

@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { COHORTS, type Cohort } from '@/lib/cohorts'
+import { COHORTS, cohortLabel, type Cohort } from '@/lib/cohorts'
 import { startPreviewAsCohort } from '@/app/admin/preview/actions'
 
 /**
@@ -52,7 +52,7 @@ export function PreviewCohortMenu() {
             onSelect={() => start(c)}
             className="cursor-pointer"
           >
-            Cohort {c}
+            {cohortLabel(c)}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

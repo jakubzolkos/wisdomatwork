@@ -49,9 +49,11 @@ export const CONTENT_CATEGORIES = [
   },
   {
     value: 'after_lab',
-    label: 'After the Lab',
-    short: 'After',
-    description: 'Integration and follow-through: reflection prompts, surveys, follow-up practice.',
+    // Shown as one header: fieldwork, its tool, and the Reflection on
+    // Practice all sit under it (Mark, Nov 2026).
+    label: 'Wisdom Lab Fieldwork',
+    short: 'Fieldwork',
+    description: 'Fieldwork after the lab: the practice, its tool, and the Reflection on Practice.',
   },
   {
     value: 'general_resources',

@@ -45,7 +45,7 @@ const TYPE_META: Record<
   { label: ReactNode; Icon: typeof FileText }
 > = {
   document: { label: PWF_PROTOCOLS_LABEL, Icon: FileText },
-  link: { label: 'Field Guides', Icon: Link2 },
+  link: { label: 'WAW Toolkit', Icon: Link2 },
   video: { label: 'Video', Icon: PlayCircle },
   reading: { label: 'Readings', Icon: BookOpen },
 }
@@ -95,8 +95,9 @@ export function LibraryAdmin({ resources }: Props) {
     })
   }, [resources, query])
 
-  const universal = matches.filter((r) => r.isUniversal)
-  const cohortGated = matches.filter((r) => !r.isUniversal)
+  const staffOnly = matches.filter((r) => r.staffOnly)
+  const universal = matches.filter((r) => r.isUniversal && !r.staffOnly)
+  const cohortGated = matches.filter((r) => !r.isUniversal && !r.staffOnly)
 
   function handleDelete() {
     if (!deleting) return
@@ -166,6 +167,19 @@ export function LibraryAdmin({ resources }: Props) {
               query
                 ? 'No matches in Cohort-gated resources.'
                 : 'No cohort-gated resources yet.'
+            }
+          />
+
+          <ResourceGroup
+            title="Staff Library"
+            description="Private to Admins and Facilitators (including the Liaisons). Never shown to fellows."
+            rows={staffOnly}
+            onEdit={setEditing}
+            onDelete={setDeleting}
+            emptyMessage={
+              query
+                ? 'No matches in the Staff Library.'
+                : 'Nothing in the Staff Library yet. Use Add resource and choose Staff Library.'
             }
           />
         </>
@@ -337,7 +351,12 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
         )}
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-          {row.isUniversal ? (
+          {row.staffOnly ? (
+            <Badge variant="secondary" className="gap-1 text-[10px]">
+              <Layers className="h-3 w-3" aria-hidden="true" />
+              Staff only
+            </Badge>
+          ) : row.isUniversal ? (
             <Badge variant="secondary" className="gap-1 text-[10px]">
               <Layers className="h-3 w-3" aria-hidden="true" />
               Recommended

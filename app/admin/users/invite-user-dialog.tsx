@@ -18,7 +18,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { UserPlus } from 'lucide-react'
 import { inviteUserAction } from './actions'
 import { ROLE_LABELS, type Role } from '@/lib/roles'
-import { COHORTS } from '@/lib/cohorts'
+import { COHORTS, cohortLabel } from '@/lib/cohorts'
 
 type Props = {
   cohorts: { id: string; name: string }[]
@@ -164,7 +164,7 @@ export function InviteUserDialog({ cohorts }: Props) {
                     <SelectItem value={NONE_COHORT}>No cohort</SelectItem>
                     {COHORTS.map((c) => (
                       <SelectItem key={c} value={c}>
-                        Cohort {c}
+                        {cohortLabel(c)}
                       </SelectItem>
                     ))}
                   </SelectContent>

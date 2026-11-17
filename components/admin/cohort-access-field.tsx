@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
-import { COHORTS, type Cohort } from '@/lib/cohorts'
+import { COHORTS, cohortLabel, type Cohort } from '@/lib/cohorts'
 
 type Props = {
   /** Comma-separated form field name (e.g. "cohorts"). */
@@ -74,7 +74,7 @@ export function CohortAccessField({
                 checked={isChecked}
                 onCheckedChange={(v) => toggle(c, v === true)}
               />
-              <span>Cohort {c}</span>
+              <span>{cohortLabel(c)}</span>
             </label>
           )
         })}

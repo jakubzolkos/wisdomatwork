@@ -32,6 +32,7 @@ export async function loadMyResourcesPwfProtocols(): Promise<
     .select('id, title, cohorts, is_universal')
     .eq('resource_type', 'document')
     .eq('is_universal', false)
+    .eq('staff_only', false)
     .order('title', { ascending: true })
 
   if (error) {

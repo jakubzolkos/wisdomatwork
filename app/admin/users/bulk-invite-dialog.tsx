@@ -25,7 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Badge } from '@/components/ui/badge'
 import { Download, Upload, Users } from 'lucide-react'
 import { ROLE_LABELS, type Role } from '@/lib/roles'
-import { COHORTS } from '@/lib/cohorts'
+import { COHORTS, cohortLabel } from '@/lib/cohorts'
 import { bulkInviteAction, type BulkInviteSummary } from './actions'
 import {
   CSV_TEMPLATE_CONTENT,
@@ -447,7 +447,7 @@ function InputStep(props: {
                 <SelectItem value={NONE_COHORT}>No cohort</SelectItem>
                 {COHORTS.map((c) => (
                   <SelectItem key={c} value={c}>
-                    Cohort {c}
+                    {cohortLabel(c)}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -26,6 +26,7 @@ interface RawResourceRow {
   tags: string[] | null
   cohorts: string[] | null
   is_universal: boolean | null
+  staff_only: boolean | null
   cover_url: string | null
   created_at: string | null
 }
@@ -45,7 +46,7 @@ export default async function AdminLibraryPage() {
   const { data: rows } = await supabase
     .from('community_resources')
     .select(
-      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, cover_url, created_at',
+      'id, title, author, description, url, resource_type, tags, cohorts, is_universal, staff_only, cover_url, created_at',
     )
     .order('created_at', { ascending: false })
     .returns<RawResourceRow[]>()
@@ -66,6 +67,7 @@ export default async function AdminLibraryPage() {
     tags: Array.isArray(r.tags) ? r.tags : [],
     cohorts: Array.isArray(r.cohorts) ? r.cohorts : [],
     isUniversal: r.is_universal === true,
+    staffOnly: r.staff_only === true,
     coverUrl: r.cover_url ?? null,
     createdAt: r.created_at,
   }))
