@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { startPreviewAsFellow } from '@/app/admin/preview/actions'
 import { formatOpensAt } from '@/lib/module-locks'
+import { cohortLabel } from '@/lib/cohorts'
 import type { CurriculumItem, CurriculumModule } from '@/lib/curriculum-tree'
 import {
   currentPhaseId,
@@ -54,7 +55,7 @@ export default async function AdminFellowProgressPage({
 
       <PageHeader
         className="mb-0"
-        eyebrow={fellow.cohort ? `Cohort ${fellow.cohort}` : 'No cohort'}
+        eyebrow={cohortLabel(fellow.cohort)}
         title={fellow.fullName}
         description={fellow.schoolName ?? undefined}
         actions={

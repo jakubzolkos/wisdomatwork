@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { cohortLabel } from '@/lib/cohorts'
 import type { AudienceScope, NotificationRow } from './types'
 
 /**
@@ -131,7 +132,7 @@ export function describeAudience(audience: AudienceInput): string {
       return 'Everyone'
     case 'cohort':
       return audience.cohort_codes && audience.cohort_codes.length
-        ? `Cohort ${audience.cohort_codes.join(', ')}`
+        ? audience.cohort_codes.map(cohortLabel).join(', ')
         : 'Cohort'
     case 'school_team': {
       const n = audience.school_team_ids?.length ?? 0

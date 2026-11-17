@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/lib/roles'
-import { isCohort } from '@/lib/cohorts'
+import { cohortLabel, isCohort, isLiaisonCohort } from '@/lib/cohorts'
 import { isAdminRole } from '@/lib/admin-access'
 import { readPreviewCookie } from '@/lib/admin-preview'
 import type { CurrentUser, PreviewMeta } from '@/lib/user-context'
@@ -155,17 +155,21 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
         if (preview.type === 'by_cohort') {
           // Synthesize a generic fellow in the requested cohort. No real
           // ID, no progress, no school - just enough for cohort gating.
+          // Liaisons are the exception: they are Facilitators, not
+          // fellows, so previewing them shows what a Facilitator sees
+          // (everything except /admin, plus the Staff Library).
+          const liaison = isLiaisonCohort(preview.cohort)
           const synthetic: CurrentUser = {
             id: '__preview__',
             email: profile.email ?? user.email ?? '',
-            fullName: `Cohort ${preview.cohort} preview`,
-            role: 'fellow',
+            fullName: `${cohortLabel(preview.cohort)} preview`,
+            role: liaison ? 'facilitator' : 'fellow',
             schoolName: '',
-            cohort: preview.cohort,
+            cohort: liaison ? null : preview.cohort,
             preview: {
               ...meta,
               mode: 'by_cohort',
-              label: `Cohort ${preview.cohort}`,
+              label: cohortLabel(preview.cohort),
             },
           }
           return synthetic

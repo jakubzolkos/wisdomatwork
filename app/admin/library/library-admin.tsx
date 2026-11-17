@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { PWF_PROTOCOLS_LABEL } from '@/lib/library/labels'
+import { cohortLabel } from '@/lib/cohorts'
 
 /**
  * Row shape accepted by the admin Library list. Matches
@@ -371,7 +372,7 @@ function ResourceRow({ row, onEdit, onDelete }: RowProps) {
           ) : (
             row.cohorts.map((c) => (
               <Badge key={c} variant="outline" className="text-[10px]">
-                Cohort {c}
+                {cohortLabel(c)}
               </Badge>
             ))
           )}

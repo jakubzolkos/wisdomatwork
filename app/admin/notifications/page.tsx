@@ -44,6 +44,7 @@ import {
 import { ProgramRemindersCard } from './program-reminders-card'
 import { pendingProgramReminders } from './reminder-actions'
 import { requireAdminPage } from '@/lib/admin-access-server'
+import { cohortLabel } from '@/lib/cohorts'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,7 +122,7 @@ function audienceLabel(
     case 'cohort': {
       const codes = row.cohort_codes ?? []
       if (codes.length === 0) return 'Cohort'
-      return `Cohort ${codes.join(', ')}`
+      return codes.map(cohortLabel).join(', ')
     }
     case 'school_team': {
       const ids = row.school_team_ids ?? []

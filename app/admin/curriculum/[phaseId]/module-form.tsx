@@ -2,6 +2,7 @@
 
 import { useId, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { cohortLabel } from '@/lib/cohorts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -105,7 +106,7 @@ export function ModuleForm({
               {phaseCohorts.length === 0
                 ? 'Phase is currently unassigned, so no fellows can see this module.'
                 : `Visible to fellows in ${phaseCohorts
-                    .map((c) => `Cohort ${c}`)
+                    .map((c) => cohortLabel(c))
                     .join(', ')}.`}
             </span>
           </span>

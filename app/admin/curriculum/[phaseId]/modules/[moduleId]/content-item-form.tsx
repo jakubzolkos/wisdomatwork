@@ -2,6 +2,7 @@
 
 import { useId, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { cohortLabel } from '@/lib/cohorts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -470,7 +471,7 @@ export function ContentItemForm({
                     moduleOverridden ? ' (overridden)' : ''
                   }, so no fellows can see this content.`
                 : `Visible to fellows in ${moduleEffectiveCohorts
-                    .map((c) => `Cohort ${c}`)
+                    .map((c) => cohortLabel(c))
                     .join(', ')}${
                     moduleOverridden ? '' : ' (inherited from the phase)'
                   }.`}

@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { linkTargetProps } from '@/lib/stored-files'
+import { cohortLabel } from '@/lib/cohorts'
 import { AddResourceDialog } from '@/components/library/add-resource-dialog'
 import { PageHeader } from '@/components/page-header'
 // Lives in a leaf module so AddResourceDialog can also import it
@@ -813,7 +814,7 @@ function CohortBadgeRow({
           variant="outline"
           className="text-[11px] font-medium text-muted-foreground"
         >
-          Cohort {c}
+          {cohortLabel(c)}
         </Badge>
       ))}
     </div>
